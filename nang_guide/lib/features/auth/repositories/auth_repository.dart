@@ -1,0 +1,1 @@
+// 백엔드(Spring Boot) API 통신 담당
