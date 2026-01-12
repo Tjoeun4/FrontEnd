@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:honbop_mate/features/auth/screens/my_bottom_navigationBar.dart';
+import 'package:honbop_mate/features/auth/views/my_bottom_navigationBar.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});

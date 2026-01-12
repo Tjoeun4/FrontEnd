@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:honbop_mate/features/auth/screens/login_selection_screen.dart'; // 변경된 로그인 화면 경로
+import 'package:honbop_mate/features/auth/views/login_selection_screen.dart'; // 변경된 로그인 화면 경로
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
