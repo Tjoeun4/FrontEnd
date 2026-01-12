@@ -1,22 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_navigation/get_navigation.dart';
+import 'package:honbop_mate/features/auth/bindings/auth_binding.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/splash_screen.dart'; // Add this import for SplashScreen
 
-void main() {
-  runApp(const MyApp());
+// void main() {
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       theme: ThemeData(
+//         primaryColor: Color(0xFF14A3A3),
+//         primarySwatch: Colors.teal,
+//         useMaterial3: true,
+//       ),
+//       home: SplashScreen(),
+//     );
+//   }
+// }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // await _initializeNaverMap();
+
+  // Get.put(AuthController(), permanent: true);
+  // Get.put(TokenService(), permanent: true);
+  // Get.put(ApiService(), permanent: true);
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primaryColor: Color(0xFF14A3A3),
-        primarySwatch: Colors.teal,
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(),
+    return GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppRoutes.SPLASH,
+      getPages: AppRoutes.routes,
+      initialBinding: AuthBinding(),
+      theme: ThemeData(fontFamily: 'Pretendard'),
     );
   }
 }

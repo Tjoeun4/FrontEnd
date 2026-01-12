@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:honbop_mate/features/auth/views/components/bottom_nav_bar.dart';
 import 'package:honbop_mate/features/auth/views/email_login_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,7 +39,11 @@ class LoginSelectionScreen extends StatelessWidget {
               text: '카카오톡으로 시작',
               backgroundColor: const Color(0xFFFFE812),
               textColor: Colors.black,
-              iconWidget: Image.asset('assets/kakao_login.png', height: 50, width: 50),
+              iconWidget: Image.asset(
+                'assets/kakao_login.png',
+                height: 50,
+                width: 50,
+              ),
               onPressedCallback: () {
                 print('카카오톡으로 시작 버튼 클릭됨');
               },
@@ -49,7 +54,11 @@ class LoginSelectionScreen extends StatelessWidget {
               text: '구글로 시작',
               backgroundColor: Colors.white,
               textColor: Colors.black,
-              iconWidget: Image.asset('assets/google_login.png', height: 35, width: 35),
+              iconWidget: Image.asset(
+                'assets/google_login.png',
+                height: 35,
+                width: 35,
+              ),
               isGoogle: true,
               onPressedCallback: () {
                 print('구글로 시작 버튼 클릭됨');
@@ -120,9 +129,7 @@ class LoginSelectionScreen extends StatelessWidget {
                           launchUrl(Uri.parse('https://www.naver.com'));
                         },
                     ),
-                    const TextSpan(
-                      text: ', ',
-                    ),
+                    const TextSpan(text: ', '),
                     TextSpan(
                       text: '개인정보 취급 방침',
                       style: const TextStyle(
@@ -134,9 +141,7 @@ class LoginSelectionScreen extends StatelessWidget {
                           launchUrl(Uri.parse('https://www.naver.com'));
                         },
                     ),
-                    const TextSpan(
-                      text: '에 동의하게 됩니다.',
-                    ),
+                    const TextSpan(text: '에 동의하게 됩니다.'),
                   ],
                 ),
               ),
@@ -144,6 +149,7 @@ class LoginSelectionScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavigation(),
     );
   }
 }
