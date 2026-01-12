@@ -191,7 +191,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: MyBottomNavigationBar(),
     );
   }
 }
