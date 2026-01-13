@@ -16,7 +16,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF14A3A3), // 배경색
+      backgroundColor: const Color(0xFFF69420), // 배경색
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -191,6 +191,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           ),
         ),
       ),
+<<<<<<< Updated upstream:nang_guide/lib/features/auth/views/email_login_screen.dart
+=======
+      //bottomNavigationBar: MyBottomNavigationBar(),
+>>>>>>> Stashed changes:nang_guide/lib/features/auth/screens/email_login_screen.dart
     );
   }
 }

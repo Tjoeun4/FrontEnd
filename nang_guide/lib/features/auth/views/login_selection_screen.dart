@@ -1,18 +1,24 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream:nang_guide/lib/features/auth/views/login_selection_screen.dart
 import 'package:honbop_mate/features/auth/views/components/bottom_nav_bar.dart';
 import 'package:honbop_mate/features/auth/views/email_login_screen.dart';
+=======
+import 'package:honbop_mate/features/auth/screens/email_login_screen.dart';
+import 'package:honbop_mate/features/auth/screens/google_signup_screen.dart';
+import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+>>>>>>> Stashed changes:nang_guide/lib/features/auth/screens/login_selection_screen.dart
 import 'package:url_launcher/url_launcher.dart';
 
-import 'email_signup_screen_step1.dart';
+import 'email_signup_screen.dart';
 
 class LoginSelectionScreen extends StatelessWidget {
-  const LoginSelectionScreen({Key? key}) : super(key: key);
+  const LoginSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF14A3A3), // 배경색 (이미지와 유사한 청록색)
+      backgroundColor: const Color(0xFFF69420),// (0xFF14A3A3), // 배경색 (이미지와 유사한 청록색)
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -60,8 +66,31 @@ class LoginSelectionScreen extends StatelessWidget {
                 width: 35,
               ),
               isGoogle: true,
-              onPressedCallback: () {
-                print('구글로 시작 버튼 클릭됨');
+              onPressedCallback: () async {
+                final googleAuthService = GoogleAuthService();
+                final googleUser = await googleAuthService.signInWithGoogle();
+
+                if (googleUser != null && context.mounted) {
+                  // In a real app, you would now send googleUser.id or email to your backend
+                  // to check if the user already exists.
+                  // For this example, we'll assume every Google login is a new user
+                  // and navigate to the additional info screen.
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => GoogleSignUpScreen(
+                        email: googleUser.email,
+                        displayName: googleUser.displayName ?? '사용자', // Provide a fallback
+                      ),
+                    ),
+                  );
+                } else {
+                  // Handle sign-in failure
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('구글 로그인에 실패했습니다.')),
+                    );
+                  }
+                }
               },
             ),
             // ... 기존 카카오, 구글 버튼 아래에 추가
@@ -75,7 +104,7 @@ class LoginSelectionScreen extends StatelessWidget {
               onPressedCallback: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const EmailSignUpScreenStep1(),
+                    builder: (context) => const EmailSignUpScreen(),
                   ),
                 );
               },
@@ -164,14 +193,14 @@ class SocialLoginButton extends StatelessWidget {
   final VoidCallback? onPressedCallback; // Added optional callback
 
   const SocialLoginButton({
-    Key? key,
+    super.key,
     required this.text,
     required this.backgroundColor,
     required this.textColor,
     required this.iconWidget,
     this.isGoogle = false,
     this.onPressedCallback, // Accepted in constructor
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
