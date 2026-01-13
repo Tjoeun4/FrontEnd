@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:honbop_mate/features/auth/views/my_bottom_navigationBar.dart';
+import 'package:get/get.dart';
+import '/features/auth/views/email_signup_screen.dart';
+import './bottom_nav_screen/home_screen.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -176,10 +178,20 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     const Text('|', style: TextStyle(color: Colors.white70)),
                     TextButton(
                       onPressed: () {
-                        // TODO: 회원가입 화면으로 이동
+                       Get.to(() => const EmailSignUpScreen());
                       },
                       child: const Text(
                         '회원가입',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    const Text('|', style: TextStyle(color: Colors.white70)),
+                    TextButton(
+                      onPressed: () {
+                       Get.to(() => HomeScreen());
+                      },
+                      child: const Text(
+                        '테스트 로그인',
                         style: TextStyle(color: Colors.white),
                       ),
                     ),

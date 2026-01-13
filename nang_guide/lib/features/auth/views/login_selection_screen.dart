@@ -1,10 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import 'package:honbop_mate/features/auth/views/components/bottom_nav_bar.dart';
-import 'package:honbop_mate/features/auth/views/email_login_screen.dart';
-import 'package:honbop_mate/features/auth/views/google_signup_screen.dart';
-import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+import './../../auth/views/components/bottom_nav_bar.dart';
+import './../../auth/views/email_login_screen.dart';
+import './../../auth/views/google_signup_screen.dart';
+import './../../auth/services/google_auth_service.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -104,11 +105,7 @@ class LoginSelectionScreen extends StatelessWidget {
               textColor: Colors.white,
               iconWidget: Icon(Icons.email_outlined, size: 28),
               onPressedCallback: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const EmailSignUpScreen(),
-                  ),
-                );
+                Get.to(() => const EmailSignUpScreen());
               },
             ),
 
@@ -131,12 +128,8 @@ class LoginSelectionScreen extends StatelessWidget {
                 iconWidget: Icon(Icons.email, size: 28),
                 isGoogle: true, // 테두리를 그리기 위해 true로 설정
                 onPressedCallback: () {
-                  print('SocialLoginButton onPressedCallback triggered!');
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const EmailLoginScreen(),
-                    ),
-                  );
+                  print('이메일 로그인 버튼 클릭됨');
+                  Get.to(() => const EmailLoginScreen());
                 },
               ),
             ),
@@ -180,7 +173,7 @@ class LoginSelectionScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigation(),
+      // bottomNavigationBar: BottomNavigation(),
     );
   }
 }

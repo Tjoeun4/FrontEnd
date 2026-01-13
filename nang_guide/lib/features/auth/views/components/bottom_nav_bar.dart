@@ -2,66 +2,54 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
 
-import '../../routes/app_routes.dart';
+import '../../controllers/bottom_nav/nav_controller.dart';
 
-class BottomNavigation extends StatelessWidget {
-  BottomNavigation({super.key});
-  // var tokenService = TokenService();
+class MyBottomNavigation extends StatelessWidget {
+  MyBottomNavigation({super.key});
+
+  final NavController nav = Get.find<NavController>();
+
+  final Color _activeColor = const Color(0xFFFF8126);
+  final Color _inactiveColor = Colors.black;
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Divider(color: Colors.black, height: 0, thickness: 1),
-        BottomNavigationBar(
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          currentIndex: 0,
-          onTap: (index) {
-            switch (index) {
-              case 0:
-                Get.offNamed(AppRoutes.HOME);
-                break;
-              case 1:
-                //Get.offNamed(AppRoutes.); // 게시판
-                break;
-              case 2:
-                //Get.toNamed(AppRoutes.); // 음식 추천
-                break;
-              case 3:
-                //Get.offNamed(AppRoutes.); // 가계부
-                break;
-              case 4:
-                //Get.offNamed(AppRoutes.MY_PROFILE);
-                break;
-            }
-          },
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.home, color: Colors.black),
-              label: "",
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.abc, color: Colors.black),
-              label: "",
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.abc, color: Colors.black),
-              label: "",
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.abc, color: Colors.black),
-              label: "",
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.abc, color: Colors.black),
-              label: "",
-            ),
-          ],
-        ),
+    return Obx(() => BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: nav.selectedIndex.value, // ✅ Rx 사용
+      selectedItemColor: _activeColor,
+      unselectedItemColor: _inactiveColor,
+      showUnselectedLabels: true,
+      onTap: nav.changeTab, // switch는 컨트롤러로
+      items: [
+        _buildNavItem(HugeIcons.strokeRoundedHome01, "홈"),
+        _buildNavItem(HugeIcons.strokeRoundedUserGroup, "게시판"),
+        _buildNavItem(HugeIcons.strokeRoundedBookOpen01, "음식 추천"),
+        _buildNavItem(HugeIcons.strokeRoundedPiggyBank, "가계부"),
+        _buildNavItem(HugeIcons.strokeRoundedUser, "내 프로필"),
       ],
+    ));
+  }
+
+  BottomNavigationBarItem _buildNavItem(dynamic icon, String label) {
+    return BottomNavigationBarItem(
+      icon: HugeIcon(icon: icon, color: _inactiveColor, size: 24),
+      activeIcon: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          HugeIcon(icon: icon, color: _activeColor, size: 24),
+          const SizedBox(height: 4),
+          Container(
+            width: 35,
+            height: 6,
+            decoration: BoxDecoration(
+              color: _activeColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ],
+      ),
+      label: label,
     );
   }
 }

@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
-// import 'package:honbop_mate/features/auth/views/login_selection_screen.dart'; // 변경된 로그인 화면 경로
-
-// 01.12
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
+import '../routes/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
-  // const SplashScreen({Key? key}) : super(key: key);
+  SplashScreen({Key? key}) : super(key: key);
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -28,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2), () {}); // 2초 대기
     // 삼중지문으로 자동로그인 주입 예정
     if (!mounted) return;
-    Get.offAllNamed(AppRoutes.HOME);
+    Get.offAllNamed(AppRoutes.LOGIN);
     // GetX를 사용하여 자동 메인 화면으로 이동
     // 자동 로그인 성공 시 메인 페이지로 이동
     // else로 로그인 페이지로 이동 예정
