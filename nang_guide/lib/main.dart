@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:honbop_mate/features/auth/bindings/auth_binding.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
-import 'package:honbop_mate/splash_screen.dart'; // Add this import for SplashScreen
+import './features/auth/bindings/auth_binding.dart';
+import './features/auth/routes/app_routes.dart';
 
 // void main() {
 //   runApp(const MyApp());

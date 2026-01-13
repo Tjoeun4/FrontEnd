@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:honbop_mate/features/auth/views/my_bottom_navigationBar.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
 
@@ -91,11 +90,6 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
       print('Job Category: $_selectedJobCategory');
       print('Address: ${_addressController.text}');
       print('Detail Address: ${_detailAddressController.text}');
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const MyBottomNavigationBar()),
-        (Route<dynamic> route) => false,
-      );
     }
   }
 
