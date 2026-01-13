@@ -191,10 +191,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           ),
         ),
       ),
-<<<<<<< Updated upstream:nang_guide/lib/features/auth/views/email_login_screen.dart
-=======
       //bottomNavigationBar: MyBottomNavigationBar(),
->>>>>>> Stashed changes:nang_guide/lib/features/auth/screens/email_login_screen.dart
     );
   }
 }

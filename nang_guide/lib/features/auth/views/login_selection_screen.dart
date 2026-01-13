@@ -1,13 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream:nang_guide/lib/features/auth/views/login_selection_screen.dart
+
 import 'package:honbop_mate/features/auth/views/components/bottom_nav_bar.dart';
 import 'package:honbop_mate/features/auth/views/email_login_screen.dart';
-=======
-import 'package:honbop_mate/features/auth/screens/email_login_screen.dart';
-import 'package:honbop_mate/features/auth/screens/google_signup_screen.dart';
+import 'package:honbop_mate/features/auth/views/google_signup_screen.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
->>>>>>> Stashed changes:nang_guide/lib/features/auth/screens/login_selection_screen.dart
+
 import 'package:url_launcher/url_launcher.dart';
 
 import 'email_signup_screen.dart';
@@ -18,7 +16,9 @@ class LoginSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF69420),// (0xFF14A3A3), // 배경색 (이미지와 유사한 청록색)
+      backgroundColor: const Color(
+        0xFFF69420,
+      ), // (0xFF14A3A3), // 배경색 (이미지와 유사한 청록색)
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -79,7 +79,9 @@ class LoginSelectionScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => GoogleSignUpScreen(
                         email: googleUser.email,
-                        displayName: googleUser.displayName ?? '사용자', // Provide a fallback
+                        displayName:
+                            googleUser.displayName ??
+                            '사용자', // Provide a fallback
                       ),
                     ),
                   );
