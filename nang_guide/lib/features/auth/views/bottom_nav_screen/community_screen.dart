@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:honbop_mate/features/auth/views/post_create_screen.dart';
+import './../components/app_nav_bar.dart';
+import './../../views/post_create_screen.dart';
 import './../components/bottom_nav_bar.dart';
 
 class CommunityScreen extends StatelessWidget {
@@ -9,6 +10,7 @@ class CommunityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppNavBar(title: "게시판"),
       body: const Center(
         child: Text(
           'Community Screen',

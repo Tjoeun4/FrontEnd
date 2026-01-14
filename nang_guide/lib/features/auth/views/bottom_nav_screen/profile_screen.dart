@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -7,6 +8,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppNavBar(title: "내 프로필"),
       body: const Center(
         child: Text(
           '프로필 Screen',

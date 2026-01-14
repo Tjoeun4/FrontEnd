@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/views/dialog/ocr_dialog.dart';
+import './../components/app_nav_bar.dart';
+import './../../../auth/views/dialog/ocr_dialog.dart';
 import './../../controllers/bottom_nav/ledger_controller.dart';
 import './../components/bottom_nav_bar.dart';
 
@@ -12,6 +13,7 @@ class LedgerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppNavBar(title: "가계부"),
       body: Stack(
         children: [
           Column(
