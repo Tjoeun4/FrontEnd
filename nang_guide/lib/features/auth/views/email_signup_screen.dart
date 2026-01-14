@@ -21,6 +21,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   final _addressController = TextEditingController();
   final _detailAddressController = TextEditingController();
+  final _ageController = TextEditingController();
 
   // State
   bool _isPasswordVisible = false;
@@ -31,14 +32,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   int _timerSeconds = 60;
   Timer? _timer;
 
-  String? _selectedAgeRange;
-  String? _selectedJobCategory;
-  final List<String> _ageRanges = ['10대', '20대', '30대', '40대', '50대+'];
-  final List<String> _jobCategories = ['학생', '직장인', '프리랜서', '자영업', '기타', '비공개'];
+  String? _selectedGender;
+  final List<String> _genders = ['남자', '여자'];
 
   String _zonecode = '';
   String _roadAddress = '';
-
 
   @override
   void dispose() {
@@ -50,7 +48,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _confirmPasswordController.dispose();
     _addressController.dispose();
     _detailAddressController.dispose();
-    super.dispose();
+    _ageController.dispose();
   }
 
   void _startTimer() {
@@ -100,6 +98,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         _roadAddress = result['roadAddress'] ?? result['jibunAddress'] ?? '';
         _addressController.text = '($_zonecode) $_roadAddress';
       });
+      // Print sigungu to console as requested
+      print('Sigungu: ${result['sigungu'] ?? 'N/A'}');
     }
   }
 
@@ -117,6 +117,20 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         );
         return;
       }
+      
+      final int? age = int.tryParse(_ageController.text);
+      if (age == null || age <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('유효한 나이를 입력해주세요.')),
+        );
+        return;
+      }
+      if (_selectedGender == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('성별을 선택해주세요.')),
+        );
+        return;
+      }
 
       // All checks passed, proceed with signup
       // TODO: Navigate to the main screen or a success page
@@ -124,8 +138,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       // Added for debugging:
       print('Email: ${_emailController.text}');
       print('Nickname: ${_nicknameController.text}');
-      print('Age Range: $_selectedAgeRange');
-      print('Job Category: $_selectedJobCategory');
+      print('Age: ${_ageController.text}');
+      print('Gender: $_selectedGender');
       print('Address: ($_zonecode) $_roadAddress');
       print('Detail Address: ${_detailAddressController.text}');
     }
@@ -206,10 +220,26 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
+                _buildDropdown(_selectedGender, _genders, '성별', HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey[600]), (val) => setState(() => _selectedGender = val)),
+                const SizedBox(height: 16),
+                
+                _buildTextField(
+                  controller: _ageController,
+                  label: '나이',
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedHappy, color: Colors.grey[600]),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return '나이를 입력해주세요.';
+                    if (int.tryParse(value) == null) return '유효한 숫자를 입력해주세요.';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                
                 _buildTextField(
                   controller: _passwordController,
                   label: '비밀번호',
-                  icon: HugeIcon(icon: HugeIcons.strokeRoundedLock, color: Colors.grey[600]),
+                  icon: Icon(Icons.lock_outline, color: Colors.grey[600]),
                   obscureText: !_isPasswordVisible,
                   validator: (value) {
                     if (value == null || value.length < 8) return '8자 이상의 비밀번호를 입력해주세요.';
@@ -238,12 +268,6 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                _buildDropdown(_selectedAgeRange, _ageRanges, '연령대', HugeIcon(icon: HugeIcons.strokeRoundedHappy, color: Colors.grey[600]), (val) => setState(() => _selectedAgeRange = val)),
-                const SizedBox(height: 16),
-
-                _buildDropdown(_selectedJobCategory, _jobCategories, '직업군', HugeIcon(icon: HugeIcons.strokeRoundedBriefcase01, color: Colors.grey[600]), (val) => setState(() => _selectedJobCategory = val)),
-                const SizedBox(height: 16),
-                
                 _buildTextField(
                   controller: _addressController,
                   label: '주소',
