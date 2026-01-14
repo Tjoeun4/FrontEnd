@@ -9,11 +9,11 @@ class AuthBinding extends Bindings {
   void dependencies() {
     // Services
     Get.put(GetStorage(), permanent: true); // Initialize GetStorage
-    Get.lazyPut<GoogleAuthService>(() => GoogleAuthService());
-    Get.lazyPut<AuthApiClient>(() => AuthApiClient());
+    Get.put<GoogleAuthService>(GoogleAuthService(), permanent: true);
+    Get.put<AuthApiClient>(AuthApiClient(), permanent: true);
 
     // Controllers
-    Get.lazyPut<AuthController>(() => AuthController());
+    Get.put<AuthController>(AuthController(), permanent: true);
     // Get.put(NavController(), permanent: true); // NavController might be related to overall app navigation, not directly auth, so I'm commenting it for now.
   }
 }

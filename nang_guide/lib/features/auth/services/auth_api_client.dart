@@ -23,15 +23,19 @@ import 'package:get/get.dart';
 // This should be replaced with an actual model from a models folder
 class GoogleAuthenticationResponse {
   final String? token;
-  final bool? newUser; // Changed from isNewUser to newUser
+  final bool? newUser;
+  final String? email; // Added
+  final String? nickname; // Added
   final String? error;
 
-  GoogleAuthenticationResponse({this.token, this.newUser, this.error});
+  GoogleAuthenticationResponse({this.token, this.newUser, this.email, this.nickname, this.error});
 
   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return GoogleAuthenticationResponse(
       token: json['token'],
-      newUser: json['newUser'], // Map the new field 'newUser'
+      newUser: json['newUser'],
+      email: json['email'], // Map the new field 'email'
+      nickname: json['nickname'], // Map the new field 'nickname'
       error: json['error'],
     );
   }
@@ -105,6 +109,34 @@ class AuthApiClient extends GetxService {
     } catch (e) {
       print('Unexpected error in googleSignIn: $e');
       return GoogleAuthenticationResponse(error: 'An unexpected error occurred: $e');
+    }
+  }
+
+  Future<GoogleAuthenticationResponse> completeGoogleRegistration(Map<String, dynamic> registrationData) async {
+    try {
+      final response = await _dio.post(
+        '/google/register-complete',
+        data: registrationData,
+      );
+
+      if (response.statusCode == 200) {
+        return GoogleAuthenticationResponse.fromJson(response.data);
+      } else {
+        return GoogleAuthenticationResponse(
+            error: response.data['error'] ?? 'Unknown error occurred');
+      }
+    } on DioException catch (e) {
+      String errorMessage = 'Failed to connect to the server for registration.';
+      if (e.response != null) {
+        errorMessage = e.response?.data['error'] ?? 'Server error occurred during registration.';
+      } else {
+        errorMessage = e.message ?? 'Unknown network error during registration.';
+      }
+      print('DioError in completeGoogleRegistration: $errorMessage');
+      return GoogleAuthenticationResponse(error: errorMessage);
+    } catch (e) {
+      print('Unexpected error in completeGoogleRegistration: $e');
+      return GoogleAuthenticationResponse(error: 'An unexpected error occurred during registration: $e');
     }
   }
 }
