@@ -44,8 +44,8 @@ class GoogleAuthenticationResponse {
 class AuthApiClient extends GetxService {
   late dio.Dio _dio; // Use dio.Dio here
 
-   final String _baseUrl = 'http://10.0.2.2:8080/api/auth'; // Replace with your backend URL
-  // final String _baseUrl = 'http://192.168.0.4:8080/api/auth';
+  final String _baseUrl = 'http://10.0.2.2:8080/api'; // More generic base URL
+  
   @override
   void onInit() {
     super.onInit();
@@ -81,7 +81,7 @@ class AuthApiClient extends GetxService {
   Future<GoogleAuthenticationResponse> googleSignIn(String idToken) async {
     try {
       final response = await _dio.post(
-        '/google/signin',
+        '/auth/google/signin', // Added /auth prefix
         data: {
           'idToken': idToken,
         },
@@ -115,7 +115,7 @@ class AuthApiClient extends GetxService {
   Future<GoogleAuthenticationResponse> completeGoogleRegistration(Map<String, dynamic> registrationData) async {
     try {
       final response = await _dio.post(
-        '/google/register-complete',
+        '/auth/google/register-complete', // Added /auth prefix
         data: registrationData,
       );
 
@@ -145,7 +145,7 @@ class AuthApiClient extends GetxService {
   Future<bool> requestEmailAuthCode(String email) async {
     try {
       final response = await _dio.post(
-        '/email-request',
+        '/auth/email-request', // Added /auth prefix
         queryParameters: {'email': email},
       );
       // Explicitly check for 200 OK and a boolean `true` body.
@@ -168,7 +168,7 @@ class AuthApiClient extends GetxService {
     try {
       // Backend expects email and code as request parameters.
       final response = await _dio.post(
-        '/email-verify',
+        '/auth/email-verify', // Added /auth prefix
         queryParameters: {
           'email': email,
           'code': code,
@@ -186,6 +186,24 @@ class AuthApiClient extends GetxService {
     } catch (e) {
       print('Unexpected error in verifyEmailAuthCode: $e');
       return false;
+    }
+  }
+
+  // --- Nickname Check Method ---
+
+  Future<bool> checkNickname(String nickname) async {
+    try {
+      final response = await _dio.get(
+        '/user/check-nickname',
+        queryParameters: {'nickname': nickname},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['isDuplicated'] ?? true; // Default to duplicated on parsing error
+      }
+      return true; // Treat non-200 responses as duplicated to be safe
+    } catch (e) {
+      print('Error in checkNickname: $e');
+      return true; // Treat any exception as duplicated to be safe
     }
   }
 }

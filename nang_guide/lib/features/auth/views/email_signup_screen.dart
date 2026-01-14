@@ -108,7 +108,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
 
     try {
-      bool success = await _apiClient.verifyEmailAuthCode(
+      bool success = await _apiClient.verifyEmailAuthCode( // 이메일 검증(/email-verify 요청)
         _emailController.text,
         _verificationCodeController.text,
       );
@@ -134,14 +134,32 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
-  void _checkNickname() {
-    // TODO: Implement nickname duplication check logic
-    setState(() {
-      _isNicknameChecked = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('사용 가능한 닉네임입니다.')),
-    );
+  Future<void> _checkNickname() async {
+    if (_nicknameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('닉네임을 입력해주세요.')),
+      );
+      return;
+    }
+
+    bool isDuplicated = await _apiClient.checkNickname(_nicknameController.text);
+    if (mounted) {
+      if (isDuplicated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 사용 중인 닉네임입니다.')),
+        );
+        setState(() {
+          _isNicknameChecked = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사용 가능한 닉네임입니다.')),
+        );
+        setState(() {
+          _isNicknameChecked = true;
+        });
+      }
+    }
   }
 
   void _searchAddress() async {
@@ -278,6 +296,13 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   controller: _nicknameController,
                   label: '닉네임',
                   icon: HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey[600]),
+                  onChanged: (value) {
+                    if (_isNicknameChecked) {
+                      setState(() {
+                        _isNicknameChecked = false;
+                      });
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) return '닉네임을 입력해주세요.';
                     return null;
@@ -400,6 +425,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     int? maxLines = 1,
     bool readOnly = false,
     VoidCallback? onTap,
+    ValueChanged<String>? onChanged,
   }) {
     return TextFormField(
       controller: controller,
@@ -410,6 +436,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       maxLines: obscureText ? 1 : maxLines,
       readOnly: readOnly,
       onTap: onTap,
+      onChanged: onChanged,
       decoration: InputDecoration(
         prefixIcon: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
