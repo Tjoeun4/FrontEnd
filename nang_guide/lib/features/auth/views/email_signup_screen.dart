@@ -266,7 +266,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                           ),
                         ),
                       SizedBox(
-                        width: 100,
+                        width: 120,
                         child: _buildSmallButton('인증 확인', _isVerified ? null : _handleVerifyCode)
                       ),
                     ],
