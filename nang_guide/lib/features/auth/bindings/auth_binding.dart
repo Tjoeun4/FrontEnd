@@ -1,13 +1,19 @@
 import 'package:get/get.dart';
-import '../controllers/bottom_nav/nav_controller.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controllers/auth_controller.dart';
-// 서비스 추가할 예정
+import '../services/auth_api_client.dart';
+import '../services/google_auth_service.dart';
 
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put(NavController(), permanent: true);
+    // Services
+    Get.put(GetStorage(), permanent: true); // Initialize GetStorage
+    Get.lazyPut<GoogleAuthService>(() => GoogleAuthService());
+    Get.lazyPut<AuthApiClient>(() => AuthApiClient());
+
+    // Controllers
     Get.lazyPut<AuthController>(() => AuthController());
-    // Get.lazyPut<TokenService>(() => TokenService());
+    // Get.put(NavController(), permanent: true); // NavController might be related to overall app navigation, not directly auth, so I'm commenting it for now.
   }
 }
