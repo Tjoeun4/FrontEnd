@@ -13,11 +13,14 @@ class AuthController extends GetxController {
     // _checkAuthStatus();
   }
 
-  // // ✅ 앱 실행 시 토큰 검증 및 자동 로그인 처리
-  // Future<bool> checkAuthStatus() async {
-  //   bool isValid = await _tokenService.refreshToken();
-  //   isAuthenticated.value = isValid;
-  //   Get.offAllNamed(AppRoutes.LOGIN);
-  //   return isValid;
+  // // ✅ 401 오류 발생 시 토큰 갱신
+  // Future<bool> handle401() async {
+  //   bool success = await _tokenService.refreshToken();
+  //   if (success) {
+  //     isAuthenticated.value = true;
+  //   } else {
+  //     await logout();
+  //   }
+  //   return success;
   // }
 }
