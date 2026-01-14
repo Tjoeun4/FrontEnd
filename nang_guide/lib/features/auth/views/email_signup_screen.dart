@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
 
@@ -12,6 +14,7 @@ class EmailSignUpScreen extends StatefulWidget {
 
 class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final AuthApiClient _apiClient = Get.find<AuthApiClient>();
 
   // Controllers
   final _emailController = TextEditingController();
@@ -27,9 +30,10 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isVerificationCodeSent = false;
+  bool _isVerified = false;
   bool _isNicknameChecked = false;
   bool _isTimerRunning = false;
-  int _timerSeconds = 60;
+  int _timerSeconds = 180; // 3 minutes
   Timer? _timer;
 
   String? _selectedGender;
@@ -49,12 +53,13 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _addressController.dispose();
     _detailAddressController.dispose();
     _ageController.dispose();
+    super.dispose();
   }
 
   void _startTimer() {
     setState(() {
       _isTimerRunning = true;
-      _timerSeconds = 55;
+      _timerSeconds = 180;
     });
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -68,12 +73,65 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     });
   }
 
-  void _handleSendVerificationCode() {
-    // TODO: Implement actual email sending logic
-    setState(() {
-      _isVerificationCodeSent = true;
-    });
-    _startTimer();
+  Future<void> _handleSendVerificationCode() async {
+    // Validate only email field
+    if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('유효한 이메일을 입력해주세요.')),
+      );
+      return;
+    }
+
+    bool success = await _apiClient.requestEmailAuthCode(_emailController.text);
+
+    if (success && mounted) {
+      setState(() {
+        _isVerificationCodeSent = true;
+      });
+      _startTimer();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('인증번호가 발송되었습니다.')),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('인증번호 발송에 실패했습니다. 이메일 주소를 확인하거나 잠시 후 다시 시도해주세요.')),
+      );
+    }
+  }
+
+  Future<void> _handleVerifyCode() async {
+    if (_verificationCodeController.text.isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('인증번호를 입력해주세요.')),
+      );
+      return;
+    }
+
+    try {
+      bool success = await _apiClient.verifyEmailAuthCode(
+        _emailController.text,
+        _verificationCodeController.text,
+      );
+
+      if (success) {
+        setState(() {
+          _isVerified = true;
+          _isTimerRunning = false;
+        });
+        _timer?.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이메일 인증이 완료되었습니다.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('인증번호가 일치하지 않습니다.')),
+        );
+      }
+    } catch (e) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('인증 중 오류가 발생했습니다: $e')),
+      );
+    }
   }
 
   void _checkNickname() {
@@ -105,7 +163,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      if (!_isVerificationCodeSent) {
+      if (!_isVerified) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('이메일 인증을 완료해주세요.')),
         );
@@ -133,7 +191,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       }
 
       // All checks passed, proceed with signup
-      // TODO: Navigate to the main screen or a success page
+      // TODO: Create user object and call API to register
       print('Signup successful!');
       // Added for debugging:
       print('Email: ${_emailController.text}');
@@ -167,6 +225,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                 _buildTextField(
                   controller: _emailController,
                   label: '이메일',
+                  enabled: !_isVerified,
                   icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: Colors.grey[600]),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -177,7 +236,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     width: 140,
                     child: _buildSmallButton(
                       _isVerificationCodeSent ? '재전송' : '인증번호 받기',
-                      _isTimerRunning ? null : _handleSendVerificationCode,
+                      (_isTimerRunning || _isVerified) ? null : _handleSendVerificationCode,
                     ),
                   ),
                 ),
@@ -188,20 +247,30 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   label: '이메일 인증번호',
                   icon: HugeIcon(icon: HugeIcons.strokeRoundedMail01, color: Colors.grey[600]),
                   keyboardType: TextInputType.number,
-                  enabled: _isVerificationCodeSent,
+                  enabled: _isVerificationCodeSent && !_isVerified,
                   validator: (value) {
-                    if (value == null || value.length < 6) return '6자리 인증번호를 입력해주세요.';
+                    if (_isVerificationCodeSent && (value == null || value.length < 6)) {
+                      return '6자리 인증번호를 입력해주세요.';
+                    }
                     return null;
                   },
-                  suffix: _isTimerRunning
-                      ? Padding(
-                          padding: const EdgeInsets.only(right: 12.0, top: 13),
+                  suffix: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_isTimerRunning)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            '0:${_timerSeconds.toString().padLeft(2, '0')}',
+                            '${(_timerSeconds ~/ 60)}:${(_timerSeconds % 60).toString().padLeft(2, '0')}',
                             style: const TextStyle(color: Colors.red, fontSize: 14),
                           ),
-                        )
-                      : null,
+                        ),
+                      SizedBox(
+                        width: 100,
+                        child: _buildSmallButton('인증 확인', _isVerified ? null : _handleVerifyCode)
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -281,25 +350,25 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   readOnly: true,
                   maxLines: 2,
                 ),
-                const SizedBox(height: 16), // 상세 주소 필드와의 간격
+                const SizedBox(height: 16), 
 
                 _buildTextField(
                   controller: _detailAddressController,
                   label: '상세 주소',
-                  icon: const Icon(Icons.location_on_outlined, color: Colors.grey), // 기본 Material 아이콘 사용
-                  maxLines: 2, // 여러 줄 입력 가능
+                  icon: const Icon(Icons.location_on_outlined, color: Colors.grey),
+                  maxLines: 2,
                   validator: (value) {
-                    // 상세 주소는 필수가 아닐 수 있으므로 validator는 비워둘 수 있습니다.
                     return null;
                   },
                 ),
                 const SizedBox(height: 32),
 
                 ElevatedButton(
-                  onPressed: _submitForm,
+                  onPressed: _isVerified ? _submitForm : null,
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Colors.orange,
+                      disabledBackgroundColor: Colors.grey,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12))),
                   child: const Text(
@@ -317,6 +386,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       ),
     );
   }
+  // ... (rest of the helper methods are the same)
 
   Widget _buildTextField({
     required TextEditingController controller,

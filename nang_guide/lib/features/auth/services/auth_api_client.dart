@@ -1,5 +1,5 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 
 // Assuming you have these models defined in your Flutter project
@@ -42,17 +42,17 @@ class GoogleAuthenticationResponse {
 }
 
 class AuthApiClient extends GetxService {
-  late Dio _dio;
+  late dio.Dio _dio; // Use dio.Dio here
 
-  final String _baseUrl = 'http://10.0.2.2:8080/api/auth'; // Replace with your backend URL
-
+   final String _baseUrl = 'http://10.0.2.2:8080/api/auth'; // Replace with your backend URL
+  // final String _baseUrl = 'http://192.168.0.4:8080/api/auth';
   @override
   void onInit() {
     super.onInit();
-    _dio = Dio(BaseOptions(
+    _dio = dio.Dio(dio.BaseOptions( // Use dio.Dio and dio.BaseOptions here
       baseUrl: _baseUrl,
       connectTimeout: const Duration(seconds: 5), // 5 seconds
-      receiveTimeout: const Duration(seconds: 3), // 3 seconds
+      receiveTimeout: const Duration(seconds: 15), // 15 seconds
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -61,7 +61,7 @@ class AuthApiClient extends GetxService {
 
     // Optional: Add interceptors for logging, error handling, etc.
     _dio.interceptors.add(
-      InterceptorsWrapper(
+      dio.InterceptorsWrapper( // Use dio.InterceptorsWrapper here
         onRequest: (options, handler) {
           print('REQUEST[${options.method}] => PATH: ${options.path}');
           return handler.next(options);
@@ -70,7 +70,7 @@ class AuthApiClient extends GetxService {
           print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
           return handler.next(response);
         },
-        onError: (DioException e, handler) {
+        onError: (dio.DioException e, handler) { // Use dio.DioException here
           print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
           return handler.next(e);
         },
@@ -96,7 +96,7 @@ class AuthApiClient extends GetxService {
         return GoogleAuthenticationResponse(
             error: response.data['error'] ?? 'Unknown error occurred');
       }
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) { // Use dio.DioException here
       String errorMessage = 'Failed to connect to the server.';
       if (e.response != null) {
         errorMessage = e.response?.data['error'] ?? 'Server error occurred.';
@@ -125,7 +125,7 @@ class AuthApiClient extends GetxService {
         return GoogleAuthenticationResponse(
             error: response.data['error'] ?? 'Unknown error occurred');
       }
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) { // Use dio.DioException here
       String errorMessage = 'Failed to connect to the server for registration.';
       if (e.response != null) {
         errorMessage = e.response?.data['error'] ?? 'Server error occurred during registration.';
@@ -137,6 +137,55 @@ class AuthApiClient extends GetxService {
     } catch (e) {
       print('Unexpected error in completeGoogleRegistration: $e');
       return GoogleAuthenticationResponse(error: 'An unexpected error occurred during registration: $e');
+    }
+  }
+
+  // --- Email Authentication Methods ---
+
+  Future<bool> requestEmailAuthCode(String email) async {
+    try {
+      final response = await _dio.post(
+        '/email-request',
+        queryParameters: {'email': email},
+      );
+      // Explicitly check for 200 OK and a boolean `true` body.
+      if (response.statusCode == 200 && response.data == true) {
+        return true;
+      }
+      // If the response is not what we expect, treat as failure.
+      return false;
+    } on dio.DioException catch (e) {
+      // Log the error and return false. The UI will handle the generic failure.
+      print('DioError in requestEmailAuthCode: ${e.message}');
+      return false;
+    } catch (e) {
+      print('Unexpected error in requestEmailAuthCode: $e');
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmailAuthCode(String email, String code) async {
+    try {
+      // Backend expects email and code as request parameters.
+      final response = await _dio.post(
+        '/email-verify',
+        queryParameters: {
+          'email': email,
+          'code': code,
+        },
+      );
+      if (response.statusCode == 200 && response.data is bool) {
+        return response.data;
+      } else {
+        // If the backend doesn't return a boolean, treat it as failure.
+        return false;
+      }
+    } on dio.DioException catch (e) { // Use dio.DioException here
+      print('DioError in verifyEmailAuthCode: ${e.message}');
+      return false; // Or re-throw a more specific error
+    } catch (e) {
+      print('Unexpected error in verifyEmailAuthCode: $e');
+      return false;
     }
   }
 }
