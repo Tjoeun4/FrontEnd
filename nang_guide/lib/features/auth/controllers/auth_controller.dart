@@ -1,4 +1,5 @@
 // FrontEnd/nang_guide/lib/features/auth/controllers/auth_controller.dart
+import 'package:honbop_mate/features/auth/views/google_signup_screen.dart'; // Add this import
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -30,20 +31,23 @@ class AuthController extends GetxController {
           if (authResponse.token != null) {
             print('Frontend: Login successful! JWT Token: ${authResponse.token}');
             await _storage.write('jwt_token', authResponse.token);
-            // Navigate to home screen or dashboard upon successful backend authentication
-            // User needs to define their actual HomeScreen
-            Get.offAll(() => const Text('Welcome to Home Screen!')); // Placeholder for HomeScreen
+
+            if (authResponse.newUser == true) { // Changed to newUser
+              print('Frontend: New user. Navigating to GoogleSignUpScreen.');
+              // Navigate to GoogleSignUpScreen for additional details if it's a new user
+              Get.offAll(() => GoogleSignUpScreen(
+                email: googleUser.email!, // Email is guaranteed if idToken is valid
+                displayName: googleUser.displayName ?? '사용자',
+              ));
+            } else {
+              print('Frontend: Existing user. Navigating to Home Screen.');
+              // Navigate to home screen or dashboard for existing user
+              // User needs to define their actual HomeScreen
+              Get.offAll(() => const Text('Welcome to Home Screen!')); // Placeholder for HomeScreen
+            }
           } else {
             errorMessage(authResponse.error ?? 'Backend authentication failed.');
             print('Frontend: Backend authentication failed: ${authResponse.error}');
-            // If backend auth fails, and googleUser is available, maybe still allow a local signup process
-            // This part might need further clarification from the user on desired flow for backend auth failure
-            // if (googleUser != null) {
-            //   Get.to(() => GoogleSignUpScreen(
-            //     email: googleUser.email,
-            //     displayName: googleUser.displayName ?? '사용자',
-            //   ));
-            // }
           }
         } else {
           errorMessage('Google ID Token is null.');

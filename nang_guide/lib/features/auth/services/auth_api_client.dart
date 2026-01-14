@@ -23,13 +23,15 @@ import 'package:get/get.dart';
 // This should be replaced with an actual model from a models folder
 class GoogleAuthenticationResponse {
   final String? token;
+  final bool? newUser; // Changed from isNewUser to newUser
   final String? error;
 
-  GoogleAuthenticationResponse({this.token, this.error});
+  GoogleAuthenticationResponse({this.token, this.newUser, this.error});
 
   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return GoogleAuthenticationResponse(
       token: json['token'],
+      newUser: json['newUser'], // Map the new field 'newUser'
       error: json['error'],
     );
   }
@@ -82,9 +84,11 @@ class AuthApiClient extends GetxService {
       );
 
       if (response.statusCode == 200) {
+        print('Frontend: Raw backend response: ${response.data}'); // Debug print
         return GoogleAuthenticationResponse.fromJson(response.data);
       } else {
         // Handle non-200 responses as errors
+        print('Frontend: Raw backend error response: ${response.data}'); // Debug print
         return GoogleAuthenticationResponse(
             error: response.data['error'] ?? 'Unknown error occurred');
       }
