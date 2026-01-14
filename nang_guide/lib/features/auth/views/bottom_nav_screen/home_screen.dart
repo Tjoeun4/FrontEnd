@@ -8,6 +8,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: TopNavBar(title: 홈),
       body: const Center(
         child: Text(
           'Home Screen',
