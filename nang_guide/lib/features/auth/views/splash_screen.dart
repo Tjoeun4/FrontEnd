@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToLoginSelection() async {
     // Future<void>로 변경
-    await Future.delayed(const Duration(seconds: 2), () {}); // 2초 대기
+    await Future.delayed(const Duration(seconds: 1), () {}); // 2초 대기
     // 삼중지문으로 자동로그인 주입 예정
     if (!mounted) return;
     Get.offAllNamed(AppRoutes.LOGIN);
