@@ -1,9 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- ----------------------------------------
+         기본 문서 설정
+         - UTF-8 인코딩
+         - 모바일 WebView 대응 viewport
+         ---------------------------------------- -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>주소 검색</title>
+    <!-- ----------------------------------------
+         전체 화면을 Daum 주소 검색 UI로 사용하기 위한 기본 스타일
+         ---------------------------------------- -->
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; }
@@ -11,13 +19,32 @@
     </style>
 </head>
 <body>
+<!-- ----------------------------------------
+     Daum Postcode UI가 삽입될 컨테이너
+     ---------------------------------------- -->
 <div id="wrap"></div>
-
+<!-- ----------------------------------------
+     Daum 우편번호(주소 검색) API 로드
+     ---------------------------------------- -->
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
+    /**
+     * ------------------------------------------------
+     * 이 페이지의 역할
+     * - Flutter WebView에서 로드됨
+     * - Daum 주소 검색 UI를 전체 화면으로 표시
+     * - 주소 선택 시 결과를 Flutter로 전달
+     * ------------------------------------------------
+     */
     window.addEventListener('load', function() {
         console.log('페이지 로드 완료');
-
+        /**
+         * ------------------------------------------------
+         * Daum Postcode API 초기화 함수
+         * - API 로드 여부를 확인
+         * - 준비되지 않았으면 재시도
+         * ------------------------------------------------
+         */
         function initDaumPostcode() {
             if (typeof daum === 'undefined' || !daum.Postcode) {
                 setTimeout(initDaumPostcode, 100);
@@ -25,11 +52,23 @@
             }
 
             console.log('Daum Postcode API 준비 완료');
-
+            /**
+             * --------------------------------------------
+             * Daum 주소 검색 UI 생성
+             * - embed 방식으로 #wrap에 삽입
+             * --------------------------------------------
+             */
             new daum.Postcode({
+                /**
+                 * --------------------------------------------
+                 * 주소 선택 완료 시 콜백
+                 * - 선택된 주소 데이터를 Flutter로 전달
+                 * --------------------------------------------
+                 */
                 oncomplete: function(data) {
                     console.log('주소 선택됨:', JSON.stringify(data));
 
+                    // Flutter WebView와의 통신 채널
                     if (window.AddressChannel) {
                         window.AddressChannel.postMessage(JSON.stringify(data));
                         console.log('Flutter로 전송 완료');
@@ -37,11 +76,12 @@
                         console.error('AddressChannel 없음');
                     }
                 },
+                // UI를 전체 화면으로 표시
                 width: '100%',
                 height: '100%'
             }).embed(document.getElementById('wrap'));
         }
-
+        // Daum 주소 검색 초기화 실행
         initDaumPostcode();
     });
 </script>

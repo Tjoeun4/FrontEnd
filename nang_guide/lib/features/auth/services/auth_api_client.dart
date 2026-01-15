@@ -3,7 +3,11 @@ import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // Added import for new model
 
-// GoogleAuthenticationResponse remains for Google-specific flows
+/// ---------------------------------------------
+/// Google 로그인 전용 응답 모델
+/// - Google OAuth 플로우에서만 사용
+/// - 신규 회원 여부, 이메일, 닉네임 포함
+/// ---------------------------------------------
 class GoogleAuthenticationResponse {
   final String? token;
   final bool? newUser;
@@ -12,7 +16,7 @@ class GoogleAuthenticationResponse {
   final String? error;
 
   GoogleAuthenticationResponse({this.token, this.newUser, this.email, this.nickname, this.error});
-
+  /// 백엔드 응답(JSON)을 프론트 모델로 매핑
   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return GoogleAuthenticationResponse(
       token: json['access_token'] ?? json['token'], // Map access_token to token
@@ -24,6 +28,11 @@ class GoogleAuthenticationResponse {
   }
 }
 
+/// ---------------------------------------------
+/// 인증/회원 관련 API 통신을 담당하는 Client
+/// - GetX Service로 앱 전역에서 재사용
+/// - Google 로그인, 이메일 인증, 회원가입 처리
+/// ---------------------------------------------
 class AuthApiClient extends GetxService {
   late dio.Dio _dio; 
 
@@ -60,6 +69,11 @@ class AuthApiClient extends GetxService {
     );
   }
 
+  /// =================================================
+  /// Google OAuth 로그인 처리
+  /// - idToken을 백엔드로 전달
+  /// - 신규 유저 여부 및 토큰 반환
+  /// =================================================
   Future<GoogleAuthenticationResponse> googleSignIn(String idToken) async {
     try {
       final response = await _dio.post(
@@ -91,7 +105,10 @@ class AuthApiClient extends GetxService {
       return GoogleAuthenticationResponse(error: 'An unexpected error occurred: $e');
     }
   }
-
+  /// =================================================
+  /// Google 로그인 후 추가 정보 입력 완료 처리
+  /// - 최초 Google 로그인 시 회원가입 마무리
+  /// =================================================
   Future<GoogleAuthenticationResponse> completeGoogleRegistration(Map<String, dynamic> registrationData) async {
     try {
       final response = await _dio.post(
@@ -119,9 +136,9 @@ class AuthApiClient extends GetxService {
       return GoogleAuthenticationResponse(error: 'An unexpected error occurred: $e');
     }
   }
-
-  // --- Email Authentication Methods ---
-
+  /// =================================================
+  /// 이메일 인증번호 발송 요청
+  /// =================================================
   Future<bool> requestEmailAuthCode(String email) async {
     try {
       final response = await _dio.post(
@@ -140,7 +157,7 @@ class AuthApiClient extends GetxService {
       return false;
     }
   }
-
+  /// 이메일 인증번호 검증
   Future<bool> verifyEmailAuthCode(String email, String code) async {
     try {
       final response = await _dio.post(
@@ -163,9 +180,11 @@ class AuthApiClient extends GetxService {
       return false;
     }
   }
-
-  // --- Nickname Check Method ---
-
+  /// =================================================
+  /// 닉네임 중복 여부 확인
+  /// - true: 중복됨
+  /// - false: 사용 가능
+  /// =================================================
   Future<bool> checkNickname(String nickname) async {
     try {
       final response = await _dio.get(
@@ -181,9 +200,9 @@ class AuthApiClient extends GetxService {
       return true; 
     }
   }
-
-  // --- Neighborhood Lookup Method ---
-
+  /// =================================================
+  /// 주소(시군구) 기반 지역 코드(neighborhoodId) 조회
+  /// =================================================
   Future<int?> getNeighborhoodIdBySigungu(String sigungu) async {
     try {
       final response = await _dio.get(
@@ -202,8 +221,10 @@ class AuthApiClient extends GetxService {
       return null;
     }
   }
-
-  // --- Registration Method ---
+  /// =================================================
+  /// 이메일 기반 회원가입 처리
+  /// - 성공 시 accessToken 포함 AuthenticationResponse 반환
+  /// =================================================
   Future<AuthenticationResponse> registerWithEmail(Map<String, dynamic> userData) async {
     try {
       final response = await _dio.post(

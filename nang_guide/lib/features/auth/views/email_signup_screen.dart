@@ -5,6 +5,11 @@ import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
 
+/// 이메일 기반 회원가입 화면
+/// - 이메일 인증
+/// - 닉네임 중복 체크
+/// - 주소 검색 및 지역 코드 설정
+/// - 사용자 기본 정보 입력 후 회원가입 처리
 class EmailSignUpScreen extends StatefulWidget {
   const EmailSignUpScreen({super.key});
 
@@ -13,10 +18,12 @@ class EmailSignUpScreen extends StatefulWidget {
 }
 
 class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
+  /// 폼 전체 유효성 검사용 Key
   final _formKey = GlobalKey<FormState>();
+  /// 인증/회원가입 API 호출을 위한 클라이언트
   final AuthApiClient _apiClient = Get.find<AuthApiClient>();
 
-  // Controllers
+  /// 입력 필드(TextFormField) 컨트롤러 모음
   final _emailController = TextEditingController();
   final _verificationCodeController = TextEditingController();
   final _nicknameController = TextEditingController();
@@ -27,23 +34,28 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _ageController = TextEditingController();
   final _neighborhoodIdController = TextEditingController(); // Added
 
-  // State
+  /// 화면 상태 관리용 변수들
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isVerificationCodeSent = false;
   bool _isVerified = false;
   bool _isNicknameChecked = false;
   bool _isTimerRunning = false;
+
+  /// 이메일 인증 타이머 관련 상태
   int _timerSeconds = 180; // 3 minutes
   Timer? _timer;
 
+  /// 성별 및 지역 관련 상태
   String? _selectedGender;
   final List<String> _genders = ['남자', '여자'];
   int? _selectedNeighborhoodId; // Added
 
+  /// 주소 검색 결과 저장용 필드
   String _zonecode = '';
   String _roadAddress = '';
 
+  /// 리소스 해제 (메모리 누수 방지)
   @override
   void dispose() {
     _timer?.cancel();
@@ -59,6 +71,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     super.dispose();
   }
 
+  /// 이메일 인증 유효시간(3분) 타이머 시작
   void _startTimer() {
     setState(() {
       _isTimerRunning = true;
@@ -76,6 +89,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     });
   }
 
+  /// 이메일 인증번호 요청 처리
   Future<void> _handleSendVerificationCode() async {
     // Validate only email field
     if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
@@ -102,6 +116,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
+  /// 입력된 이메일 인증번호 검증 처리
   Future<void> _handleVerifyCode() async {
     if (_verificationCodeController.text.isEmpty) {
        ScaffoldMessenger.of(context).showSnackBar(
@@ -137,6 +152,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
+  /// 닉네임 중복 여부 서버 확인
   Future<void> _checkNickname() async {
     if (_nicknameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,6 +181,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
+  /// 주소 검색 페이지 이동 및 지역 코드 조회
   void _searchAddress() async {
     final result = await Navigator.push(
       context,
@@ -200,6 +217,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
+  /// 모든 입력값 검증 후 회원가입 요청
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (!_isVerified) {
@@ -269,6 +287,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
+  /// 회원가입 입력 UI 구성
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -481,8 +500,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           ),
     ));
   }
-  // ... (rest of the helper methods are the same)
 
+  /// 공통 입력 필드 위젯
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -522,7 +541,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       ),
     );
   }
-
+  /// 성별 선택 드롭다운
     Widget _buildDropdown(String? value, List<String> items, String label, Widget icon, ValueChanged<String?> onChanged) {
     return DropdownButtonFormField<String>(
       value: value,
@@ -544,7 +563,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       ),
     );
   }
-
+  /// 작은 액션 버튼(중복확인, 인증 등)
   Widget _buildSmallButton(String text, VoidCallback? onPressed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
@@ -559,7 +578,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       ),
     );
   }
-
+  /// 비밀번호 표시/숨김 토글 버튼
   Widget _buildVisibilityToggle(VoidCallback onPressed, bool isVisible) {
     return IconButton(
       icon: HugeIcon(icon: isVisible ? HugeIcons.strokeRoundedView : HugeIcons.strokeRoundedViewOff),
