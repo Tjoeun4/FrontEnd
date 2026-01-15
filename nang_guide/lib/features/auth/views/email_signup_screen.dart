@@ -193,7 +193,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         _zonecode = result['zonecode'] ?? '';
         _roadAddress = result['roadAddress'] ?? result['jibunAddress'] ?? '';
         _addressController.text = '($_zonecode) $_roadAddress';
-        
+
         _selectedNeighborhoodId = fetchedNeighborhoodId;
         _neighborhoodIdController.text = fetchedNeighborhoodId?.toString() ?? '지역 코드를 찾을 수 없습니다.';
       });
@@ -214,7 +214,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         );
         return;
       }
-      
+
       final int? age = int.tryParse(_ageController.text);
       if (age == null || age <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -364,7 +364,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
                 _buildDropdown(_selectedGender, _genders, '성별', HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey[600]), (val) => setState(() => _selectedGender = val)),
                 const SizedBox(height: 16),
-                
+
                 _buildTextField(
                   controller: _ageController,
                   label: '나이',
@@ -377,7 +377,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                
+
                 _buildTextField(
                   controller: _passwordController,
                   label: '비밀번호',
@@ -393,7 +393,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 _buildTextField(
                   controller: _confirmPasswordController,
                   label: '비밀번호 확인하기',
@@ -423,7 +423,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   readOnly: true,
                   maxLines: 2,
                 ),
-                const SizedBox(height: 16), 
+                const SizedBox(height: 16),
 
                 _buildTextField(
                   controller: _detailAddressController,
@@ -447,29 +447,39 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   },
                 ),
                 const SizedBox(height: 32),
-
-                ElevatedButton(
-                  onPressed: _isVerified && _isNicknameChecked && _selectedNeighborhoodId != null ? _submitForm : null,
-                  style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.orange,
-                      disabledBackgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12))),
-                  child: const Text(
-                    '회원가입',
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                ),
               ],
             ),
           ),
         ),
       ),
-    );
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: ElevatedButton(
+              onPressed: _isVerified &&
+                  _isNicknameChecked &&
+                  _selectedNeighborhoodId != null
+                  ? _submitForm
+                  : null,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: Colors.orange,
+                disabledBackgroundColor: Colors.grey,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                '회원가입',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+    ));
   }
   // ... (rest of the helper methods are the same)
 
