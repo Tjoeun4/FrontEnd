@@ -8,7 +8,7 @@ import 'package:honbop_mate/features/auth/models/authentication_response.dart'; 
 /// - Google OAuth 플로우에서만 사용
 /// - 신규 회원 여부, 이메일, 닉네임 포함
 /// ---------------------------------------------
-class GoogleAuthenticationResponse {
+class GoogleAuthenticationResponse { // 백엔드에서 보낸 응답을 받는 모델
   final String? token;
   final bool? newUser;
   final String? email; 
