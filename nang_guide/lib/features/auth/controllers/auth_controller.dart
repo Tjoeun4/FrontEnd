@@ -5,6 +5,9 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
+import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
+
 /// --------------------------------------------------
 /// 인증 상태 및 인증 플로우를 총괄하는 컨트롤러
 /// - Google 로그인 전체 흐름 제어
@@ -62,7 +65,7 @@ class AuthController extends GetxController {
             print('Frontend: Login successful! JWT Token: ${authResponse.token}');
             await _storage.write('jwt_token', authResponse.token);
             print('Frontend: Existing user. Navigating to Home Screen.');
-            Get.offAll(() => const Text('Welcome to Home Screen!')); // Placeholder for HomeScreen
+            Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
           } else {
             // This case implies an actual authentication failure for an existing user,
             // or an unexpected error from the backend for a new user flow.
@@ -102,7 +105,8 @@ class AuthController extends GetxController {
       if (authResponse.token != null) {
         print('Frontend: Registration complete! JWT Token: ${authResponse.token}');
         await _storage.write('jwt_token', authResponse.token);
-        Get.offAll(() => const Text('Welcome to Home Screen!')); // Navigate to Home Screen
+        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
+        showWelcomeDialog(Get.context!); // 환영 다이얼로그 표시
       } else {
         errorMessage(authResponse.error ?? 'Registration failed.');
         print('Frontend: Registration failed: ${authResponse.error}');

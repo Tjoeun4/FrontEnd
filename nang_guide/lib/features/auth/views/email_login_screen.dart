@@ -228,7 +228,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     const Text('|', style: TextStyle(color: Colors.white70)),
                     TextButton(
                       onPressed: () {
-                       Get.offAll(() => HomeScreen());
+                        Get.offAllNamed(AppRoutes.HOME);;
                       },
                       child: const Text(
                         '테스트 로그인',

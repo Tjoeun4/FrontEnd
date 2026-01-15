@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
-import 'package:get/get.dart'; // Add this import
-import 'package:honbop_mate/features/auth/controllers/auth_controller.dart'; // Add this import
+import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient import 추가
+import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 
 class GoogleSignUpScreen extends StatefulWidget {
   final String email;
@@ -20,18 +22,20 @@ class GoogleSignUpScreen extends StatefulWidget {
 
 class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  final AuthApiClient _apiClient = Get.find<AuthApiClient>(); // AuthApiClient 추가
 
   // Controllers
   late final TextEditingController _nicknameController;
   final _addressController = TextEditingController();
   final _detailAddressController = TextEditingController();
+  final _ageController = TextEditingController(); // 나이 컨트롤러 추가
+  final _neighborhoodIdController = TextEditingController(); // 지역 코드 컨트롤러 추가
 
   // State
   bool _isNicknameChecked = false;
-  String? _selectedAgeRange;
-  String? _selectedJobCategory;
-  final List<String> _ageRanges = ['10대', '20대', '30대', '40대', '50대+'];
-  final List<String> _jobCategories = ['학생', '직장인', '프리랜서', '자영업', '기타', '비공개'];
+  String? _selectedGender; // 성별 추가
+  final List<String> _genders = ['남자', '여자']; // 성별 목록 추가
+  int? _selectedNeighborhoodId; // 지역 코드 ID 추가
 
   String _zonecode = '';
   String _roadAddress = '';
@@ -47,17 +51,37 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     _nicknameController.dispose();
     _addressController.dispose();
     _detailAddressController.dispose();
+    _ageController.dispose(); // 나이 컨트롤러 dispose 추가
+    _neighborhoodIdController.dispose(); // 지역 코드 컨트롤러 dispose 추가
     super.dispose();
   }
 
-  void _checkNickname() {
-    // TODO: Implement nickname duplication check logic
-    setState(() {
-      _isNicknameChecked = true;
-    });
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('사용 가능한 닉네임입니다.')));
+  Future<void> _checkNickname() async {
+    if (_nicknameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('닉네임을 입력해주세요.')),
+      );
+      return;
+    }
+
+    bool isDuplicated = await _apiClient.checkNickname(_nicknameController.text);
+    if (mounted) {
+      if (isDuplicated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 사용 중인 닉네임입니다.')),
+        );
+        setState(() {
+          _isNicknameChecked = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사용 가능한 닉네임입니다.')),
+        );
+        setState(() {
+          _isNicknameChecked = true;
+        });
+      }
+    }
   }
 
   void _searchAddress() async {
@@ -67,33 +91,75 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     );
 
     if (result != null && result is Map<String, dynamic>) {
+      final sigungu = result['sigungu'] as String?;
+      int? fetchedNeighborhoodId;
+
+      if (sigungu != null && sigungu.isNotEmpty) {
+        fetchedNeighborhoodId = await _apiClient.getNeighborhoodIdBySigungu(sigungu);
+        if (fetchedNeighborhoodId == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('해당 시군구에 대한 지역 코드를 찾을 수 없습니다.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('주소에서 시군구 정보를 추출할 수 없습니다.')),
+        );
+      }
+
       setState(() {
         _zonecode = result['zonecode'] ?? '';
         _roadAddress = result['roadAddress'] ?? result['jibunAddress'] ?? '';
         _addressController.text = '($_zonecode) $_roadAddress';
+
+        _selectedNeighborhoodId = fetchedNeighborhoodId;
+        _neighborhoodIdController.text = fetchedNeighborhoodId?.toString() ?? '지역 코드를 찾을 수 없습니다.';
       });
     }
   }
 
-  void _submitForm() async { // Made async
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (!_isNicknameChecked) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('닉네임 중복 확인을 해주세요.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('닉네임 중복 확인을 해주세요.')),
+        );
+        return;
+      }
+
+      final int? age = int.tryParse(_ageController.text);
+      if (age == null || age <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('유효한 나이를 입력해주세요.')),
+        );
+        return;
+      }
+      if (_selectedGender == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('성별을 선택해주세요.')),
+        );
+        return;
+      }
+      if (_selectedNeighborhoodId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('주소를 검색하여 지역 코드를 설정해주세요.')),
+        );
         return;
       }
 
       // Collect all data
+      final genderToSend = _selectedGender == '남자' ? 'M' : (_selectedGender == '여자' ? 'F' : null);
+
       final registrationData = {
         'email': widget.email,
         'nickname': _nicknameController.text,
-        'gender': 'M', // Placeholder: assuming male, needs actual UI input
-        'age': 25, // Placeholder: assuming 25, needs actual UI input
-        'zipcode': _zonecode, // Use zonecode from address search
-        'addressBase': _roadAddress, // Use roadAddress from address search
+        'gender': genderToSend,
+        'age': age,
+        'zipcode': _zonecode,
+        'addressBase': _roadAddress,
         'addressDetail': _detailAddressController.text,
-        'monthlyFoodBudget': 500000, // Placeholder: needs actual UI input
+        'monthlyFoodBudget': 0, // Placeholder, as no UI for it yet
+        'neighborhoodId': _selectedNeighborhoodId,
       };
 
       // Call the AuthController to complete registration
@@ -134,6 +200,13 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
                     icon: HugeIcons.strokeRoundedUser,
                     color: Colors.grey[600],
                   ),
+                  onChanged: (value) {
+                    if (_isNicknameChecked) {
+                      setState(() {
+                        _isNicknameChecked = false;
+                      });
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) return '닉네임을 입력해주세요.';
                     return null;
@@ -144,26 +217,18 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildDropdown(
-                  _selectedAgeRange,
-                  _ageRanges,
-                  '연령대',
-                  HugeIcon(
-                    icon: HugeIcons.strokeRoundedHappy,
-                    color: Colors.grey[600],
-                  ),
-                  (val) => setState(() => _selectedAgeRange = val),
-                ),
+                _buildDropdown(_selectedGender, _genders, '성별', HugeIcon(icon: HugeIcons.strokeRoundedUser, color: Colors.grey[600]), (val) => setState(() => _selectedGender = val)),
                 const SizedBox(height: 16),
-                _buildDropdown(
-                  _selectedJobCategory,
-                  _jobCategories,
-                  '직업군',
-                  HugeIcon(
-                    icon: HugeIcons.strokeRoundedBriefcase01,
-                    color: Colors.grey[600],
-                  ),
-                  (val) => setState(() => _selectedJobCategory = val),
+                _buildTextField(
+                  controller: _ageController,
+                  label: '나이',
+                  icon: HugeIcon(icon: HugeIcons.strokeRoundedHappy, color: Colors.grey[600]),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return '나이를 입력해주세요.';
+                    if (int.tryParse(value) == null) return '유효한 숫자를 입력해주세요.';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
@@ -191,13 +256,32 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
                     color: Colors.grey,
                   ),
                   maxLines: 2,
+                  validator: (value) {
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _neighborhoodIdController,
+                  label: '지역 코드',
+                  readOnly: true,
+                  icon: const Icon(Icons.pin_drop_outlined, color: Colors.grey),
+                  validator: (value) {
+                    if (value == null || value.isEmpty || _selectedNeighborhoodId == null) return '주소 검색을 통해 지역 코드를 설정해주세요.';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: _submitForm,
+                  onPressed: _isNicknameChecked &&
+                           _selectedGender != null &&
+                           _selectedNeighborhoodId != null
+                           ? _submitForm
+                           : null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: Colors.orange,
+                    disabledBackgroundColor: Colors.grey, // 비활성화 시 색상 추가
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -228,6 +312,8 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     int? maxLines = 1,
     bool readOnly = false,
     VoidCallback? onTap,
+    TextInputType? keyboardType,
+    ValueChanged<String>? onChanged,
   }) {
     return TextFormField(
       controller: controller,
