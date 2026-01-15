@@ -17,8 +17,10 @@ dependencies:
   url_launcher: ^6.3.0
   hugeicons:
   get:
+  google_maps_flutter: ^2.14.0
   # daum_postcode_search: ^1.0.0
   webview_flutter: ^4.8.0
+  http:
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +34,13 @@ flutter:
     - assets/images/
     - assets/
     - assets/address_search.html
+
+  fonts:
+   - family: Pretendard
+     fonts:
+       - asset: assets/fonts/Pretendard-Black.ttf
+         weight: 900
+       - asset: assets/fonts/Pretendard-Bold.ttf
+         weight: 700
+       - asset: assets/fonts/Pretendard-Medium.ttf
+         weight: 400

@@ -2,8 +2,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+
 import '../controllers/auth_controller.dart';
 import './../../auth/views/components/bottom_nav_bar.dart';
+
 import './../../auth/views/email_login_screen.dart';
 import './../../auth/views/google_signup_screen.dart';
 import './../../auth/services/google_auth_service.dart';
