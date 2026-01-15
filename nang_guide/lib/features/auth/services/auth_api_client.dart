@@ -206,4 +206,26 @@ class AuthApiClient extends GetxService {
       return true; // Treat any exception as duplicated to be safe
     }
   }
+
+  // --- Neighborhood Lookup Method ---
+
+  Future<int?> getNeighborhoodIdBySigungu(String sigungu) async {
+    try {
+      final response = await _dio.get(
+        '/neighborhoods/search',
+        queryParameters: {'query': sigungu},
+      );
+      if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
+        // Assuming the first result is the most relevant
+        return response.data[0]['neighborhoodId'];
+      }
+      return null;
+    } on dio.DioException catch (e) {
+      print('DioError in getNeighborhoodIdBySigungu: ${e.message}');
+      return null;
+    } catch (e) {
+      print('Unexpected error in getNeighborhoodIdBySigungu: $e');
+      return null;
+    }
+  }
 }

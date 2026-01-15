@@ -25,6 +25,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _addressController = TextEditingController();
   final _detailAddressController = TextEditingController();
   final _ageController = TextEditingController();
+  final _neighborhoodIdController = TextEditingController(); // Added
 
   // State
   bool _isPasswordVisible = false;
@@ -38,6 +39,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
 
   String? _selectedGender;
   final List<String> _genders = ['남자', '여자'];
+  int? _selectedNeighborhoodId; // Added
 
   String _zonecode = '';
   String _roadAddress = '';
@@ -53,6 +55,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     _addressController.dispose();
     _detailAddressController.dispose();
     _ageController.dispose();
+    _neighborhoodIdController.dispose(); // Added
     super.dispose();
   }
 
@@ -169,13 +172,31 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     );
 
     if (result != null && result is Map<String, dynamic>) {
+      final sigungu = result['sigungu'] as String?;
+      int? fetchedNeighborhoodId;
+
+      if (sigungu != null && sigungu.isNotEmpty) {
+        fetchedNeighborhoodId = await _apiClient.getNeighborhoodIdBySigungu(sigungu);
+        if (fetchedNeighborhoodId == null) {
+          // If ID not found for sigungu, try a more general query or inform user
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('해당 시군구에 대한 지역 코드를 찾을 수 없습니다.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('주소에서 시군구 정보를 추출할 수 없습니다.')),
+        );
+      }
+
       setState(() {
         _zonecode = result['zonecode'] ?? '';
         _roadAddress = result['roadAddress'] ?? result['jibunAddress'] ?? '';
         _addressController.text = '($_zonecode) $_roadAddress';
+        
+        _selectedNeighborhoodId = fetchedNeighborhoodId;
+        _neighborhoodIdController.text = fetchedNeighborhoodId?.toString() ?? '지역 코드를 찾을 수 없습니다.';
       });
-      // Print sigungu to console as requested
-      print('Sigungu: ${result['sigungu'] ?? 'N/A'}');
     }
   }
 
@@ -207,6 +228,12 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         );
         return;
       }
+       if (_selectedNeighborhoodId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('주소를 검색하여 지역 코드를 설정해주세요.')),
+        );
+        return;
+      }
 
       // All checks passed, proceed with signup
       // TODO: Create user object and call API to register
@@ -218,6 +245,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       print('Gender: $_selectedGender');
       print('Address: ($_zonecode) $_roadAddress');
       print('Detail Address: ${_detailAddressController.text}');
+      print('Neighborhood ID: $_selectedNeighborhoodId');
     }
   }
 
@@ -386,10 +414,22 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+
+                _buildTextField(
+                  controller: _neighborhoodIdController,
+                  label: '지역 코드',
+                  readOnly: true,
+                  icon: const Icon(Icons.pin_drop_outlined, color: Colors.grey),
+                  validator: (value) {
+                    if (value == null || value.isEmpty || _selectedNeighborhoodId == null) return '주소 검색을 통해 지역 코드를 설정해주세요.';
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 32),
 
                 ElevatedButton(
-                  onPressed: _isVerified ? _submitForm : null,
+                  onPressed: _isVerified && _isNicknameChecked && _selectedNeighborhoodId != null ? _submitForm : null,
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: Colors.orange,
