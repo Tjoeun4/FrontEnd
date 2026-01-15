@@ -200,7 +200,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (!_isVerified) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -228,7 +228,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         );
         return;
       }
-       if (_selectedNeighborhoodId == null) {
+      if (_selectedNeighborhoodId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('주소를 검색하여 지역 코드를 설정해주세요.')),
         );
@@ -236,16 +236,36 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
       }
 
       // All checks passed, proceed with signup
-      // TODO: Create user object and call API to register
-      print('Signup successful!');
-      // Added for debugging:
-      print('Email: ${_emailController.text}');
-      print('Nickname: ${_nicknameController.text}');
-      print('Age: ${_ageController.text}');
-      print('Gender: $_selectedGender');
-      print('Address: ($_zonecode) $_roadAddress');
-      print('Detail Address: ${_detailAddressController.text}');
-      print('Neighborhood ID: $_selectedNeighborhoodId');
+      final genderToSend = _selectedGender == '남자' ? 'M' : (_selectedGender == '여자' ? 'F' : null);
+
+      final userData = {
+        'nickname': _nicknameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'gender': genderToSend,
+        'age': int.tryParse(_ageController.text),
+        'zipcode': _zonecode,
+        'addressBase': _roadAddress,
+        'addressDetail': _detailAddressController.text,
+        'monthlyFoodBudget': 0, // Placeholder, as no UI for it yet
+        'neighborhoodId': _selectedNeighborhoodId,
+      };
+
+      print('Attempting signup with data: $userData');
+
+      final authResponse = await _apiClient.registerWithEmail(userData);
+
+      if (authResponse.accessToken != null && mounted) { // Changed from .token to .accessToken
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('회원가입이 성공적으로 완료되었습니다!')),
+        );
+        // Navigate to login screen or home screen
+        Get.offAll(() => const Text('Welcome to Home Screen!')); // Placeholder for HomeScreen
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authResponse.error ?? '회원가입에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
     }
   }
 
@@ -505,6 +525,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
           child: icon,
         ),
         labelText: label,
+        // suffixIcon: suffix,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
          focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

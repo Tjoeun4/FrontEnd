@@ -1,67 +1,49 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // Added import for new model
 
-// Assuming you have these models defined in your Flutter project
-// You'll need to create these Dart models corresponding to your Spring Boot DTOs
-// For example:
-// class GoogleAuthenticationResponse {
-//   final String? token;
-//   final String? error;
-//
-//   GoogleAuthenticationResponse({this.token, this.error});
-//
-//   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
-//     return GoogleAuthenticationResponse(
-//       token: json['token'],
-//       error: json['error'],
-//     );
-//   }
-// }
-
-// Create a placeholder for GoogleAuthenticationResponse for now
-// This should be replaced with an actual model from a models folder
+// GoogleAuthenticationResponse remains for Google-specific flows
 class GoogleAuthenticationResponse {
   final String? token;
   final bool? newUser;
-  final String? email; // Added
-  final String? nickname; // Added
+  final String? email; 
+  final String? nickname; 
   final String? error;
 
   GoogleAuthenticationResponse({this.token, this.newUser, this.email, this.nickname, this.error});
 
   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return GoogleAuthenticationResponse(
-      token: json['token'],
+      token: json['access_token'] ?? json['token'], // Map access_token to token
       newUser: json['newUser'],
-      email: json['email'], // Map the new field 'email'
-      nickname: json['nickname'], // Map the new field 'nickname'
+      email: json['email'],
+      nickname: json['nickname'],
       error: json['error'],
     );
   }
 }
 
 class AuthApiClient extends GetxService {
-  late dio.Dio _dio; // Use dio.Dio here
+  late dio.Dio _dio; 
 
   final String _baseUrl = 'http://10.0.2.2:8080/api'; // More generic base URL
   
   @override
   void onInit() {
     super.onInit();
-    _dio = dio.Dio(dio.BaseOptions( // Use dio.Dio and dio.BaseOptions here
+    _dio = dio.Dio(dio.BaseOptions( 
       baseUrl: _baseUrl,
-      connectTimeout: const Duration(seconds: 5), // 5 seconds
-      receiveTimeout: const Duration(seconds: 15), // 15 seconds
+      connectTimeout: const Duration(seconds: 5), 
+      receiveTimeout: const Duration(seconds: 15), 
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     ));
 
-    // Optional: Add interceptors for logging, error handling, etc.
     _dio.interceptors.add(
-      dio.InterceptorsWrapper( // Use dio.InterceptorsWrapper here
+      dio.InterceptorsWrapper( 
         onRequest: (options, handler) {
           print('REQUEST[${options.method}] => PATH: ${options.path}');
           return handler.next(options);
@@ -70,7 +52,7 @@ class AuthApiClient extends GetxService {
           print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
           return handler.next(response);
         },
-        onError: (dio.DioException e, handler) { // Use dio.DioException here
+        onError: (dio.DioException e, handler) { 
           print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
           return handler.next(e);
         },
@@ -81,27 +63,25 @@ class AuthApiClient extends GetxService {
   Future<GoogleAuthenticationResponse> googleSignIn(String idToken) async {
     try {
       final response = await _dio.post(
-        '/auth/google/signin', // Added /auth prefix
+        '/auth/google/signin', 
         data: {
           'idToken': idToken,
         },
       );
 
       if (response.statusCode == 200) {
-        print('Frontend: Raw backend response: ${response.data}'); // Debug print
+        print('Frontend: Raw backend response: ${response.data}'); 
         return GoogleAuthenticationResponse.fromJson(response.data);
       } else {
-        // Handle non-200 responses as errors
-        print('Frontend: Raw backend error response: ${response.data}'); // Debug print
+        print('Frontend: Raw backend error response: ${response.data}'); 
         return GoogleAuthenticationResponse(
             error: response.data['error'] ?? 'Unknown error occurred');
       }
-    } on dio.DioException catch (e) { // Use dio.DioException here
+    } on dio.DioException catch (e) { 
       String errorMessage = 'Failed to connect to the server.';
       if (e.response != null) {
         errorMessage = e.response?.data['error'] ?? 'Server error occurred.';
       } else {
-        // Something happened in setting up or sending the request that triggered an Error
         errorMessage = e.message ?? 'Unknown network error.';
       }
       print('DioError in googleSignIn: $errorMessage');
@@ -115,7 +95,7 @@ class AuthApiClient extends GetxService {
   Future<GoogleAuthenticationResponse> completeGoogleRegistration(Map<String, dynamic> registrationData) async {
     try {
       final response = await _dio.post(
-        '/auth/google/register-complete', // Added /auth prefix
+        '/auth/google/register-complete', 
         data: registrationData,
       );
 
@@ -125,7 +105,7 @@ class AuthApiClient extends GetxService {
         return GoogleAuthenticationResponse(
             error: response.data['error'] ?? 'Unknown error occurred');
       }
-    } on dio.DioException catch (e) { // Use dio.DioException here
+    } on dio.DioException catch (e) { 
       String errorMessage = 'Failed to connect to the server for registration.';
       if (e.response != null) {
         errorMessage = e.response?.data['error'] ?? 'Server error occurred during registration.';
@@ -136,7 +116,7 @@ class AuthApiClient extends GetxService {
       return GoogleAuthenticationResponse(error: errorMessage);
     } catch (e) {
       print('Unexpected error in completeGoogleRegistration: $e');
-      return GoogleAuthenticationResponse(error: 'An unexpected error occurred during registration: $e');
+      return GoogleAuthenticationResponse(error: 'An unexpected error occurred: $e');
     }
   }
 
@@ -145,17 +125,14 @@ class AuthApiClient extends GetxService {
   Future<bool> requestEmailAuthCode(String email) async {
     try {
       final response = await _dio.post(
-        '/auth/email-request', // Added /auth prefix
+        '/auth/email-request', 
         queryParameters: {'email': email},
       );
-      // Explicitly check for 200 OK and a boolean `true` body.
       if (response.statusCode == 200 && response.data == true) {
         return true;
       }
-      // If the response is not what we expect, treat as failure.
       return false;
     } on dio.DioException catch (e) {
-      // Log the error and return false. The UI will handle the generic failure.
       print('DioError in requestEmailAuthCode: ${e.message}');
       return false;
     } catch (e) {
@@ -166,9 +143,8 @@ class AuthApiClient extends GetxService {
 
   Future<bool> verifyEmailAuthCode(String email, String code) async {
     try {
-      // Backend expects email and code as request parameters.
       final response = await _dio.post(
-        '/auth/email-verify', // Added /auth prefix
+        '/auth/email-verify', 
         queryParameters: {
           'email': email,
           'code': code,
@@ -177,12 +153,11 @@ class AuthApiClient extends GetxService {
       if (response.statusCode == 200 && response.data is bool) {
         return response.data;
       } else {
-        // If the backend doesn't return a boolean, treat it as failure.
         return false;
       }
-    } on dio.DioException catch (e) { // Use dio.DioException here
+    } on dio.DioException catch (e) { 
       print('DioError in verifyEmailAuthCode: ${e.message}');
-      return false; // Or re-throw a more specific error
+      return false; 
     } catch (e) {
       print('Unexpected error in verifyEmailAuthCode: $e');
       return false;
@@ -198,12 +173,12 @@ class AuthApiClient extends GetxService {
         queryParameters: {'nickname': nickname},
       );
       if (response.statusCode == 200 && response.data != null) {
-        return response.data['isDuplicated'] ?? true; // Default to duplicated on parsing error
+        return response.data['isDuplicated'] ?? true; 
       }
-      return true; // Treat non-200 responses as duplicated to be safe
+      return true; 
     } catch (e) {
       print('Error in checkNickname: $e');
-      return true; // Treat any exception as duplicated to be safe
+      return true; 
     }
   }
 
@@ -216,7 +191,6 @@ class AuthApiClient extends GetxService {
         queryParameters: {'query': sigungu},
       );
       if (response.statusCode == 200 && response.data is List && response.data.isNotEmpty) {
-        // Assuming the first result is the most relevant
         return response.data[0]['neighborhoodId'];
       }
       return null;
@@ -226,6 +200,40 @@ class AuthApiClient extends GetxService {
     } catch (e) {
       print('Unexpected error in getNeighborhoodIdBySigungu: $e');
       return null;
+    }
+  }
+
+  // --- Registration Method ---
+  Future<AuthenticationResponse> registerWithEmail(Map<String, dynamic> userData) async {
+    try {
+      final response = await _dio.post(
+        '/v1/auth/register',
+        data: userData,
+      );
+      if (response.statusCode == 200) {
+        // Backend returns AuthenticationResponse, which contains accessToken
+        return AuthenticationResponse.fromJson(response.data);
+      }
+      // Handle non-200 success codes if applicable, otherwise a generic error
+      return AuthenticationResponse(error: '회원가입에 실패했습니다.'); 
+    } on dio.DioException catch (e) {
+      String? errorMessage;
+      if (e.response != null && e.response?.data is Map) {
+        // Check if the backend sent a structured error response
+        errorMessage = e.response?.data['error']?.toString();
+      }
+
+      if (e.response?.statusCode == 409) {
+        errorMessage = errorMessage ?? '이미 가입된 이메일 주소입니다.';
+      } else {
+        errorMessage = errorMessage ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      }
+      
+      print('DioError in registerWithEmail: ${e.message ?? errorMessage}');
+      return AuthenticationResponse(error: errorMessage);
+    } catch (e) {
+      print('Unexpected error in registerWithEmail: $e');
+      return AuthenticationResponse(error: '예상치 못한 오류가 발생했습니다: $e');
     }
   }
 }
