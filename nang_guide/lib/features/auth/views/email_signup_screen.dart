@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
+import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
 /// 이메일 기반 회원가입 화면
 /// - 이메일 인증
@@ -277,8 +279,8 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('회원가입이 성공적으로 완료되었습니다!')),
         );
-        // Navigate to login screen or home screen
-        Get.offAll(() => const Text('Welcome to Home Screen!')); // Placeholder for HomeScreen
+        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
+        showWelcomeDialog(Get.context!); // 환영 다이얼로그 표시
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(authResponse.error ?? '회원가입에 실패했습니다. 다시 시도해주세요.')),
