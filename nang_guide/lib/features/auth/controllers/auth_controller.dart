@@ -115,6 +115,7 @@ class AuthController extends GetxController {
     }
   }
 
+
   /// ==================================================
   /// 로그아웃 처리
   /// - Google 계정 로그아웃
@@ -134,6 +135,7 @@ class AuthController extends GetxController {
     return _storage.read('jwt_token') != null;
   }
 }
+
   // // ✅ 401 오류 발생 시 토큰 갱신
   // Future<bool> handle401() async {
   //   bool success = await _tokenService.refreshToken();
@@ -144,4 +146,4 @@ class AuthController extends GetxController {
   //   }
   //   return success;
   // }
-}
+

@@ -10,6 +10,7 @@ class HomeBinding extends Bindings {
     
     Get.lazyPut<HomeController>(() => HomeController());
     Get.lazyPut<AuthController>(() => AuthController());
+    Get.lazyPut<NavController>(() => NavController()); // NavController 바인딩 추가
     // Get.lazyPut<TokenService>(() => TokenService());
   }
 }

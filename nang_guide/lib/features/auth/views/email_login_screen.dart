@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../routes/app_routes.dart';
 import '/features/auth/views/email_signup_screen.dart';
 import './bottom_nav_screen/home_screen.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient 임포트
@@ -47,7 +48,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('로그인 성공!')),
         );
-        Get.offAll(() => HomeScreen()); // 홈 화면으로 이동
+        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
       } else if (mounted) {
         // 로그인 실패 시 오류 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
