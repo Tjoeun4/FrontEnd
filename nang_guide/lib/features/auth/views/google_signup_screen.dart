@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'address_search_page.dart';
+import 'package:get/get.dart'; // Add this import
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart'; // Add this import
 
 class GoogleSignUpScreen extends StatefulWidget {
   final String email;
@@ -73,7 +75,7 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async { // Made async
     if (_formKey.currentState!.validate()) {
       if (!_isNicknameChecked) {
         ScaffoldMessenger.of(
@@ -82,14 +84,28 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
         return;
       }
 
-      // TODO: Send all data to the backend to create the user
-      print('Google Sign-Up Complete');
-      print('Email: ${widget.email}');
-      print('Nickname: ${_nicknameController.text}');
-      print('Age Range: $_selectedAgeRange');
-      print('Job Category: $_selectedJobCategory');
-      print('Address: ${_addressController.text}');
-      print('Detail Address: ${_detailAddressController.text}');
+      // Collect all data
+      final registrationData = {
+        'email': widget.email,
+        'nickname': _nicknameController.text,
+        'gender': 'M', // Placeholder: assuming male, needs actual UI input
+        'age': 25, // Placeholder: assuming 25, needs actual UI input
+        'zipcode': _zonecode, // Use zonecode from address search
+        'addressBase': _roadAddress, // Use roadAddress from address search
+        'addressDetail': _detailAddressController.text,
+        'monthlyFoodBudget': 500000, // Placeholder: needs actual UI input
+      };
+
+      // Call the AuthController to complete registration
+      final AuthController authController = Get.find<AuthController>();
+      await authController.completeGoogleRegistration(registrationData);
+
+      // Show feedback based on controller's state
+      if (authController.errorMessage.isNotEmpty && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authController.errorMessage.value)),
+        );
+      }
     }
   }
 

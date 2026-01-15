@@ -2,6 +2,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controllers/auth_controller.dart';
+import './../../auth/views/components/bottom_nav_bar.dart';
 import './../../auth/views/email_login_screen.dart';
 import './../../auth/views/google_signup_screen.dart';
 import './../../auth/services/google_auth_service.dart';
@@ -67,31 +69,15 @@ class LoginSelectionScreen extends StatelessWidget {
               ),
               isGoogle: true,
               onPressedCallback: () async {
-                final googleAuthService = GoogleAuthService();
-                final googleUser = await googleAuthService.signInWithGoogle();
+                final AuthController authController = Get.find<AuthController>();
+                await authController.signInWithGoogle();
 
-                if (googleUser != null && context.mounted) {
-                  // In a real app, you would now send googleUser.id or email to your backend
-                  // to check if the user already exists.
-                  // For this example, we'll assume every Google login is a new user
-                  // and navigate to the additional info screen.
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => GoogleSignUpScreen(
-                        email: googleUser.email,
-                        displayName:
-                            googleUser.displayName ??
-                            '사용자', // Provide a fallback
-                      ),
-                    ),
+                // Optionally, observe authController.errorMessage and authController.isLoading
+                // to show feedback to the user on this screen.
+                if (authController.errorMessage.isNotEmpty && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(authController.errorMessage.value)),
                   );
-                } else {
-                  // Handle sign-in failure
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('구글 로그인에 실패했습니다.')),
-                    );
-                  }
                 }
               },
             ),
