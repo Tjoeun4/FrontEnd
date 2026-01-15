@@ -18,8 +18,6 @@ class LedgerScreen extends StatelessWidget {
         children: [
           Column(
             children: [
-              const SizedBox(height: 20),
-
               // 월 이동
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -52,7 +50,7 @@ class LedgerScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               // 요일
               Row(
                 children: controller.weekLabels.map((e) {
