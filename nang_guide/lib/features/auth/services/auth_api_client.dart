@@ -257,4 +257,41 @@ class AuthApiClient extends GetxService {
       return AuthenticationResponse(error: '예상치 못한 오류가 발생했습니다: $e');
     }
   }
+
+  /// =================================================
+  /// 이메일 및 비밀번호를 사용한 사용자 인증
+  /// - 성공 시 accessToken 포함 AuthenticationResponse 반환
+  /// =================================================
+  Future<AuthenticationResponse> authenticate(String email, String password) async {
+    try {
+      final response = await _dio.post(
+        '/v1/auth/authenticate',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+      if (response.statusCode == 200) {
+        return AuthenticationResponse.fromJson(response.data);
+      }
+      return AuthenticationResponse(error: '로그인에 실패했습니다.'); 
+    } on dio.DioException catch (e) {
+      String? errorMessage;
+      if (e.response != null && e.response?.data is Map) {
+        errorMessage = e.response?.data['error']?.toString();
+      }
+
+      if (e.response?.statusCode == 401) { // Unauthorized for invalid credentials
+        errorMessage = errorMessage ?? '이메일 또는 비밀번호가 올바르지 않습니다.';
+      } else {
+        errorMessage = errorMessage ?? '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+      }
+      
+      print('DioError in authenticate: ${e.message ?? errorMessage}');
+      return AuthenticationResponse(error: errorMessage);
+    } catch (e) {
+      print('Unexpected error in authenticate: $e');
+      return AuthenticationResponse(error: '예상치 못한 오류가 발생했습니다: $e');
+    }
+  }
 }

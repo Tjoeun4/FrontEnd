@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/features/auth/views/email_signup_screen.dart';
 import './bottom_nav_screen/home_screen.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient 임포트
+import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // AuthenticationResponse 모델 임포트
+import 'package:get_storage/get_storage.dart'; // GetStorage 임포트
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -12,8 +15,47 @@ class EmailLoginScreen extends StatefulWidget {
 
 class _EmailLoginScreenState extends State<EmailLoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController(); // 이메일 컨트롤러 추가
+  final _passwordController = TextEditingController(); // 비밀번호 컨트롤러 추가
+  final AuthApiClient _apiClient = Get.find<AuthApiClient>(); // AuthApiClient 인스턴스
+  final GetStorage _storage = Get.find<GetStorage>(); // GetStorage 인스턴스
+
   bool _saveId = false;
   bool _isPasswordVisible = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose(); // 컨트롤러 dispose
+    _passwordController.dispose(); // 컨트롤러 dispose
+    super.dispose();
+  }
+
+  /// 로그인 로직 구현
+  Future<void> _login() async {
+    if (_formKey.currentState!.validate()) {
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      final AuthenticationResponse authResponse = await _apiClient.authenticate(email, password);
+
+      if (authResponse.accessToken != null && mounted) {
+        // 로그인 성공 시 토큰 저장 및 홈 화면으로 이동
+        await _storage.write('jwt_token', authResponse.accessToken);
+        await _storage.write('refresh_token', authResponse.refreshToken);
+        await _storage.write('user_id', authResponse.userId); 
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('로그인 성공!')),
+        );
+        Get.offAll(() => HomeScreen()); // 홈 화면으로 이동
+      } else if (mounted) {
+        // 로그인 실패 시 오류 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(authResponse.error ?? '로그인에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +91,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 ),
                 const Spacer(flex: 1),
                 TextFormField(
+                  controller: _emailController, // 컨트롤러 연결
                   decoration: InputDecoration(
                     hintText: '이메일',
                     filled: true,
@@ -74,6 +117,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
+                  controller: _passwordController, // 컨트롤러 연결
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     hintText: '비밀번호',
@@ -140,12 +184,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // TODO: 로그인 로직 구현
-                        print('로그인 시도');
-                      }
-                    },
+                    onPressed: _login, // 로그인 메소드 연결
                     child: const Text(
                       '로그인',
                       style: TextStyle(
