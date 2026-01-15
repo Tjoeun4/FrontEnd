@@ -52,7 +52,7 @@ class AppRoutes {
       // middlewares: [AuthMiddleware(), OwnerMiddleware()],
       transition: Transition.noTransition,
     ),
-    GetPage(name: HOME, page: () => HomeScreen(), binding: HomeBinding(),transition: Transition.noTransition,),
+    GetPage(name: HOME, page: () => HomeScreen(), binding: HomeBinding(),transition: Transition.noTransition,), // name과 page 요소는 각각 라우트 경로와 해당 위젯을 매핑, binding은 해당 위젯으로 이동할 때 주입할 의존성 관리 파일(컨트롤러), transition은 화면 전환 혹은 화면 전환 전 조건 검사
     GetPage(name: SEARCH, page: () => SplashScreen(), binding: SearchBinding()),
     GetPage(name: ALARM, page: () => SplashScreen(), binding: AlarmBinding()),
     GetPage(name: COMMUNITY, page: () => CommunityScreen(), binding: CommunityBinding(),transition: Transition.noTransition,),

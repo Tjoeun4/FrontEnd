@@ -11,7 +11,7 @@ class GoogleSignUpScreen extends StatefulWidget {
   final String displayName;
 
   const GoogleSignUpScreen({
-    super.key,
+    super.key, // 부모 위젯(Stateless위젯 혹은 StatefulWidget. 여기서는 StatefulWidget을 의미)에 이 위젯의 식별번호인 key를 보냄
     required this.email,
     required this.displayName,
   });
