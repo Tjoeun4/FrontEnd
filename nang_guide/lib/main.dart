@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get_storage/get_storage.dart';
 import './features/auth/bindings/auth_binding.dart';
 import './features/auth/routes/app_routes.dart';
 import 'features/auth/services/google_auth_service.dart';
@@ -26,6 +27,7 @@ import 'features/auth/services/google_auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
   // GoogleSignIn 초기화 (한 번만!)
   await GoogleAuthService.initialize();
   // await _initializeNaverMap();
