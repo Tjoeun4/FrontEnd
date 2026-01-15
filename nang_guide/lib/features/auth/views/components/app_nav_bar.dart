@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 
 import '../../controllers/auth_controller.dart';
 
@@ -37,6 +38,8 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
           icon: Icon(Icons.telegram),
           onPressed: () {
            //  authController.logout();
+            // GetX를 사용하여 채팅방 목록 화면으로 이동
+            Get.to(() => ChatListScreen());
           },
         ),
         IconButton(
