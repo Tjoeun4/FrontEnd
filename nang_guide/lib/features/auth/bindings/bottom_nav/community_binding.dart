@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/nav_controller.dart';
 import 'package:honbop_mate/features/auth/services/api_service.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
 import './../../controllers/bottom_nav/community_controller.dart';
 
 // 서비스 추가할 예정
@@ -19,5 +20,7 @@ class CommunityBinding extends Bindings {
     
     // 4. 네비게이션 컨트롤러 등 추가
     Get.lazyPut<NavController>(() => NavController());
+
+    Get.lazyPut<TokenService>(() => TokenService());
   }
 }

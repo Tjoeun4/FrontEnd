@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/community_controller.dart';
 
-void GroupDialog(BuildContext context, String postId) { // postId를 인자로 받습니다.
+void GroupDialog(BuildContext context) { // postId를 인자로 받습니다.
   final communityController = Get.find<CommunityController>();
   final TextEditingController nameController = TextEditingController();
 
@@ -45,7 +45,7 @@ void GroupDialog(BuildContext context, String postId) { // postId를 인자로 �
                       onPressed: () async {
                         // ✅ 2. 서버의 그룹 방 생성 API 호출 (postId 사용)
                         // userId는 임시로 1 전달
-                        await communityController.createGroupRoom(1, postId);
+                        await communityController.createGroupRoom(1, nameController.text.trim(),);
                         
                         if (context.mounted) Navigator.pop(context);
                       },
