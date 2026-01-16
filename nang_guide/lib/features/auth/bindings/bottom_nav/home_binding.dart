@@ -8,10 +8,10 @@ import './../../controllers/bottom_nav/home_controller.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    
     Get.lazyPut<HomeController>(() => HomeController());
+
     Get.lazyPut<AuthController>(() => AuthController());
     Get.lazyPut<NavController>(() => NavController()); // NavController 바인딩 추가
-    Get.lazyPut<TokenService>(() => TokenService());
+    // Get.lazyPut<TokenService>(() => TokenService());
   }
 }

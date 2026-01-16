@@ -1,25 +1,30 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // Added import for new model
+import 'package:honbop_mate/features/auth/models/authentication_response.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 
 /// ---------------------------------------------
 /// Google 로그인 전용 응답 모델
 /// - Google OAuth 플로우에서만 사용
 /// - 신규 회원 여부, 이메일, 닉네임 포함
 /// ---------------------------------------------
-class GoogleAuthenticationResponse { // 백엔드에서 보낸 응답을 받는 모델
+class GoogleAuthenticationResponse {
   final String? token;
+  final String? refreshToken; // Add refreshToken field
   final bool? newUser;
   final String? email; 
   final String? nickname; 
   final String? error;
 
-  GoogleAuthenticationResponse({this.token, this.newUser, this.email, this.nickname, this.error});
-  /// 백엔드 응답(JSON)을 프론트 모델로 매핑
+  GoogleAuthenticationResponse({this.token, this.refreshToken, this.newUser, this.email, this.nickname, this.error});
+  
   factory GoogleAuthenticationResponse.fromJson(Map<String, dynamic> json) {
     return GoogleAuthenticationResponse(
-      token: json['access_token'] ?? json['token'], // Map access_token to token
+      token: json['access_token'] ?? json['token'],
+      refreshToken: json['refresh_token'], // Map refresh_token
       newUser: json['newUser'],
       email: json['email'],
       nickname: json['nickname'],
@@ -34,26 +39,20 @@ class GoogleAuthenticationResponse { // 백엔드에서 보낸 응답을 받는 
 /// - Google 로그인, 이메일 인증, 회원가입 처리
 /// ---------------------------------------------
 class AuthApiClient extends GetxService {
-  late dio.Dio _dio; 
+  final dio.Dio _dio = Get.find<dio.Dio>();
+  final GetStorage _storage = Get.find<GetStorage>();
+  final TokenService _tokenService = Get.find<TokenService>();
 
-  final String _baseUrl = 'http://10.0.2.2:8080/api'; // More generic base URL
-  
   @override
   void onInit() {
     super.onInit();
-    _dio = dio.Dio(dio.BaseOptions( 
-      baseUrl: _baseUrl,
-      connectTimeout: const Duration(seconds: 5), 
-      receiveTimeout: const Duration(seconds: 15), 
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-
     _dio.interceptors.add(
       dio.InterceptorsWrapper( 
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          final token = _tokenService.getAccessToken();
+          if (token != null && options.headers['Authorization'] == null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
           print('REQUEST[${options.method}] => PATH: ${options.path}');
           return handler.next(options);
         },
@@ -61,8 +60,37 @@ class AuthApiClient extends GetxService {
           print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
           return handler.next(response);
         },
-        onError: (dio.DioException e, handler) { 
+        onError: (dio.DioException e, handler) async { 
           print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
+
+          if (e.response?.statusCode == 401) {
+            // Check if the current request is for refreshing token, if so, do not retry
+            if (e.requestOptions.path != '/v1/auth/refresh-token') { // Note: ensure this path matches your TokenService's refresh endpoint
+              print('AuthApiClient: 401 Unauthorized. Attempting to refresh token...');
+              bool refreshed = await _tokenService.refreshToken();
+
+              if (refreshed) {
+                print('AuthApiClient: Token refreshed. Retrying original request.');
+                // Create a new requestOptions with the new token
+                final newAccessToken = _tokenService.getAccessToken();
+                final dio.RequestOptions requestOptions = e.requestOptions;
+                requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+                
+                // Retry the original request with new token
+                try {
+                  final response = await _dio.fetch(requestOptions);
+                  return handler.resolve(response);
+                } on dio.DioException catch (retryError) {
+                  return handler.next(retryError);
+                }
+              } else {
+                print('AuthApiClient: Failed to refresh token. Redirecting to login.');
+                await _tokenService.clearTokens(); // Clear tokens if refresh failed
+                Get.offAllNamed(AppRoutes.LOGIN); // Redirect to login selection screen
+                return handler.next(e); // Propagate the error after redirection
+              }
+            }
+          }
           return handler.next(e);
         },
       ),
