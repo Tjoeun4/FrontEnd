@@ -14,13 +14,15 @@ class CommunityBinding extends Bindings {
     Get.lazyPut<ApiService>(() => ApiService());
     Get.lazyPut(() => CommunityController(Get.find<ApiService>()));
 
-    // 3. CommunityController 등록 
+    // 3. CommunityController 등록
     // 생성자에서 ApiService를 필요로 한다면 Get.find()로 넣어줍니다.
-    Get.lazyPut<CommunityController>(() => CommunityController(Get.find<ApiService>()));
-    
+    Get.lazyPut<CommunityController>(
+      () => CommunityController(Get.find<ApiService>()),
+    );
+
     // 4. 네비게이션 컨트롤러 등 추가
     Get.lazyPut<NavController>(() => NavController());
 
-    Get.lazyPut<TokenService>(() => TokenService());
+    // Get.lazyPut<TokenService>(() => TokenService());
   }
 }
