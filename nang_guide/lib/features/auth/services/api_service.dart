@@ -24,7 +24,9 @@ class ApiService {
       },
     );
 
-    final SpringResponse response = SpringResponse.fromJson(jsonDecode(utf8.decode(springResponse.bodyBytes)));
+    final SpringResponse response = SpringResponse.fromJson(
+      jsonDecode(utf8.decode(springResponse.bodyBytes)),
+    );
 
     // if (response.statusCode == 401) {
     //   bool refreshed = await _authController.handle401();
@@ -35,12 +37,15 @@ class ApiService {
     return response.body;
   }
 
-  Future<Map<String, dynamic>> postRequest(String endpoint, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> postRequest(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     var token = await _tokenService.loadToken();
     if (token == null) throw Exception("No token found");
     final url = "http://10.0.2.2:8080/$endpoint";
 
-//
+    //
     final springResponse = await http.post(
       Uri.parse(url),
       headers: {
@@ -50,7 +55,9 @@ class ApiService {
       body: jsonEncode(body),
     );
 
-    final SpringResponse response = SpringResponse.fromJson(jsonDecode(utf8.decode(springResponse.bodyBytes)));
+    final SpringResponse response = SpringResponse.fromJson(
+      jsonDecode(utf8.decode(springResponse.bodyBytes)),
+    );
 
     // if (response.statusCode == 401) {
     //   bool refreshed = await _authController.handle401();

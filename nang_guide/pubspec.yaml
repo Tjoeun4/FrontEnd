@@ -23,6 +23,7 @@ dependencies:
   # daum_postcode_search: ^1.0.0
   webview_flutter: ^4.8.0
   http:
+  image_picker:
 
 dev_dependencies:
   flutter_test:
