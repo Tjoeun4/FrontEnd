@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart'; // TokenService import
 import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
@@ -16,14 +17,53 @@ import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome
 /// --------------------------------------------------
 class AuthController extends GetxController { // GetxController는 상태 관리 + 로직처리 + 화면 전환을 담당. 이를 상속하겠다는건 GetxController 클래스의 모든 기능과 속성을 그대로 혹은 재정의해서 사용하겠다는 뜻
   /// Google OAuth 인증 처리 서비스
-  final GoogleAuthService _googleAuthService = Get.find<GoogleAuthService>(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
-  /// 백엔드 인증 API 통신 클라이언트
-  final AuthApiClient _authApiClient = Get.find<AuthApiClient>(); // AuthApiClient 클래스의 인스턴스를 가져옴
-  /// JWT 토큰 저장용 로컬 스토리지
-  final GetStorage _storage = Get.find<GetStorage>(); // GetStorage 객체는 앱에 데이터를 영구적으로 저장하기 위한 가벼운 로컬 저장소
-  /// UI 상태 관리용 Observable
-  var isLoading = false.obs; // .obs는 변수를 관찰 가능한 상태(반응형 타입=Rx타입)로 만들어주는 GetX의 메서드. 즉, setState를 사용하지 않아도 isLoading 변수가 바뀌는 순간 UI가 자동으로 다시 그려짐.
-  var errorMessage = ''.obs; // Rx타입의 변수는 값을 바꿀 때 isLoading.value = true; 형식이나 isLoading(true);
+  late final GoogleAuthService _googleAuthService;
+  late final AuthApiClient _authApiClient;
+  late final GetStorage _storage;
+  late final TokenService _tokenService;
+
+  var isLoading = false.obs;
+  var errorMessage = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _googleAuthService = Get.find<GoogleAuthService>(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
+    _authApiClient = Get.find<AuthApiClient>();
+    _storage = Get.find<GetStorage>();
+    _tokenService = Get.find<TokenService>();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // Check if both access and refresh tokens exist
+    final String? accessToken = _tokenService.getAccessToken();
+    final String? refreshToken = _tokenService.getRefreshToken();
+
+    if (accessToken != null && refreshToken != null) {
+      print('AuthController: Found existing tokens. Attempting auto-login...');
+      // Attempt to refresh token to validate and get a fresh access token
+      bool refreshed = await _tokenService.refreshToken();
+
+      if (refreshed) {
+        print('AuthController: Auto-login successful via token refresh. Navigating to Home.');
+        Get.offAllNamed(AppRoutes.HOME);
+      } else {
+        print('AuthController: Token refresh failed. Clearing tokens and navigating to Login Selection.');
+        await _tokenService.clearTokens();
+        Get.offAllNamed(AppRoutes.LOGIN);
+      }
+    } else {
+      print('AuthController: No existing tokens found. Navigating to Login Selection.');
+      Get.offAllNamed(AppRoutes.LOGIN);
+    }
+  }
+
   /// ==================================================
   /// Google 로그인 메인 플로우
   ///
@@ -62,6 +102,7 @@ class AuthController extends GetxController { // GetxController는 상태 관리
           } else if (authResponse.token != null) { // newUser 필드가 false이지만, token이 있다면. 즉, 이미 가입한 사용자 혹은 회원가입을 마친 사용자
             print('Frontend: Login successful! JWT Token: ${authResponse.token}');
             await _storage.write('jwt_token', authResponse.token); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
+            await _storage.write('refresh_token', authResponse.refreshToken);
             print('Frontend: Existing user. Navigating to Home Screen.');
             Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동 .offAllNames 메서드는 GetMaterialApp에 등록된 이름을 통해 이동하는 메서드.
           } else {
@@ -103,6 +144,7 @@ class AuthController extends GetxController { // GetxController는 상태 관리
       if (authResponse.token != null) {
         print('Frontend: Registration complete! JWT Token: ${authResponse.token}');
         await _storage.write('jwt_token', authResponse.token);
+        await _storage.write('refresh_token', authResponse.refreshToken);
         Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
         showWelcomeDialog(Get.context!); // 환영 다이얼로그 표시
       } else {
@@ -126,6 +168,7 @@ class AuthController extends GetxController { // GetxController는 상태 관리
   Future<void> signOut() async {
     await _googleAuthService.signOut();
     await _storage.remove('jwt_token');
+    await _storage.remove('refresh_token');
     // Navigate to login screen
     // Get.offAll(() => LoginSelectionScreen());
   }

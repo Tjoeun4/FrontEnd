@@ -145,7 +145,7 @@ Widget _imageCard() {
       child: Stack(
         children: [
           Image.asset(
-            'assets/images/logo.png',
+            'assets/logo.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
