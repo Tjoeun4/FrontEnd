@@ -12,7 +12,7 @@ class ApiService {
   var count = 0;
 
   Future<Map<String, dynamic>> getRequest(String endpoint) async {
-    var token = await _tokenService.loadToken();
+    var token = _tokenService.getAccessToken();
     if (token == null) throw Exception("No token found");
     final url = "http://10.0.2.2:8080/$endpoint";
 
@@ -20,7 +20,7 @@ class ApiService {
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Bearer ${token.accessToken}",
+        "Authorization": "Bearer $token",
       },
     );
 
@@ -36,7 +36,7 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> postRequest(String endpoint, Map<String, dynamic> body) async {
-    var token = await _tokenService.loadToken();
+    var token = _tokenService.getAccessToken();
     if (token == null) throw Exception("No token found");
     final url = "http://10.0.2.2:8080/$endpoint";
 
@@ -45,7 +45,7 @@ class ApiService {
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Bearer ${token.accessToken}",
+        "Authorization": "Bearer $token",
       },
       body: jsonEncode(body),
     );
