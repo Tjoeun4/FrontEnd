@@ -43,9 +43,7 @@ class TokenService extends GetxService {
       final response = await _dio.post(
         '/v1/auth/refresh-token', // 백엔드 토큰 재발급 엔드포인트
         options: Options(
-          headers: {
-            'Authorization': 'Bearer $currentRefreshToken',
-          },
+          headers: {'Authorization': 'Bearer $currentRefreshToken'},
         ),
       );
 
@@ -64,22 +62,31 @@ class TokenService extends GetxService {
         if (responseData is Map<String, dynamic>) {
           final authResponse = AuthenticationResponse.fromJson(responseData);
           if (authResponse.accessToken != null) {
-            await saveTokens(authResponse.accessToken!, authResponse.refreshToken);
+            await saveTokens(
+              authResponse.accessToken!,
+              authResponse.refreshToken,
+            );
             print('TokenService: Tokens refreshed successfully.');
             return true;
           }
         } else {
-          print('TokenService: Unexpected response data format after potential decoding. Expected Map, got ${responseData.runtimeType}. Data: ${responseData}');
+          print(
+            'TokenService: Unexpected response data format after potential decoding. Expected Map, got ${responseData.runtimeType}. Data: ${responseData}',
+          );
           return false;
         }
       }
-      print('TokenService: Failed to refresh token. Status: ${response.statusCode}, Data: ${response.data}');
+      print(
+        'TokenService: Failed to refresh token. Status: ${response.statusCode}, Data: ${response.data}',
+      );
       return false;
     } on DioException catch (e) {
       print('TokenService: Error refreshing token: $e');
       if (e.response?.statusCode == 401) {
         // Refresh Token 자체도 만료되었거나 유효하지 않은 경우
-        print('TokenService: Refresh token expired or invalid. Clearing tokens.');
+        print(
+          'TokenService: Refresh token expired or invalid. Clearing tokens.',
+        );
         await clearTokens(); // 모든 토큰 삭제 후 로그인 화면으로 유도
       }
       return false;

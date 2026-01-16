@@ -10,5 +10,6 @@ class LedgerBinding extends Bindings {
     Get.lazyPut<LedgerController>(() => LedgerController());
     Get.lazyPut<AuthController>(() => AuthController());
     // Get.lazyPut<TokenService>(() => TokenService());
+    Get.lazyPut<NavController>(() => NavController());
   }
 }

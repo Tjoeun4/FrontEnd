@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // import '../../controllers/auth_controller.dart';
+// 촬영하기 위한 패키지입니다.
+import 'package:image_picker/image_picker.dart';
+
 
 void OcrDialog(BuildContext context) {
   // 이후 수정할 예정입니다.
@@ -100,16 +103,14 @@ void OcrDialog(BuildContext context) {
               
                    ElevatedButton(
                       onPressed: () async {
-                        final bn = businessNumberController.text.trim();
+    final picker = ImagePicker();
+    final XFile? image =
+        await picker.pickImage(source: ImageSource.camera);
 
-                        // 🔄 로딩 표시
-                        Get.dialog(const Center(child: CircularProgressIndicator()),
-                            barrierDismissible: false);
-
-                        // final isValid = await authController.validateBusinessNumber(bn);
-
-                        Get.back(); // 로딩 닫기
-                      },
+    if (image != null) {
+      print(image.path);
+    }
+  },
                       style: ElevatedButton.styleFrom(
                         minimumSize: Size.fromHeight(50), // 높이만 설정
                         backgroundColor: Color(0xFF868583),
