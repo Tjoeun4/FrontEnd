@@ -171,15 +171,39 @@ class AuthController extends GetxController { // GetxController는 상태 관리
 
   /// ==================================================
   /// 로그아웃 처리
-  /// - Google 계정 로그아웃
-  /// - 저장된 JWT 제거
+  /// - 백엔드에 로그아웃 요청
+  /// - Google 계정 로그아웃 (선택적)
+  /// - 저장된 JWT 및 Refresh 토큰 제거
+  /// - 로그인 화면으로 이동
   /// ==================================================
-  Future<void> signOut() async {
-    await _googleAuthService.signOut();
-    await _storage.remove('jwt_token');
-    await _storage.remove('refresh_token');
-    // Navigate to login screen
-    // Get.offAll(() => LoginSelectionScreen());
+  Future<void> logout() async { 
+    isLoading(true);
+    errorMessage('');
+
+    try {
+      // 1. 백엔드에 로그아웃 요청
+      bool backendLoggedOut = await _authApiClient.logout();
+
+      if (backendLoggedOut) {
+        print('AuthController: Backend logout successful, or tokens cleared due to 401. Proceeding with client-side logout.');
+        // 2. Google 계정 로그아웃 (선택적: Google 로그인으로 들어왔을 경우)
+        await _googleAuthService.signOut(); 
+
+        // 3. 로컬 토큰 제거 (AuthApiClient.logout()에서 401 처리 시 이미 호출될 수 있으나, 명시적으로 다시 호출하여 확실히 제거)
+        await _tokenService.clearTokens();
+
+        // 4. 로그인 선택 화면으로 이동
+        Get.offAllNamed(AppRoutes.LOGIN);
+      } else {
+        errorMessage('로그아웃에 실패했습니다. 다시 시도해주세요.');
+        print('AuthController: Backend logout failed.');
+      }
+    } catch (e) {
+      errorMessage('로그아웃 중 오류가 발생했습니다: $e');
+      print('AuthController: Error during logout: $e');
+    } finally {
+      isLoading(false);
+    }
   }
   /// ==================================================
   /// 로그인 상태 여부 확인
