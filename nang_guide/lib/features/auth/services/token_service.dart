@@ -149,4 +149,16 @@ class TokenService extends GetxService {
   bool hasAccessToken() {
     return getAccessToken() != null;
   }
+
+  Future<AuthenticationResponse?> loadToken() async {
+    final accessToken = getAccessToken();
+    final refreshToken = getRefreshToken();
+
+    if (accessToken == null) return null;
+
+    return AuthenticationResponse(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+  }
 }
