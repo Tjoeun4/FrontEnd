@@ -25,6 +25,30 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   bool _isPasswordVisible = false;
 
   @override
+  void initState() {
+    super.initState();
+    _loadSavedIdInfo(); // 저장된 아이디 정보 로드
+  }
+
+  // 저장된 아이디 정보 로드
+  Future<void> _loadSavedIdInfo() async {
+    // GetStorage에서 'save_id_checkbox_state' 키로 저장된 체크박스 상태를 로드
+    // 저장된 값이 없으면 기본값은 false
+    _saveId = _storage.read('save_id_checkbox_state') ?? false;
+    
+    // _saveId가 true이면, 'saved_email' 키로 저장된 이메일 주소를 로드
+    // 로드된 이메일이 있으면 _emailController에 설정
+    if (_saveId) {
+      final savedEmail = _storage.read('saved_email');
+      if (savedEmail != null) {
+        _emailController.text = savedEmail;
+      }
+    }
+    // 위젯의 상태를 갱신하여 로드된 값들을 UI에 반영
+    setState(() {});
+  }
+
+  @override
   void dispose() {
     _emailController.dispose(); // 컨트롤러 dispose
     _passwordController.dispose(); // 컨트롤러 dispose
@@ -36,6 +60,13 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text;
       final password = _passwordController.text;
+
+      // '아이디 저장' 체크박스 상태에 따라 이메일 저장 또는 삭제
+      if (_saveId) {
+        await _storage.write('saved_email', email); // 체크박스가 체크되어 있으면 이메일 저장
+      } else {
+        await _storage.remove('saved_email'); // 체크박스가 해제되어 있으면 저장된 이메일 삭제
+      }
 
       final AuthenticationResponse authResponse = await _apiClient.authenticate(email, password);
 
@@ -163,10 +194,14 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       style: TextStyle(color: Colors.white),
                     ),
                     value: _saveId,
-                    onChanged: (bool? value) {
+                    onChanged: (bool? value) async { // onChanged를 async로 변경
                       setState(() {
                         _saveId = value ?? false;
                       });
+                      await _storage.write('save_id_checkbox_state', _saveId); // 체크박스 상태 저장
+                      if (!_saveId) {
+                        await _storage.remove('saved_email'); // 체크박스가 해제되면 저장된 이메일 삭제
+                      }
                     },
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
