@@ -45,7 +45,7 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: Icon(Icons.logout),
           onPressed: () {
-           //  authController.logout();
+            authController.logout();
           },
         )
       ],
