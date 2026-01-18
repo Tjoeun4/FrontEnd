@@ -10,24 +10,25 @@ import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes 
 import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
 /// --------------------------------------------------
-/// 인증 상태 및 인증 플로우를 총괄하는 컨트롤러
+/// 인증 상태 및 인증 플로우를 총괄하는 GetX 컨트롤러
 /// - Google 로그인 전체 흐름 제어
+/// - 자동 로그인(토큰 기반) 처리
 /// - 신규 / 기존 사용자 분기 처리
-/// - JWT 저장 및 로그인 상태 관리
+/// - JWT 토큰 저장 및 로그인 상태에 따른 화면 전환 · 관리
 /// --------------------------------------------------
 class AuthController extends GetxController { // GetxController는 상태 관리 + 로직처리 + 화면 전환을 담당. 이를 상속하겠다는건 GetxController 클래스의 모든 기능과 속성을 그대로 혹은 재정의해서 사용하겠다는 뜻
   /// Google OAuth 인증 처리 서비스
-  late final GoogleAuthService _googleAuthService;
+  late final GoogleAuthService _googleAuthService; // late는 나중에 초기화하겠다는 선언. 정리하면 처음 사용할 때 딱 한번만 값을 할당하고, 그 이후엔 절대 바꾸지 않겠다는 의미.
   late final AuthApiClient _authApiClient;
   late final GetStorage _storage;
   late final TokenService _tokenService;
 
-  var isLoading = false.obs;
+  var isLoading = false.obs; // .obs는 GetX의 메소드 - 해당 변수를 관찰하겠다는 뜻. 값이 바뀌면 자신(Obx) 내부에 있는 위젯만 즉시 새로고침
   var errorMessage = ''.obs;
 
   @override
-  void onInit() {
-    super.onInit();
+  void onInit() { // onInit() 메서드는 GetX 라이브러리의 컨트롤러(GetxController)가 생성될 때 가장 먼저 호출되는 초기화 메서드(플러터의 initState()와 비슷한 역할). AuthController(현재 클래스)가 메모리에 생성될 때 호출됨
+    super.onInit(); // 부모 클래스(GetXController)의 기본 초기화 로직을 먼저 실행
     _googleAuthService = Get.find<GoogleAuthService>(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
     _authApiClient = Get.find<AuthApiClient>();
     _storage = Get.find<GetStorage>();
@@ -35,30 +36,38 @@ class AuthController extends GetxController { // GetxController는 상태 관리
   }
 
   @override
-  void onReady() {
+  void onReady() { // onReady() 메서드는 화면이 다 준비되었으니 이제 본격적으로 프로그램을 돌려봐!라는 신호탄 역할. UI 렌더링이 완료된 후 호출됨. (전체적인 흐름 컨트롤러 생성 -> onInit() -> UI렌더링 -> onReady())
     super.onReady();
-    _checkLoginStatus();
+    _checkLoginStatus(); // 바로 밑 메서드 호출(자동 로그인 체크 및 화면 이동 시작).
   }
 
+  /// --------------------------------------------------
+  /// 자동 로그인 및 초기 화면 분기 로직
+  ///
+  /// - Access / Refresh Token 존재 여부 확인
+  /// - Refresh Token으로 Access Token 재발급 시도
+  /// - 성공 시 홈 화면 이동
+  /// - 실패 또는 토큰 없음 → 로그인 화면 이동
+  /// --------------------------------------------------
   Future<void> _checkLoginStatus() async {
-    // Check if both access and refresh tokens exist
+    // accessToken과 refreshToken의 존재 여부 체크
     final String? accessToken = _tokenService.getAccessToken();
     final String? refreshToken = _tokenService.getRefreshToken();
 
-    if (accessToken != null && refreshToken != null) {
+    if (accessToken != null && refreshToken != null) { // accessToken과 refreshToken이 있다면
       print('AuthController: Found existing tokens. Attempting auto-login...');
-      // Attempt to refresh token to validate and get a fresh access token
-      bool refreshed = await _tokenService.refreshToken();
+      // 토큰을 갱신하여 유효성을 확인하고 새로운 액세스 토큰을 발급받으려고 시도
+      bool refreshed = await _tokenService.refreshToken(); // 결과는 bool(백엔드에서의 인증이 성공하면 토큰 재발급 받은 후 저장 및 true 반환 / 실패 또는 만료 시 false 반환 및 모든 토큰 제거)
 
-      if (refreshed) {
+      if (refreshed) { // 토큰 재발급 완료 시 홈화면으로 이동
         print('AuthController: Auto-login successful via token refresh. Navigating to Home.');
         Get.offAllNamed(AppRoutes.HOME);
-      } else {
+      } else { // 토큰 재발급 실패(또는 만료) 시 다시 로그인 화면으로 이동
         print('AuthController: Token refresh failed. Clearing tokens and navigating to Login Selection.');
         await _tokenService.clearTokens();
         Get.offAllNamed(AppRoutes.LOGIN);
       }
-    } else {
+    } else { // accessToken과 refreshToken이 없다면 로그인 화면으로 이동
       print('AuthController: No existing tokens found. Navigating to Login Selection.');
       Get.offAllNamed(AppRoutes.LOGIN);
     }
