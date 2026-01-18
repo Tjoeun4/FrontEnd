@@ -322,4 +322,39 @@ class AuthApiClient extends GetxService {
       return AuthenticationResponse(error: '예상치 못한 오류가 발생했습니다: $e');
     }
   }
+
+  /// =================================================
+  /// 사용자 로그아웃 처리
+  /// - 백엔드에 로그아웃 요청 후 로컬 토큰 삭제
+  /// =================================================
+  Future<bool> logout() async {
+    try {
+      // 백엔드에 로그아웃 요청. Authorization 헤더는 Dio 인터셉터에서 자동으로 추가됨.
+      final response = await _dio.post(
+        '/v1/auth/logout', 
+      );
+
+      if (response.statusCode == 200) {
+        print('로그아웃 성공. 로컬 토큰 삭제.');
+        await _tokenService.clearTokens(); // 로컬 저장소에서 토큰 삭제
+        return true;
+      } else {
+        print('백엔드 로그아웃 실패: ${response.statusCode}');
+        return false;
+      }
+    } on dio.DioException catch (e) {
+      print('DioError in logout: ${e.response?.statusCode} - ${e.message}');
+      if (e.response?.statusCode == 401) {
+        // 이미 토큰이 만료되었거나 유효하지 않아 401을 받았다면, 로컬 토큰을 삭제하고 로그인 화면으로 이동.
+        print('401 Unauthorized during logout. Clearing local tokens.');
+        await _tokenService.clearTokens();
+        Get.offAllNamed(AppRoutes.LOGIN);
+        return true; // 사용자 입장에서는 로그아웃 처리된 것으로 간주
+      }
+      return false;
+    } catch (e) {
+      print('Unexpected error in logout: $e');
+      return false;
+    }
+  }
 }
