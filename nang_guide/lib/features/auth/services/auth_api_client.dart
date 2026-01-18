@@ -46,7 +46,7 @@ class GoogleAuthenticationResponse {
 /// - Google 로그인, 이메일 인증, 회원가입 처리
 /// ---------------------------------------------
 class AuthApiClient extends GetxService {
-  final dio.Dio _dio = Get.find<dio.Dio>();
+  final dio.Dio _dio = Get.find<dio.Dio>(); // Base URL이 http://10.0.2.2:8080/api 로 설정된채로 가져와짐
   final GetStorage _storage = Get.find<GetStorage>();
   final TokenService _tokenService = Get.find<TokenService>();
 

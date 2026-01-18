@@ -6,6 +6,11 @@ import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient import 추가
 import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 
+/// ==============================
+/// Google 회원가입 후 추가 정보 입력 화면
+/// - Google 로그인으로 받은 이메일, 닉네임(displayName)을 전달받아
+/// - 추가 사용자 정보를 입력받는 StatefulWidget
+/// ==============================
 class GoogleSignUpScreen extends StatefulWidget {
   final String email;
   final String displayName;
@@ -19,19 +24,36 @@ class GoogleSignUpScreen extends StatefulWidget {
   @override
   State<GoogleSignUpScreen> createState() => _GoogleSignUpScreenState();
 }
-
+/// ==============================
+/// GoogleSignUpScreen의 상태 관리 클래스
+/// - 입력 폼 상태
+/// - 텍스트 컨트롤러
+/// - 닉네임 중복 확인, 주소 검색, 회원가입 처리 로직 포함
+/// ==============================
 class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
+  // ------------------------------
+  // Form 전체 유효성 검사용 Key
+  // ------------------------------
   final _formKey = GlobalKey<FormState>();
+  // ------------------------------
+  // Auth API Client (GetX DI)
+  // - 닉네임 중복 체크
+  // - 지역 코드 조회 등 서버 통신 담당
+  // ------------------------------
   final AuthApiClient _apiClient = Get.find<AuthApiClient>(); // AuthApiClient 추가
 
-  // Controllers
+  // ==============================
+  // 입력 필드용 TextEditingController 모음
+  // ==============================
   late final TextEditingController _nicknameController;
   final _addressController = TextEditingController();
   final _detailAddressController = TextEditingController();
   final _ageController = TextEditingController(); // 나이 컨트롤러 추가
   final _neighborhoodIdController = TextEditingController(); // 지역 코드 컨트롤러 추가
 
-  // State
+  // ==============================
+  // 화면 상태(State) 변수들
+  // ==============================
   bool _isNicknameChecked = false;
   String? _selectedGender; // 성별 추가
   final List<String> _genders = ['남자', '여자']; // 성별 목록 추가
@@ -40,12 +62,20 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
   String _zonecode = '';
   String _roadAddress = '';
 
+  // ==============================
+  // 초기화
+  // - Google 계정 displayName을 기본 닉네임으로 세팅
+  // ==============================
   @override
   void initState() {
     super.initState();
     _nicknameController = TextEditingController(text: widget.displayName);
   }
 
+  // ==============================
+  // 메모리 정리
+  // - TextEditingController dispose
+  // ==============================
   @override
   void dispose() {
     _nicknameController.dispose();
@@ -56,6 +86,11 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     super.dispose();
   }
 
+  // ==============================
+  // 닉네임 중복 확인
+  // - 서버에 닉네임 중복 여부 요청
+  // - 결과에 따라 SnackBar 표시 및 상태 갱신
+  // ==============================
   Future<void> _checkNickname() async {
     if (_nicknameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,6 +119,12 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     }
   }
 
+  // ==============================
+  // 주소 검색
+  // - AddressSearchPage로 이동
+  // - 선택한 주소에서 시군구를 추출해 지역 코드 조회
+  // - 주소 및 지역 코드 상태 업데이트
+  // ==============================
   void _searchAddress() async {
     final result = await Navigator.push(
       context,
@@ -118,6 +159,12 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     }
   }
 
+  // ==============================
+  // 회원가입 최종 제출
+  // - 폼 검증
+  // - 닉네임 체크, 나이, 성별, 주소 여부 확인
+  // - Google 회원가입 완료 API 호출
+  // ==============================
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (!_isNicknameChecked) {
@@ -175,6 +222,11 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
     }
   }
 
+  // ==============================
+  // UI 구성
+  // - 입력 폼 (닉네임, 성별, 나이, 주소 등)
+  // - 가입 완료 버튼
+  // ==============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -302,7 +354,10 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
       ),
     );
   }
-
+  // ==============================
+  // 공통 TextFormField 빌더
+  // - 아이콘, 라벨, 검증 로직을 공통화
+  // ==============================
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -336,7 +391,10 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
       ),
     );
   }
-
+  // ==============================
+  // 공통 DropdownFormField 빌더
+  // - 성별 선택 등에 사용
+  // ==============================
   Widget _buildDropdown(
     String? value,
     List<String> items,
@@ -365,7 +423,9 @@ class _GoogleSignUpScreenState extends State<GoogleSignUpScreen> {
       ),
     );
   }
-
+  // ==============================
+  // 작은 버튼 위젯 (닉네임 중복 체크용)
+  // ==============================
   Widget _buildSmallButton(String text, VoidCallback? onPressed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
