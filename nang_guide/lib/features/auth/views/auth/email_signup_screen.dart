@@ -1,11 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'address_search_page.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
-import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
+
+import './address_search_page.dart';
+import './welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
 /// 이메일 기반 회원가입 화면
 /// - 이메일 인증

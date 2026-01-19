@@ -1,19 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../controllers/auth_controller.dart';
-import './../../auth/views/components/bottom_nav_bar.dart';
-
-
-import '../controllers/auth_controller.dart';
-import './../../auth/views/components/bottom_nav_bar.dart';
-import './../../auth/views/email_login_screen.dart';
-import './../../auth/views/google_signup_screen.dart';
-import './../../auth/services/google_auth_service.dart';
-
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../controllers/auth_controller.dart';
+import './email_login_screen.dart';
 import 'email_signup_screen.dart';
 
 class LoginSelectionScreen extends StatelessWidget {
@@ -44,7 +35,8 @@ class LoginSelectionScreen extends StatelessWidget {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
-            ),Text(
+            ),
+            Text(
               '냉가이드',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -54,7 +46,6 @@ class LoginSelectionScreen extends StatelessWidget {
               ),
             ),
             const Spacer(), // Pushes everything below it to the bottom
-
             // 2. 구글 버튼 (요청하신 부분)
             SocialLoginButton(
               text: '구글로 시작',
@@ -66,9 +57,14 @@ class LoginSelectionScreen extends StatelessWidget {
                 width: 35,
               ),
               isGoogle: true,
-              onPressedCallback: () async { // 구글로 시작 버튼을 누르면 실행될 함수
-                final AuthController authController = Get.find<AuthController>(); // AuthController의 인스턴스를 가져와 authController 변수에 넣음
-                await authController.signInWithGoogle(); // 구글 로그인을 시도하는 함수 실행(idToken(구글 토큰)을 백엔드와 통신하여 결과에 따라 신규 가입/로그인 성공으로 분기).
+              onPressedCallback: () async {
+                // 구글로 시작 버튼을 누르면 실행될 함수
+                final AuthController authController =
+                    Get.find<
+                      AuthController
+                    >(); // AuthController의 인스턴스를 가져와 authController 변수에 넣음
+                await authController
+                    .signInWithGoogle(); // 구글 로그인을 시도하는 함수 실행(idToken(구글 토큰)을 백엔드와 통신하여 결과에 따라 신규 가입/로그인 성공으로 분기).
                 // Optionally, observe authController.errorMessage and authController.isLoading
                 // 로그인 과정 중 오류가 발생했다면 화면 하단에 스낵바에 어떤 에러가 발생했는지 표시
                 if (authController.errorMessage.isNotEmpty && context.mounted) {
@@ -82,7 +78,8 @@ class LoginSelectionScreen extends StatelessWidget {
             // 3. 이메일 가입 버튼 (진회색)
             SocialLoginButton(
               text: '이메일로 가입',
-              backgroundColor: const Color(0xFF424242), // 진회색
+              backgroundColor: const Color(0xFF424242),
+              // 진회색
               textColor: Colors.white,
               iconWidget: Icon(Icons.email_outlined, size: 28),
               onPressedCallback: () {
@@ -107,7 +104,8 @@ class LoginSelectionScreen extends StatelessWidget {
                 backgroundColor: Colors.white,
                 textColor: Colors.black,
                 iconWidget: Icon(Icons.email, size: 28),
-                isGoogle: true, // 테두리를 그리기 위해 true로 설정
+                isGoogle: true,
+                // 테두리를 그리기 위해 true로 설정
                 onPressedCallback: () {
                   print('이메일 로그인 버튼 클릭됨');
                   Get.to(() => const EmailLoginScreen());

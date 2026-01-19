@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../routes/app_routes.dart';
-import '/features/auth/views/email_signup_screen.dart';
-import './bottom_nav_screen/home_screen.dart';
-import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient 임포트
-import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // AuthenticationResponse 모델 임포트
 import 'package:get_storage/get_storage.dart'; // GetStorage 임포트
+import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // AuthenticationResponse 모델 임포트
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient 임포트
+
+import '../../routes/app_routes.dart';
+import './email_signup_screen.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -74,8 +74,8 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         // 로그인 성공 시 토큰 저장 및 홈 화면으로 이동
         await _storage.write('jwt_token', authResponse.accessToken);
         await _storage.write('refresh_token', authResponse.refreshToken);
-        await _storage.write('user_id', authResponse.userId); 
-        
+
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('로그인 성공!')),
         );

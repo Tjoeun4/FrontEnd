@@ -21,10 +21,10 @@ import './../views/bottom_nav_screen/community_screen.dart';
 import './../views/bottom_nav_screen/ledger_screen.dart';
 import './../views/bottom_nav_screen/profile_screen.dart';
 import './../views/bottom_nav_screen/recommend_screen.dart';
-import './../views/email_signup_screen.dart';
-import './../views/email_login_screen.dart';
+import '../views/auth/email_signup_screen.dart';
+import '../views/auth/email_login_screen.dart';
 import './../views/splash_screen.dart';
-import './../views/login_selection_screen.dart';
+import '../views/auth/login_selection_screen.dart';
 
 class AppRoutes {
   static const SPLASH = '/';
