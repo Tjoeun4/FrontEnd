@@ -1,4 +1,7 @@
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/services/chat_service.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
 import 'package:honbop_mate/features/auth/views/dialog/gonggu_dialog.dart';
 import './../../../../features/auth/services/api_service.dart';
 import './../../models/chat_message_request.dart';
@@ -8,14 +11,23 @@ class CommunityController extends GetxController {
   // final AuthService _authService = AuthService();
 
   final ApiService apiService;
+  
+
+  var isLoading = false.obs; // .obs는 GetX의 메소드 - 해당 변수를 관찰하겠다는 뜻. 값이 바뀌면 자신(Obx) 내부에 있는 위젯만 즉시 새로고침
+  var errorMessage = ''.obs;
+
+  late final ChatService _chatService;
+  late final TokenService _tokenService;
 
   CommunityController(this.apiService);
+  final RxString selectedType = 'PERSONAL'.obs;
 
   @override
   onInit() {
     super.onInit();
     print('🎬 CommunityController 생성 및 onInit 실행');
-    fetchMyRooms(1); // 테스트를 위해 1번 유저로 조회 시도
+    _chatService = Get.find<ChatService>(); // 채팅서비스를 호출하기위함
+    _tokenService = Get.find<TokenService>(); // TokenService 인스턴스 가져오기 why? 리프레쉬 없으면 쫓아낼 계획
     // _fetchMessageist1();
     // _checkAuthStatus();
   }
@@ -28,6 +40,48 @@ class CommunityController extends GetxController {
   final myUId = ''.obs;
 
   final myRooms = <ChatMessageRequest>[].obs;
+
+  final GetStorage _storage = Get.find<GetStorage>(); // GetStorage 인스턴스
+  
+  // ✅ 채팅방 생성 메서드
+  // =================================================
+  Future<int?> onCreateRoom({
+  required String roomName,
+  required String type,
+  int? postId,
+}) async {
+  final int targetId = GetStorage().read('target_id');
+
+  // 🔍 입력 파라미터 로그
+  print('========== onCreateRoom CALLED ==========');
+  print('userId  : $targetId (${targetId.runtimeType})');
+  print('roomName: "$roomName" (${roomName.runtimeType})');
+  print('type    : "$type" (${type.runtimeType})');
+  print('postId  : ${postId ?? 0} (${(postId ?? 0).runtimeType})');
+  print('=========================================');
+
+  if (roomName.trim().isEmpty) {
+    Get.snackbar('오류', '방 이름을 입력하세요');
+    return null;
+  }
+
+  final bool success = await _chatService.createRoom(
+    targetId,
+    roomName,
+    type,
+    postId ?? 0,
+  );
+
+  print('createRoom result: $success');
+
+  if (success) {
+    Get.back();
+    Get.snackbar('성공', '방 생성 완료');
+  } else {
+    Get.snackbar('실패', '방 생성 실패');
+    return null;
+  }
+}
 
   // ✅ 내 채팅방 목록 가져오기 (G
   // Future<void> _fetchMessageist1() async {
@@ -50,15 +104,60 @@ class CommunityController extends GetxController {
   //   }
   // }
 
-  // // ✅ 앱 실행 시 토큰 검증 및 자동 로그인 처리
-  // Future<bool> checkAuthStatus() async {
-  //   bool isValid = await _tokenService.refreshToken();
-  //   isAuthenticated.value = isValid;
-  //   Get.offAllNamed(AppRoutes.LOGIN);
-  //   return isValid;
-  // }
-  // 서버에서 받은 채팅방 목록을 저장할 변수
-  
+
+  // 채팅방을 생성하는 메서드
+  // chatService -> createRoom 메서드가 이미 존재함
+  // 1. 먼저 값에 스프링 시큐리티때문에 리프레쉬 토큰이 있는지 확인해야됨
+  // 2. 그 후에 createRoom을 호출해야됨
+  // 3. createRoom이 성공적으로 방을 만들면, 방 목록을 다시 불러와야됨
+  // 4. 방 목록을 불러오는 메서드는 fetchMyRooms로 이미 존재함 불러올 예정임
+  // 5. 방을 만들 때, 개인방인지 공구방인지 가족방인지 타입을 넘겨줘야됨 ex) GROUP_BUY, PERSONAL, FAMILY
+  // 6. 모든 방에는 postId도 같이 넘겨줘야됨
+  // 7. createRoom 메서드는 roomName, type, postId를 파라미터로 받음
+  // 8. createRoom 메서드는 성공적으로 방을 만들면 true를 반환하고, 실패하면 false를 반환함
+  // =================================================
+  Future<void> CreateChatRoom() async { 
+    isLoading(true); // 로딩 중 상태로 변경
+    errorMessage('');
+    final String? accessToken = _tokenService.getAccessToken(); // 로컬 저장소에 저장된 accessToken을 가져옴
+    
+    if(accessToken == null) {
+      errorMessage('토큰이 없습니다.');
+      isLoading(false);
+      return;
+    } else {
+
+  //   try {
+  //   final roomId = await _chatService.createRoom(
+  //     userId: userId,
+  //     postId: postId,
+  //   );
+
+  //   print('✅ 방 생성 완료 (roomId: $roomId)');
+  //   await fetchMyRooms(userId);
+  // } catch (e) {
+  //   print('❌ 그룹방 생성 실패: $e');
+  // } finally {
+  //   isLoading(false);
+  // }  
+  }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // ✅ 내 채팅방 목록 가져오기 (상세 로그) Dto(ChatRoomRequest) -> getMyRooms
   Future<void> fetchMyRooms(int userId) async {

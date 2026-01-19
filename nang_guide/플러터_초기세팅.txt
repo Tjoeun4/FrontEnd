@@ -1,0 +1,17 @@
+1. 플러터 초기세팅
+    1. 해당 파일 폴더 들어간 후 터미널에 flutter pub get 입력
+    2. 빨간줄이 다 없어지지 않으면, flutter clean 사용
+    3. flutter clean -> flutter pub get -> flutter upgrade // upgrade 는 특이사항 (패키지 : << {이런 형식을 최신화 시켜줌})
+    4. 에뮬레이터 켜진 상태로 flutter run 해야지 에뮬레이터가 켜지는 상황
+    5. 안켜진 상태로 chrome로 하고 싶다면 flutter run -d chrome << 로 하면 가능 chrome 대신 edge, explore 가능
+    
+
+2. 플러터 확장할 파일들
+    1. Auto Import - ES, TS, JSX .. << 이런거
+    2. Awesome Flutter Snippets << 
+    3. Dart
+    4. Error Lens << 빨간줄 원인 알려줌 영어로
+    5. Flutter
+    6. Flutter Tree << 플러터 뷰 구조를 알려주는 형식
+    7. Flutter Widget Snippets << 마찬가지 뷰 구조 도와줌
+    8. open in browser << 플러터 웹으로 열어주는 형식

@@ -1,12 +1,18 @@
   import 'package:flutter/material.dart';
   import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/community_controller.dart';
+import 'package:honbop_mate/features/auth/controllers/post_controller.dart';
+import 'package:honbop_mate/features/auth/services/chat_service.dart';
   // import '../../controllers/auth_controller.dart';
 
 void GongguDialog(BuildContext context) { 
+  final _formKey = GlobalKey<FormState>();
   final communityController = Get.find<CommunityController>();
-  final TextEditingController nameController = TextEditingController();
-  RxString selectedType = 'PERSONAL'.obs; 
+  final _roomnameController = TextEditingController(); // room name 입력을 위한 컨트롤러 선언
+  final postController = TextEditingController();
+  
+  late final postId = '';
+  final RxString selectedType = 'PERSONAL'.obs;
 
   showDialog(
     context: context, // 이제 Get.context! 대신 받은 context를 쓰면 됩니다.
@@ -23,7 +29,7 @@ void GongguDialog(BuildContext context) {
               const SizedBox(height: 15),
               
               TextField(
-                controller: nameController,
+                controller: _roomnameController,
                 decoration: const InputDecoration(
                   hintText: "방 이름 (또는 음식 이름)",
                   border: OutlineInputBorder(),
@@ -37,6 +43,7 @@ void GongguDialog(BuildContext context) {
               // 3. 드롭다운 버튼 설정
               DropdownButton<String>(
                 value: selectedType.value,
+             
                 isExpanded: true,
                 items: const [
                   DropdownMenuItem(value: 'PERSONAL', child: Text("개인 채팅")),
@@ -63,17 +70,13 @@ void GongguDialog(BuildContext context) {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () async {
-                        print("최종 선택된 타입: ${selectedType.value}");
-                        
-                        await communityController.createPersonalRoom(
-                          1, 
-                          nameController.text.trim(),
-                          selectedType.value, 
-                        );
-                        Navigator.pop(context);
-                      },
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF8000)),
+                        onPressed: () => communityController.onCreateRoom(
+                          roomName: _roomnameController.text,
+                          type: selectedType.value,
+                          postId: 0,
+                        ),
+                      // onPressed: () => chatService.CreateRoom().then(
                       child: const Text("예", style: TextStyle(color: Colors.white)),
                     ),
                   ),
