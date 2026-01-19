@@ -14,12 +14,21 @@ class ChatListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 1. 화면이 열릴 때 내 채팅방 목록을 서버에서 불러온다 (userId는 현재 로그인 유저 ID로 교체 필요)
     // 백엔드 ChatRoomController의 @GetMapping("/rooms") 호출
-    controller.fetchMyRooms(20260101);
+
+    /*
+    // 화면 로드 시 데이터 페치 (예시 ID: 1)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchMyRooms(1);
+    });
+     */
 
     return Scaffold(
       appBar: AppBar(
           title: const Text("채팅 목록",
-              style: TextStyle(color: Colors.black)
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold
+              )
           ),
           backgroundColor: Colors.white,
           elevation: 0.5,
@@ -29,58 +38,74 @@ class ChatListScreen extends StatelessWidget {
           ),
       ),
       body: Obx(() {
-        // 2. 로딩 상태 처리
-        if(controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+        if(controller.isLoading.value) return const Center(child: CircularProgressIndicator());
+        // if(controller.chatRooms.isEmpty) return const Center(child: Text("참여 중인 채팅방이 없습니다."));
 
-        // 3. 데이터가 없을 경우 처리
-        if(controller.chatRooms.isEmpty) {
-          return const Center(
-            child: Text("참여 중인 채팅방이 없습니다.",
-            style: TextStyle(color: Colors.grey)
-            ),
-          );
-        }
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: controller.chatRooms.length,
+          itemBuilder: (context, index) {
+            final room = controller.chatRooms[index];
 
-        // 4. 실제 채팅방 목록 렌더링
-        return ListView.separated(
-            itemCount: controller.chatRooms.length,
-            separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFEEEEEE)),
-            itemBuilder: (context, index) {
-              final room = controller.chatRooms[index];
+            return GestureDetector(
+              // onTap: () => Get.to(() => ChatScreen(roomId: room.roomId, roomName: room.roomName)),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 2, blurRadius: 10)
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // 왼쪽 아이콘 영역
+                    _buildRoomIcon(room.type),
+                    const SizedBox(width: 15),
 
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: CircleAvatar(
-                  radius: 25,
-                  backgroundColor: _getRoomColor(room.type),
-                  child: Icon(_getRoomIcon(room.type), color: Colors.white),
+                    // 중간 텍스트 영역
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(room.roomName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(height: 5),
+                          Text(room.lastMessage ?? "", style: const TextStyle(color: Colors.grey, fontSize: 13), overflow: TextOverflow.ellipsis),
+                        ],
+                      ),
+                    ),
+
+                    // 오른쪽 정보 영역 (인원수/안읽은 개수)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (room.type == ChatRoomType.GROUP_BUY)
+                          const Text("49/50명", style: TextStyle(color: Colors.grey, fontSize: 11)),
+                        const SizedBox(height: 5),
+                        if (room.unreadCount > 0)
+                          Text("+${room.unreadCount}", style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
+                    ),
+                  ],
                 ),
-                title: Text(
-                  room.roomName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                subtitle: Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    _getRoomDescription(room.type),
-                    style: const TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                ),
-                // 백엔드 DTO에 unreadCount를 포함시켰다면 아래 trailing에 표시 가능
-                onTap: () {
-                  // 5. 특정 방 클릭 시 해당 방의 ID를 가지고 대화방으로 이동
-                  // 이동하면서 해당 방의 과거 내역 로드 및 소켓 연결 수행
-                  Get.to(() => ChatScreen(
-                    roomId: room.roomId,
-                    roomName: room.roomName
-                  ));
-                }, // 실제 채팅방으로 이동
-              );
-            },
+              ),
+            );
+          },
         );
       }),
+    );
+  }
+
+  Widget _buildRoomIcon(ChatRoomType type) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+      child: Icon(
+        type == ChatRoomType.GROUP_BUY ? Icons.groups : Icons.person,
+        color: Colors.black87,
+      ),
     );
   }
 

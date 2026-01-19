@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
-
 import '../../controllers/auth_controller.dart';
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool centerTitle;
+  final bool showLogoutAction; // 로그아웃 아이콘 표시 여부 추가
   final AuthController authController = Get.find<AuthController>();
 
   AppNavBar({
     Key? key,
     required this.title,
     this.centerTitle = false,
+    this.showLogoutAction = true, // 기본값은 true
   }) : super(key: key);
 
   @override
@@ -26,6 +27,7 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
           )),
       centerTitle: centerTitle,
       backgroundColor: Colors.white,
+      elevation: 0, // 하단 구분선 제거 (디자인에 맞춰 조정)
       // 원하는 색상 설정
       actions: [
         IconButton(
@@ -42,12 +44,13 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
             Get.to(() => ChatListScreen());
           },
         ),
-        IconButton(
-          icon: Icon(Icons.logout),
-          onPressed: () {
-           //  authController.logout();
-          },
-        )
+        if(showLogoutAction)
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () {
+             //  authController.logout();
+            },
+          )
       ],
     );
   }

@@ -1,18 +1,25 @@
 import 'dart:convert';
 
 // 1) 채팅방 유형 선택
-enum ChatRoomType { GROUP_BUY, PERSONAL, FAMILY}
+enum ChatRoomType {GROUP_BUY, PERSONAL, FAMILY}
 
 // 2) 채팅방 (백엔드 ChatRoomResponse.java 기반)
 class ChatRoom {
   final int roomId;
   final String roomName;
   final ChatRoomType type;
+  // 임시 구현
+  final String? lastMessage;
+  final String? lastMessageTime;
+  final int unreadCount;
 
   ChatRoom({
     required this.roomId,
     required this.roomName,
     required this.type,
+    this.lastMessage,
+    this.lastMessageTime,
+    this.unreadCount = 0,
   });
 
   // JSON 데이터를 Dart 객체로 변환시키기 (백엔드가 응답할 수 있게)
@@ -21,10 +28,17 @@ class ChatRoom {
       roomId: json['roomId'] as int,
       roomName: json['roomName'] as String,
       // String으로 들어오는 타입을 enum으로 바꾸기
-      type: ChatRoomType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => ChatRoomType.PERSONAL,
-      ),
+      type: ChatRoomType
+          .values
+          .firstWhere((e) => e
+          .toString()
+          .split('.')
+          .last == json['type']),
+
+      // 서버 응답이 없으면 임시 데이터로
+      lastMessage: json['lastMessage'],
+      lastMessageTime: json['lastMessageTime'],
+      unreadCount: json['unreadCount'] ?? 0,
     );
   }
 }
