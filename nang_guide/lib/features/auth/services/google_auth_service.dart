@@ -27,6 +27,7 @@ class GoogleAuthService {
   GoogleSignInAccount? _currentUser;
   // 외부에서 현재 사용자 정보 접근(getter를 통해 외부에서는 currentUser라는 이름으로 접근함. GoogleSignInAccount타입을 반환하는 getter 메서드 currentUser(읽기 전용))
   GoogleSignInAccount? get currentUser => _currentUser; // 예시 : 외부에서 authService.currentUser?.displayName; 이런식으로 접근
+
   /// 구글 로그인 수행
   /// 로그인 성공 시 _currentUser에 저장, 토큰/정보 출력
   /// 실패 시 에러 핸들링
@@ -41,7 +42,7 @@ class GoogleAuthService {
 
       if (googleUser != null) {
         _currentUser = googleUser;
-        // 로그인된 googleUser로부터 인증 정보(idToken, accessToken)을 가져와 auth 변수(signInWithGoogle 메서드 안에만 있는 지역변수)에 저장.
+        // 로그인된 googleUser로부터 인증 정보(idToken)을 가져와 auth 변수(signInWithGoogle 메서드 안에만 있는 지역변수)에 저장.
         final GoogleSignInAuthentication auth = await googleUser.authentication;
 
         print('로그인 성공!');

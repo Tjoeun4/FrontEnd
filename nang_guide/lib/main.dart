@@ -28,14 +28,12 @@ import 'features/auth/services/google_auth_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  // GoogleSignIn 초기화 (한 번만!)
-  await GoogleAuthService.initialize();
-  // await _initializeNaverMap();
+  await GoogleAuthService.initialize(); // GoogleSignIn 초기화 (한 번만!)
 
+  // await _initializeNaverMap();
   // Get.put(AuthController(), permanent: true);
   // Get.put(TokenService(), permanent: true);
   // Get.put(ApiService(), permanent: true);
-
   runApp(MyApp());
 }
 

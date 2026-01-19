@@ -59,8 +59,8 @@ class AuthController extends GetxController {
   /// --------------------------------------------------
   Future<void> _checkLoginStatus() async {
     // accessToken과 refreshToken의 존재 여부 체크
-    final String? accessToken = _tokenService.getAccessToken();
-    final String? refreshToken = _tokenService.getRefreshToken();
+    final String? accessToken = _tokenService.getAccessToken(); // 로컬 저장소에 저장된 accessToken을 가져옴
+    final String? refreshToken = _tokenService.getRefreshToken(); // 로컬 저장소에 저장된 refreshToken을 가져옴
 
     if (accessToken != null && refreshToken != null) {
       // accessToken과 refreshToken이 있다면
