@@ -3,6 +3,7 @@ import '../../routes/app_routes.dart';
 
 class NavController extends GetxController {
   final selectedIndex = 0.obs;
+  var isNotificationOn = true.obs; // 알림 상태 변수 추가
 
   void changeTab(int index) {
     if (selectedIndex.value == index) return;
