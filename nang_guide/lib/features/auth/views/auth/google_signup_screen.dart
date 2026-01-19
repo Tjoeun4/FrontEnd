@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
-import 'address_search_page.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient import 추가
-import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
+import 'package:hugeicons/hugeicons.dart';
+
+import 'address_search_page.dart';
 
 /// ==============================
 /// Google 회원가입 후 추가 정보 입력 화면

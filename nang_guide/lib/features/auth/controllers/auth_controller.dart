@@ -1,5 +1,5 @@
 // FrontEnd/nang_guide/lib/features/auth/controllers/auth_controller.dart
-import 'package:honbop_mate/features/auth/views/google_signup_screen.dart';
+import 'package:honbop_mate/features/auth/views/auth/google_signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -7,7 +7,7 @@ import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
 import 'package:honbop_mate/features/auth/services/token_service.dart'; // TokenService import
 import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
-import 'package:honbop_mate/features/auth/views/welcome_dialog.dart'; // welcome_dialog.dart import 추가
+import 'package:honbop_mate/features/auth/views/auth/welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
 /// --------------------------------------------------
 /// 인증 상태 및 인증 플로우를 총괄하는 GetX 컨트롤러
