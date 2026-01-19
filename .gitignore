@@ -67,3 +67,6 @@ lib/generated_plugin_registrant.dart
 
 # End of https://www.toptal.com/developers/gitignore/api/flutter
 .env
+nang_guide/GEMINI.md
+/nang_guide/.idea
+/nang_guide/.idea/libraries

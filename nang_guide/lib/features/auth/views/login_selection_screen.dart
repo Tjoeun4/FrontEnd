@@ -37,30 +37,24 @@ class LoginSelectionScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30), // Spacing between image and text
             const Text(
-              '혼밥 메이트를 찾는 가장 쉬운 방법',
+              '냉장고를 지키는 나의 냉장고 파트너',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
+            ),Text(
+              '냉가이드',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 35,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const Spacer(), // Pushes everything below it to the bottom
-            // 1. 카카오 버튼
-            SocialLoginButton(
-              text: '카카오톡으로 시작',
-              backgroundColor: const Color(0xFFFFE812),
-              textColor: Colors.black,
-              iconWidget: Image.asset(
-                'assets/kakao_login.png',
-                height: 50,
-                width: 50,
-              ),
-              onPressedCallback: () {
-                print('카카오톡으로 시작 버튼 클릭됨');
-              },
-            ),
-            const SizedBox(height: 12), // 버튼 사이 간격
+
             // 2. 구글 버튼 (요청하신 부분)
             SocialLoginButton(
               text: '구글로 시작',
@@ -72,12 +66,11 @@ class LoginSelectionScreen extends StatelessWidget {
                 width: 35,
               ),
               isGoogle: true,
-              onPressedCallback: () async {
-                final AuthController authController = Get.find<AuthController>();
-                await authController.signInWithGoogle();
-
+              onPressedCallback: () async { // 구글로 시작 버튼을 누르면 실행될 함수
+                final AuthController authController = Get.find<AuthController>(); // AuthController의 인스턴스를 가져와 authController 변수에 넣음
+                await authController.signInWithGoogle(); // 구글 로그인을 시도하는 함수 실행(idToken(구글 토큰)을 백엔드와 통신하여 결과에 따라 신규 가입/로그인 성공으로 분기).
                 // Optionally, observe authController.errorMessage and authController.isLoading
-                // to show feedback to the user on this screen.
+                // 로그인 과정 중 오류가 발생했다면 화면 하단에 스낵바에 어떤 에러가 발생했는지 표시
                 if (authController.errorMessage.isNotEmpty && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(authController.errorMessage.value)),
@@ -85,7 +78,6 @@ class LoginSelectionScreen extends StatelessWidget {
                 }
               },
             ),
-            // ... 기존 카카오, 구글 버튼 아래에 추가
             const SizedBox(height: 12), // 버튼 사이 간격
             // 3. 이메일 가입 버튼 (진회색)
             SocialLoginButton(

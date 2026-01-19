@@ -1,29 +1,32 @@
 import 'dart:convert';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
 import 'package:http/http.dart' as http;
 import './../models/spring_response_model.dart';
 // import '/services/token_service.dart';
 import '../controllers/auth_controller.dart';
 
 class ApiService {
-  final AuthController _authController = Get.find<AuthController>();
-  // final TokenService _tokenService = Get.find<TokenService>();
+  // final AuthController _authController = Get.find<AuthController>();
+  final TokenService _tokenService = Get.find<TokenService>();
   var count = 0;
 
   Future<Map<String, dynamic>> getRequest(String endpoint) async {
-    // vra token = await _tokenService.loadToken();
-    // if (token == null) throw Exception("No token found");
-    final url = "우리가 들어갈 API 주소 입니다./$endpoint";
+    var token = _tokenService.getAccessToken();
+    if (token == null) throw Exception("No token found");
+    final url = "http://10.0.2.2:8080/$endpoint";
 
     final springResponse = await http.get(
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        // 'accesstoken': token.accessToken
+        "Authorization": "Bearer $token",
       },
     );
 
-    final SpringResponse response = SpringResponse.fromJson(jsonDecode(utf8.decode(springResponse.bodyBytes)));
+    final SpringResponse response = SpringResponse.fromJson(
+      jsonDecode(utf8.decode(springResponse.bodyBytes)),
+    );
 
     // if (response.statusCode == 401) {
     //   bool refreshed = await _authController.handle401();
@@ -34,22 +37,27 @@ class ApiService {
     return response.body;
   }
 
-  Future<Map<String, dynamic>> postRequest(String endpoint, Map<String, dynamic> body) async {
-    // var token = await _tokenService.loadToken();
-    // if (token == null) throw Exception("No token found");
-    final url = "우리가들어갈엔드포인트/$endpoint";
+  Future<Map<String, dynamic>> postRequest(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
+    var token = _tokenService.getAccessToken();
+    if (token == null) throw Exception("No token found");
+    final url = "http://10.0.2.2:8080/$endpoint";
 
-//
+    //
     final springResponse = await http.post(
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-       //  'accesstoken': token.accessToken
+        "Authorization": "Bearer $token",
       },
       body: jsonEncode(body),
     );
 
-    final SpringResponse response = SpringResponse.fromJson(jsonDecode(utf8.decode(springResponse.bodyBytes)));
+    final SpringResponse response = SpringResponse.fromJson(
+      jsonDecode(utf8.decode(springResponse.bodyBytes)),
+    );
 
     // if (response.statusCode == 401) {
     //   bool refreshed = await _authController.handle401();

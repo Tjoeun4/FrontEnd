@@ -17,12 +17,14 @@ dependencies:
   url_launcher: ^6.3.0
   stomp_dart_client: ^3.0.1
   intl: ^0.20.2
+  image_picker: ^1.0.7
   hugeicons:
   get:
   google_maps_flutter: ^2.14.0
   # daum_postcode_search: ^1.0.0
   webview_flutter: ^4.8.0
   http:
+  image_picker:
 
 dev_dependencies:
   flutter_test:
@@ -33,7 +35,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
     - assets/
     - assets/address_search.html
 

@@ -5,5 +5,6 @@ class NavBinding extends Bindings {
   @override
   void dependencies() {
     Get.put(NavController(), permanent: true);
+    
   }
 }

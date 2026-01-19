@@ -44,13 +44,12 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
             Get.to(() => ChatListScreen());
           },
         ),
-        if(showLogoutAction)
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-             //  authController.logout();
-            },
-          )
+        IconButton(
+          icon: Icon(Icons.logout),
+          onPressed: () {
+            authController.logout();
+          },
+        )
       ],
     );
   }
