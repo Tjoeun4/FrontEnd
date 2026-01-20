@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart';
 import '../../controllers/bottom_nav/nav_controller.dart';
 import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
@@ -49,6 +50,9 @@ class ProfileScreen extends StatelessWidget {
               _buildMenuSection([
                 _buildMenuItem("냉장고 음식 리스트 보기"),
                 _buildMenuItem("유통기한 확인하기"),
+                _buildMenuItem("보유 조미료 관리", onTap: () {
+                  showSeasoningSurveyDialog(context);
+                }),
                 _buildMenuItem("식료품 공구 내 게시글 관리"),
                 _buildMenuItem("내 동네 설정"),
                 _buildMenuItem("관심 목록") // 관심 목록 = 내가 찜한 것들을 모아둔 곳

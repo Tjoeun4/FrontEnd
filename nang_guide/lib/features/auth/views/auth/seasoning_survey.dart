@@ -99,7 +99,7 @@ void showSeasoningSurveyDialog(BuildContext context) {
                   Navigator.pop(context);
                 },
                 child: const Text(
-                  '선택 완료',
+                  '저장',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
