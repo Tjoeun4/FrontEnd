@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 
 void showSeasoningSurveyDialog(BuildContext context) {
+  final GetStorage _storage = Get.find<GetStorage>();
+  
   // 모든 조미료를 1개씩 개별 항목으로 분리
   final List<Map<String, dynamic>> seasonings = [
     {"name": "소금", "isSelected": false},
@@ -23,6 +26,17 @@ void showSeasoningSurveyDialog(BuildContext context) {
     {"name": "허브", "isSelected": false},
     {"name": "와사비", "isSelected": false},
   ];
+
+  // 이전에 저장된 조미료 목록을 불러와 초기화
+  final List<dynamic>? savedSeasonings = _storage.read('saved_seasonings');
+  if (savedSeasonings != null) {
+    for (var savedName in savedSeasonings) {
+      final index = seasonings.indexWhere((item) => item['name'] == savedName);
+      if (index != -1) {
+        seasonings[index]['isSelected'] = true;
+      }
+    }
+  }
 
   showDialog(
     context: context,
@@ -93,8 +107,12 @@ void showSeasoningSurveyDialog(BuildContext context) {
                       .toList();
                   print("선택 완료: $results");
                   
-                  final authApiClient = Get.find<AuthApiClient>();
-                  await authApiClient.completeOnboardingSurvey();
+                  // GetStorage에 선택된 조미료 저장
+                  await _storage.write('saved_seasonings', results);
+                  
+                  // 백엔드 API가 없으므로 임시로 로컬 저장만 수행
+                  // final authApiClient = Get.find<AuthApiClient>();
+                  // await authApiClient.completeOnboardingSurvey();
                   
                   Navigator.pop(context);
                 },
