@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart'; // GetStorage 임포트
-import 'package:honbop_mate/features/auth/models/authentication_response.dart'; // AuthenticationResponse 모델 임포트
-import 'package:honbop_mate/features/auth/services/auth_api_client.dart'; // AuthApiClient 임포트
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 
 import '../../routes/app_routes.dart';
 import './email_signup_screen.dart';
@@ -18,7 +17,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController(); // 이메일 컨트롤러 추가
   final _passwordController = TextEditingController(); // 비밀번호 컨트롤러 추가
-  final AuthApiClient _apiClient = Get.find<AuthApiClient>(); // AuthApiClient 인스턴스
+  final AuthController _authController = Get.find<AuthController>();
   final GetStorage _storage = Get.find<GetStorage>(); // GetStorage 인스턴스
 
   bool _saveId = false;
@@ -68,22 +67,11 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         await _storage.remove('saved_email'); // 체크박스가 해제되어 있으면 저장된 이메일 삭제
       }
 
-      final AuthenticationResponse authResponse = await _apiClient.authenticate(email, password);
+      await _authController.signInWithEmail(email, password);
 
-      if (authResponse.accessToken != null && mounted) {
-        // 로그인 성공 시 토큰 저장 및 홈 화면으로 이동
-        await _storage.write('jwt_token', authResponse.accessToken);
-        await _storage.write('refresh_token', authResponse.refreshToken);
-
-
+      if (_authController.errorMessage.isNotEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 성공!')),
-        );
-        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
-      } else if (mounted) {
-        // 로그인 실패 시 오류 메시지 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authResponse.error ?? '로그인에 실패했습니다. 다시 시도해주세요.')),
+          SnackBar(content: Text(_authController.errorMessage.value)),
         );
       }
     }
@@ -210,7 +198,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                SizedBox(
+                Obx(() => SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
@@ -220,8 +208,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    onPressed: _login, // 로그인 메소드 연결
-                    child: const Text(
+                    onPressed: _authController.isLoading.value ? null : _login, // 로그인 메소드 연결
+                    child: _authController.isLoading.value
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
                       '로그인',
                       style: TextStyle(
                         fontSize: 18,
@@ -230,7 +220,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       ),
                     ),
                   ),
-                ),
+                )),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

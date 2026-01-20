@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-void showWelcomeDialog(BuildContext context) {
-  showDialog(
+Future<void> showWelcomeDialog(BuildContext context) {
+  return showDialog(
     context: context,
     barrierDismissible: false, // 배경 클릭 시 닫히지 않도록 설정
     builder: (BuildContext context) {
