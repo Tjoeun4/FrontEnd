@@ -33,10 +33,7 @@ class AuthController extends GetxController {
   void onInit() {
     // onInit() 메서드는 GetX 라이브러리의 컨트롤러(GetxController)가 생성될 때 가장 먼저 호출되는 초기화 메서드(플러터의 initState()와 비슷한 역할). AuthController(현재 클래스)가 메모리에 생성될 때 호출됨
     super.onInit(); // 부모 클래스(GetXController)의 기본 초기화 로직을 먼저 실행
-    _googleAuthService =
-        Get.find<
-          GoogleAuthService
-        >(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
+    _googleAuthService = Get.find<GoogleAuthService>(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
     _authApiClient = Get.find<AuthApiClient>();
     _storage = Get.find<GetStorage>();
     _tokenService = Get.find<TokenService>();
@@ -118,8 +115,8 @@ class AuthController extends GetxController {
         if (idToken != null) {
           // idToken이 null이 아닐 때
           print(
-            'Frontend: Received idToken: $idToken',
-          ); // idToken을 받았다는 문자열을 idToken과 함께 출력
+            'Frontend: Received idToken: $idToken', // idToken을 받았다는 문자열을 idToken과 함께 출력
+          );
           final authResponse = await _authApiClient.googleSignIn(
             idToken,
           ); // authApiClient에 있는 백엔드와 통신하여 구글 로그인을 하는 함수를 (idToken을 매개변수로 하여)호출하여 반환된 결과를 authResponse 변수에 저장
@@ -153,7 +150,7 @@ class AuthController extends GetxController {
             await _storage.write(
               'jwt_token',
               authResponse.token,
-            ); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
+            ); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고, write메서드로 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
             await _storage.write('refresh_token', authResponse.refreshToken);
             await _handleLoginSuccess(
                 authResponse.onboardingSurveyCompleted ?? false, false);
