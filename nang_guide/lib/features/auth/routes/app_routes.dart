@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/views/post_create_screen.dart';
 
 // 바인딩
 import './../bindings/top_nav/alarm_binding.dart';
@@ -59,7 +60,7 @@ class AppRoutes {
     GetPage(name: RECOMMEND, page: () => RecommendScreen(), binding: RecommendBinding(),transition: Transition.noTransition,),
     GetPage(name: LEDGER, page: () => LedgerScreen(), binding: LedgerBinding(),transition: Transition.noTransition,),
     GetPage(name: PROFILE, page: () => ProfileScreen(), binding: ProfileBinding(),transition: Transition.noTransition,),
-    GetPage(name: POST, page: () => SplashScreen(), binding: PostBinding()),
+    GetPage(name: POST, page: () => PostCreateScreen(), binding: PostBinding(),transition: Transition.noTransition,),
     GetPage(name: CHAT, page: () => SplashScreen(), binding: ChatBinding()),
   ];
 }
