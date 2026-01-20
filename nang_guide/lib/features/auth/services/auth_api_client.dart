@@ -15,6 +15,7 @@ class GoogleAuthenticationResponse {
   final String? token;
   final String? refreshToken; // Add refreshToken field
   final bool? newUser;
+  final bool? onboardingSurveyCompleted; // 온보딩 설문 완료 여부
   final String? email;
   final String? nickname;
   final String? error;
@@ -23,6 +24,7 @@ class GoogleAuthenticationResponse {
     this.token,
     this.refreshToken,
     this.newUser,
+    this.onboardingSurveyCompleted,
     this.email,
     this.nickname,
     this.error,
@@ -33,6 +35,7 @@ class GoogleAuthenticationResponse {
       token: json['access_token'] ?? json['token'],
       refreshToken: json['refresh_token'], // Map refresh_token
       newUser: json['newUser'],
+      onboardingSurveyCompleted: json['onboarding_survey_completed'],
       email: json['email'],
       nickname: json['nickname'],
       error: json['error'],
@@ -453,6 +456,20 @@ class AuthApiClient extends GetxService {
       return false;
     } catch (e) {
       print('Unexpected error in deleteAccount: $e');
+      return false;
+    }
+  }
+
+  /// =================================================
+  /// 온보딩 설문 완료
+  /// - 백엔드에 온보딩 설문이 완료되었음을 알림
+  /// =================================================
+  Future<bool> completeOnboardingSurvey() async {
+    try {
+      final response = await _dio.post('/user/onboarding/complete');
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error in completeOnboardingSurvey: $e');
       return false;
     }
   }

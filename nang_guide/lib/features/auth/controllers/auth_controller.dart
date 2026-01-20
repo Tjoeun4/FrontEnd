@@ -1,4 +1,3 @@
-// FrontEnd/nang_guide/lib/features/auth/controllers/auth_controller.dart
 import 'package:honbop_mate/features/auth/views/auth/google_signup_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -7,7 +6,8 @@ import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
 import 'package:honbop_mate/features/auth/services/token_service.dart'; // TokenService import
 import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
-import 'package:honbop_mate/features/auth/views/auth/welcome_dialog.dart'; // welcome_dialog.dart import 추가
+import 'package:honbop_mate/features/auth/views/auth/welcome_dialog.dart';
+import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart';// welcome_dialog.dart import 추가
 
 /// --------------------------------------------------
 /// 인증 상태 및 인증 플로우를 총괄하는 GetX 컨트롤러
@@ -155,10 +155,8 @@ class AuthController extends GetxController {
               authResponse.token,
             ); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
             await _storage.write('refresh_token', authResponse.refreshToken);
-            print('Frontend: Existing user. Navigating to Home Screen.');
-            Get.offAllNamed(
-              AppRoutes.HOME,
-            ); // 홈 화면으로 이동 .offAllNames 메서드는 GetMaterialApp에 등록된 이름을 통해 이동하는 메서드.
+            await _handleLoginSuccess(
+                authResponse.onboardingSurveyCompleted ?? false, false);
           } else {
             // This case implies an actual authentication failure for an existing user,
             // or an unexpected error from the backend for a new user flow.
@@ -211,8 +209,8 @@ class AuthController extends GetxController {
         );
         await _storage.write('jwt_token', authResponse.token);
         await _storage.write('refresh_token', authResponse.refreshToken);
-        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
-        showWelcomeDialog(Get.context!); // 환영 다이얼로그 표시
+        await _handleLoginSuccess(
+            authResponse.onboardingSurveyCompleted ?? false, true);
       } else {
         errorMessage(authResponse.error ?? 'Registration failed.');
         print('Frontend: Registration failed: ${authResponse.error}');
@@ -220,6 +218,64 @@ class AuthController extends GetxController {
     } catch (e) {
       errorMessage('An error occurred during registration: $e');
       print('Frontend: Error during registration: $e');
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> _handleLoginSuccess(
+      bool onboardingSurveyCompleted, bool isNewUser) async {
+    Get.offAllNamed(AppRoutes.HOME);
+
+    if (!onboardingSurveyCompleted) {
+      if (isNewUser) {
+        await showWelcomeDialog(Get.context!);
+      }
+      showSeasoningSurveyDialog(Get.context!);
+    }
+  }
+
+  /// ==================================================
+  /// 이메일 로그인
+  /// ==================================================
+  Future<void> signInWithEmail(String email, String password) async {
+    isLoading(true);
+    errorMessage('');
+    try {
+      final authResponse = await _authApiClient.authenticate(email, password);
+      if (authResponse.accessToken != null) {
+        await _storage.write('jwt_token', authResponse.accessToken);
+        await _storage.write('refresh_token', authResponse.refreshToken);
+        await _handleLoginSuccess(
+            authResponse.onboardingSurveyCompleted ?? false, false);
+      } else {
+        errorMessage(authResponse.error ?? 'Login failed.');
+      }
+    } catch (e) {
+      errorMessage('An error occurred during email sign-in: $e');
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  /// ==================================================
+  /// 이메일 회원가입
+  /// ==================================================
+  Future<void> registerWithEmail(Map<String, dynamic> userData) async {
+    isLoading(true);
+    errorMessage('');
+    try {
+      final authResponse = await _authApiClient.registerWithEmail(userData);
+      if (authResponse.accessToken != null) {
+        await _storage.write('jwt_token', authResponse.accessToken);
+        await _storage.write('refresh_token', authResponse.refreshToken);
+        await _handleLoginSuccess(
+            authResponse.onboardingSurveyCompleted ?? false, true);
+      } else {
+        errorMessage(authResponse.error ?? 'Registration failed.');
+      }
+    } catch (e) {
+      errorMessage('An error occurred during email registration: $e');
     } finally {
       isLoading(false);
     }

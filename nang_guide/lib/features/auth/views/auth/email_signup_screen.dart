@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import './address_search_page.dart';
-import './welcome_dialog.dart'; // welcome_dialog.dart import 추가
 
 /// 이메일 기반 회원가입 화면
 /// - 이메일 인증
@@ -26,6 +25,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   /// 인증/회원가입 API 호출을 위한 클라이언트
   final AuthApiClient _apiClient = Get.find<AuthApiClient>();
+  final AuthController _authController = Get.find<AuthController>();
 
   /// 입력 필드(TextFormField) 컨트롤러 모음
   final _emailController = TextEditingController();
@@ -273,19 +273,11 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         'neighborhoodId': _selectedNeighborhoodId,
       };
 
-      print('Attempting signup with data: $userData');
+      await _authController.registerWithEmail(userData);
 
-      final authResponse = await _apiClient.registerWithEmail(userData);
-
-      if (authResponse.accessToken != null && mounted) { // Changed from .token to .accessToken
+      if (_authController.errorMessage.isNotEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('회원가입이 성공적으로 완료되었습니다!')),
-        );
-        Get.offAllNamed(AppRoutes.HOME); // 홈 화면으로 이동
-        showWelcomeDialog(Get.context!); // 환영 다이얼로그 표시
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authResponse.error ?? '회원가입에 실패했습니다. 다시 시도해주세요.')),
+          SnackBar(content: Text(_authController.errorMessage.value)),
         );
       }
     }
@@ -478,12 +470,13 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
         bottomNavigationBar: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-            child: ElevatedButton(
-              onPressed: _isVerified &&
-                  _isNicknameChecked &&
-                  _selectedNeighborhoodId != null
-                  ? _submitForm
-                  : null,
+            child: Obx(() => ElevatedButton(
+              onPressed: _authController.isLoading.value ||
+                  !_isVerified ||
+                  !_isNicknameChecked ||
+                  _selectedNeighborhoodId == null
+                  ? null
+                  : _submitForm,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Colors.orange,
@@ -492,7 +485,9 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
+              child: _authController.isLoading.value
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
                 '회원가입',
                 style: TextStyle(
                   fontSize: 18,
@@ -500,7 +495,7 @@ class _EmailSignUpScreenState extends State<EmailSignUpScreen> {
                   color: Colors.white,
                 ),
               ),
-            ),
+            )),
           ),
     ));
   }

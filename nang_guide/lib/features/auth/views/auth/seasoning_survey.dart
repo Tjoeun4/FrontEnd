@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 
-void _showSeasoningButtonDialog(BuildContext context) {
+void showSeasoningSurveyDialog(BuildContext context) {
   // 모든 조미료를 1개씩 개별 항목으로 분리
   final List<Map<String, dynamic>> seasonings = [
     {"name": "소금", "isSelected": false},
@@ -84,12 +86,16 @@ void _showSeasoningButtonDialog(BuildContext context) {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   final results = seasonings
                       .where((e) => e['isSelected'])
                       .map((e) => e['name'])
                       .toList();
                   print("선택 완료: $results");
+                  
+                  final authApiClient = Get.find<AuthApiClient>();
+                  await authApiClient.completeOnboardingSurvey();
+                  
                   Navigator.pop(context);
                 },
                 child: const Text(

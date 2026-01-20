@@ -1,11 +1,15 @@
 class AuthenticationResponse {
   final String? accessToken;
   final String? refreshToken;
+  final int? userId;
+  final bool? onboardingSurveyCompleted;
   final String? error; // For error handling from API client
 
   AuthenticationResponse({
     this.accessToken,
     this.refreshToken,
+    this.userId,
+    this.onboardingSurveyCompleted,
     this.error, // Added error field for consistency in API client responses
   });
 
@@ -13,6 +17,8 @@ class AuthenticationResponse {
     return AuthenticationResponse(
       accessToken: json['access_token'],
       refreshToken: json['refresh_token'],
+      userId: json['user_id'],
+      onboardingSurveyCompleted: json['onboarding_survey_completed'],
       error: json['error'], // Assuming backend might send an 'error' field directly on some failures
     );
   }
