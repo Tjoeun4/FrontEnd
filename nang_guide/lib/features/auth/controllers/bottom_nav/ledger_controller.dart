@@ -69,4 +69,35 @@ class LedgerController extends GetxController {
     month.value = newMonth;
     generateDays(); // 달력 데이터 갱신
   }
+
+  // ledger_controller.dart 내부에 추가
+  var historyItems = [
+    {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '20000', 'amount': 5600},
+    {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '테스툽', 'amount': 10000},
+    {'date': '2026-01-20', 'time': '오전 10:42', 'category': '교통/차량', 'content': '몰라', 'amount': 20000},
+  ].obs;
+
+// 날짜별로 그룹화하는 게터
+  Map<String, List<dynamic>> get groupedItems {
+    Map<String, List<dynamic>> data = {};
+    for (var item in historyItems) {
+      String date = item['date'].toString();
+      if (data[date] == null) data[date] = [];
+      data[date]!.add(item);
+    }
+    return data;
+  }
+
+  // ledger_controller.dart 내부에 추가
+  int getDayTotal(int day) {
+    if (day == 0) return 0; // 공백 칸은 0원
+
+    // 날짜 형식을 'yyyy-MM-dd'로 맞춤 (기존 historyItems 데이터 형식에 맞게)
+    String dateKey = "${year.value}-${month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+
+    // 해당 날짜와 일치하는 아이템들의 amount 합산
+    return historyItems
+        .where((item) => item['date'] == dateKey)
+        .fold(0, (sum, item) => sum + (item['amount'] as int));
+  }
 }

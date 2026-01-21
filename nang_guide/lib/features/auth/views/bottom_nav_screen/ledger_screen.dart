@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // Segmented Control용
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import './../components/app_nav_bar.dart';
-import './../../../auth/views/dialog/ocr_dialog.dart';
+import 'package:intl/intl.dart';
+
+import '../dialog/expense_registration_screen.dart';
 import './../../controllers/bottom_nav/ledger_controller.dart';
+import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
 
 class LedgerScreen extends StatelessWidget {
@@ -40,7 +42,10 @@ class LedgerScreen extends StatelessWidget {
             bottom: 36,
             right: 36,
             child: FloatingActionButton(
-              onPressed: () => OcrDialog(context),
+              onPressed: () {
+                // 다이얼로그 대신 새 페이지로 이동
+                Get.to(() => const ExpenseRegistrationScreen());
+              },
               backgroundColor: Colors.amber,
               child: const Icon(Icons.add, color: Colors.white),
             ),
@@ -185,42 +190,162 @@ class LedgerScreen extends StatelessWidget {
 
   // 내역 탭 UI (임시)
   Widget _buildHistoryTab() {
-    return const Center(
-      child: Text('기록된 내역이 없습니다.', style: TextStyle(color: Colors.grey)),
+    final groupedData = controller.groupedItems;
+    final sortedDates = groupedData.keys.toList()..sort((a, b) => b.compareTo(a)); // 최신순 정렬
+
+    if (sortedDates.isEmpty) {
+      return const Center(child: Text('기록된 내역이 없습니다.', style: TextStyle(color: Colors.grey)));
+    }
+
+    return ListView.builder(
+      itemCount: sortedDates.length,
+      itemBuilder: (context, index) {
+        String dateStr = sortedDates[index];
+        List<dynamic> items = groupedData[dateStr]!;
+        DateTime dateTime = DateTime.parse(dateStr);
+
+        // 해당 날짜의 총 지출 계산
+        int dayTotal = items.fold(0, (sum, item) => sum + (item['amount'] as int));
+
+        return Column(
+          children: [
+            // --- 날짜 헤더 영역 ---
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.grey[50], // 헤더 배경색
+              child: Row(
+                children: [
+                  Text(
+                    '${dateTime.day}',
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[400],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              DateFormat('EEEE', 'ko_KR').format(dateTime).substring(0, 3), // 수요일 등
+                              style: const TextStyle(fontSize: 10, color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('yyyy.MM').format(dateTime),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${NumberFormat('#,###').format(dayTotal)}원',
+                    style: const TextStyle(fontSize: 16, color: Colors.redAccent, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // --- 상세 내역 리스트 영역 ---
+            ...items.map((item) => Column(
+              children: [
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    child: Text('🍜', style: TextStyle(fontSize: 20)), // 카테고리별 아이콘 로직 필요
+                  ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(item['content'], style: const TextStyle(fontSize: 15)),
+                      Text(
+                        '${NumberFormat('#,###').format(item['amount'])}원',
+                        style: const TextStyle(fontSize: 15, color: Colors.redAccent),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '${item['category']}  |  ${item['time']}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                ),
+                const Divider(indent: 16, endIndent: 16, height: 1),
+              ],
+            )).toList(),
+          ],
+        );
+      },
     );
   }
 
   // 달력 탭 UI (기존 코드 활용)
   Widget _buildCalendarTab() {
-    return ListView( // 스크롤 가능하도록 리스트뷰 권장
+    return ListView(
       children: [
-        // 요일 라벨
+        // 요일 라벨 (일월화수목금토)
         Row(
           children: controller.weekLabels.map((e) => Expanded(
             child: Container(
               alignment: Alignment.center,
               height: 40,
-              child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(e, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
             ),
           )).toList(),
         ),
+
         // 날짜 그리드
         Obx(() => Column(
           children: List.generate(
             controller.days.length,
                 (rowIndex) => Row(
               children: controller.days[rowIndex].map((day) {
+                // 해당 날짜의 총 지출액 가져오기
+                int dayTotal = controller.getDayTotal(day);
+
                 return Expanded(
                   child: Container(
-                    height: 60, // 달력 칸 높이 조절
-                    alignment: Alignment.topCenter,
-                    padding: const EdgeInsets.only(top: 8),
+                    height: 80, // 금액 표시를 위해 높이를 60 -> 80으로 늘림
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade100, width: 0.5),
                     ),
-                    child: Text(
-                      day == 0 ? '' : '$day',
-                      style: const TextStyle(fontSize: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 날짜 숫자
+                        Text(
+                          day == 0 ? '' : '$day',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: day == 0 ? Colors.transparent : Colors.black87,
+                          ),
+                        ),
+                        const Spacer(),
+                        // 지출 금액이 있을 때만 표시
+                        if (day != 0 && dayTotal > 0)
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: FittedBox( // 금액이 길어질 경우 글자 크기 자동 조절
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${NumberFormat('#,###').format(dayTotal)}',
+                                style: const TextStyle(
+                                  color: Colors.redAccent,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 );
