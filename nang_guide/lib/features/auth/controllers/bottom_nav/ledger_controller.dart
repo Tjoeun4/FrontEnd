@@ -75,7 +75,7 @@ class LedgerController extends GetxController {
   var historyItems = [
     {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '20000', 'amount': 5600},
     {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '테스툽', 'amount': 10000},
-    {'date': '2026-01-20', 'time': '오전 10:42', 'category': '교통/차량', 'content': '몰라', 'amount': 20000},
+    {'date': '2026-01-20', 'time': '오전 10:42', 'category': '교통', 'content': '몰라', 'amount': 20000},
   ].obs;
 
 // 날짜별로 그룹화하는 게터
@@ -131,5 +131,24 @@ class LedgerController extends GetxController {
   void _updateTotalExpense() {
     int total = historyItems.fold(0, (sum, item) => sum + (item['amount'] as int));
     totalExpense.value = total;
+  }
+
+  // ledger_controller.dart 내부에 추가
+  String getCategoryEmoji(String category) {
+    switch (category) {
+      case '식비':
+        return '🍜';
+      case '교통':
+        return '🚕';
+      case '쇼핑':
+        return '🛍️';
+      case '식재료':
+        return '🥬';
+      case '생활용품':
+        return '🧼';
+      case '기타':
+      default:
+        return '💰'; // 기본 이모지
+    }
   }
 }
