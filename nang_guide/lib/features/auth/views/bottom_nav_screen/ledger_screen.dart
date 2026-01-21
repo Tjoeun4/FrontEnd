@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart'; // Segmented Control용
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import './../components/app_nav_bar.dart';
-import './../../../auth/views/dialog/ocr_dialog.dart';
+
+import '../dialog/expense_registration_screen.dart';
 import './../../controllers/bottom_nav/ledger_controller.dart';
+import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
 
 class LedgerScreen extends StatelessWidget {
@@ -40,7 +41,10 @@ class LedgerScreen extends StatelessWidget {
             bottom: 36,
             right: 36,
             child: FloatingActionButton(
-              onPressed: () => OcrDialog(context),
+              onPressed: () {
+                // 다이얼로그 대신 새 페이지로 이동
+                Get.to(() => const ExpenseRegistrationScreen());
+              },
               backgroundColor: Colors.amber,
               child: const Icon(Icons.add, color: Colors.white),
             ),
