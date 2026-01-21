@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import './features/auth/bindings/auth_binding.dart';
 import './features/auth/routes/app_routes.dart';
 import 'features/auth/services/google_auth_service.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 // void main() {
 //   runApp(const MyApp());
@@ -30,6 +31,8 @@ void main() async {
   await GetStorage.init();
   await GoogleAuthService.initialize(); // GoogleSignIn 초기화 (한 번만!)
 
+  // 3. 한국어(ko_KR) 로케일 데이터를 초기화합니다.
+  await initializeDateFormatting('ko_KR');
   // await _initializeNaverMap();
   // Get.put(AuthController(), permanent: true);
   // Get.put(TokenService(), permanent: true);
