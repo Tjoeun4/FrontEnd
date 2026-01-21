@@ -419,7 +419,7 @@ class LedgerScreen extends StatelessWidget {
                             const Spacer(),
                             if (day != 0 && dayTotal > 0)
                               Align(
-                                alignment: Alignment.bottomRight,
+
                                 child: FittedBox(
                                   child: Text(
                                     '${NumberFormat('#,###').format(dayTotal)}',
