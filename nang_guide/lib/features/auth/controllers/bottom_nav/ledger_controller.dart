@@ -73,16 +73,20 @@ class LedgerController extends GetxController {
 
   // ledger_controller.dart 내부에 추가
   var historyItems = [
-    {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '20000', 'amount': 5600},
-    {'date': '2026-01-21', 'time': '오전 10:41', 'category': '식비', 'content': '테스툽', 'amount': 10000},
-    {'date': '2026-01-20', 'time': '오전 10:42', 'category': '교통', 'content': '몰라', 'amount': 20000},
+    {
+      'spentAt': '2026-01-21T10:41:00', 'title': '김치찌개', 'category': '식비', 'amount': 5600, 'memo': ''
+    },
+    {
+      'spentAt': '2026-01-20T18:30:00', 'title': '택시비', 'category': '교통', 'amount': 20000, 'memo': '야근'
+    },
   ].obs;
 
 // 날짜별로 그룹화하는 게터
   Map<String, List<dynamic>> get groupedItems {
     Map<String, List<dynamic>> data = {};
     for (var item in historyItems) {
-      String date = item['date'].toString();
+      // spentAt에서 날짜 부분(yyyy-MM-dd)만 추출하여 키로 사용
+      String date = item['spentAt'].toString().substring(0, 10);
       if (data[date] == null) data[date] = [];
       data[date]!.add(item);
     }
@@ -91,38 +95,30 @@ class LedgerController extends GetxController {
 
   // ledger_controller.dart 내부에 추가
   int getDayTotal(int day) {
-    if (day == 0) return 0; // 공백 칸은 0원
-
-    // 날짜 형식을 'yyyy-MM-dd'로 맞춤 (기존 historyItems 데이터 형식에 맞게)
+    if (day == 0) return 0;
     String dateKey = "${year.value}-${month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
 
-    // 해당 날짜와 일치하는 아이템들의 amount 합산
     return historyItems
-        .where((item) => item['date'] == dateKey)
+        .where((item) => item['spentAt'].toString().startsWith(dateKey)) // date 대신 spentAt 검사
         .fold(0, (sum, item) => sum + (item['amount'] as int));
   }
 
-  // ledger_controller.dart 내부에 추가
-
+  // ledger_controller.dart 내 addExpense 함수 부분
   void addExpense({
     required DateTime dateTime,
     required String category,
-    required String content,
+    required String title, // content -> title
     required int amount,
     required String memo,
   }) {
-    // UI에서 사용하는 데이터 형식에 맞춰 맵 생성
     final newItem = {
-      'date': DateFormat('yyyy-MM-dd').format(dateTime),
-      'time': DateFormat('aa hh:mm', 'ko_KR').format(dateTime), // '오전 10:41' 형식
-      'category': category,
-      'content': content,
+      'spentAt': dateTime.toIso8601String(), // 백엔드 전송을 위해 ISO 형식 권장
+      'title': title, // content 대신 title 사용
       'amount': amount,
+      'category': category,
       'memo': memo,
     };
-
     historyItems.add(newItem); // 리스트에 추가 (RxList이므로 UI 자동 갱신)
-
     // 전체 지출 합계도 업데이트 (선택 사항)
     _updateTotalExpense();
   }
