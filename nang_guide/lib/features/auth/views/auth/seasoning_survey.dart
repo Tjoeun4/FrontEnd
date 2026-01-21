@@ -242,7 +242,7 @@ void showSeasoningSurveyDialog(BuildContext context) {
                         );
                         
                         // 백엔드에 온보딩 완료 신호 전송
-                        await _apiClient.completeOnboardingSurvey();
+                        await _apiClient.completeOnboardingSurvey(); // 백엔드 API에 onboardingsurveycompleted 값을 true로 변경하는 API 호출
 
                         Navigator.pop(context);
                       }
