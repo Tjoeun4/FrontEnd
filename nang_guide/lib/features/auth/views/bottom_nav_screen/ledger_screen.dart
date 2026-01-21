@@ -344,7 +344,7 @@ class LedgerScreen extends StatelessWidget {
                       children: [
                         // ✅ item 대신 data를 사용하여 안전하게 접근합니다.
                         Text(
-                          data['content'].toString(),
+                          data['title'].toString(),
                           style: const TextStyle(fontSize: 15),
                         ),
                         Text(
@@ -357,7 +357,8 @@ class LedgerScreen extends StatelessWidget {
                       ],
                     ),
                     subtitle: Text(
-                      '${data['category']}  |  ${data['time']}',
+                      // ✅ data['time'] 대신 spentAt에서 시간을 추출하도록 수정
+                      '${data['category']}  |  ${data['spentAt'].toString().split('T').last.substring(0, 5)}',
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     onTap: () {
@@ -419,7 +420,6 @@ class LedgerScreen extends StatelessWidget {
                             const Spacer(),
                             if (day != 0 && dayTotal > 0)
                               Align(
-
                                 child: FittedBox(
                                   child: Text(
                                     '${NumberFormat('#,###').format(dayTotal)}',
@@ -446,10 +446,10 @@ class LedgerScreen extends StatelessWidget {
   }
 
   void _showDayDetailBottomSheet(int day) {
-    String dateKey =
-        "${controller.year.value}-${controller.month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+    String dateKey = "${controller.year.value}-${controller.month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+    // ✅ 수정: item['date'] 대신 spentAt의 앞부분(날짜)과 비교해야 합니다.
     var dayItems = controller.historyItems
-        .where((item) => item['date'] == dateKey)
+        .where((item) => item['spentAt'].toString().startsWith(dateKey))
         .toList();
 
     Get.bottomSheet(
@@ -503,8 +503,13 @@ class LedgerScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 24),
                   ),
                   // 3. 나머지 텍스트들도 data를 사용하면 더 안전합니다.
-                  title: Text(data['content'].toString()),
-                  subtitle: Text(data['time'].toString()),
+                  title: Text(data['title'].toString()),
+                    // 더 안전한 시간 표시 방법
+                    subtitle: Text(
+                      data['spentAt'].toString().contains('T')
+                          ? data['spentAt'].toString().split('T')[1].substring(0, 5) // "10:41" 추출
+                          : data['spentAt'].toString(), // 형식이 다르면 전체 출력
+                    ),
                   trailing: Text(
                     '${NumberFormat('#,###').format(data['amount'])}원',
                   ),

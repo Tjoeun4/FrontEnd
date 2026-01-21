@@ -19,19 +19,17 @@ class ExpenseEditScreen extends StatefulWidget {
 class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   final LedgerController controller = Get.find<LedgerController>();
   late TextEditingController _amountController;
-  late TextEditingController _contentController;
+  late TextEditingController _titleController;
   late TextEditingController _memoController;
   late DateTime _selectedDateTime;
   late String _selectedCategory;
 
-  @override
   void initState() {
     super.initState();
-    // 기존 데이터로 초기화
     _amountController = TextEditingController(text: widget.item['amount'].toString());
-    _contentController = TextEditingController(text: widget.item['content']);
+    _titleController = TextEditingController(text: widget.item['title']); // content -> title
     _memoController = TextEditingController(text: widget.item['memo'] ?? "");
-    _selectedDateTime = DateTime.parse(widget.item['date']);
+    _selectedDateTime = DateTime.parse(widget.item['spentAt']); // date -> spentAt
     _selectedCategory = widget.item['category'];
   }
 
@@ -93,7 +91,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
 
             _buildLabel("내용"),
             TextField(
-              controller: _contentController,
+              controller: _titleController,
               decoration: const InputDecoration(hintText: "어디에 쓰셨나요?"),
             ),
             const SizedBox(height: 20),
@@ -171,12 +169,12 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   void _updateExpense() {
     int index = controller.historyItems.indexOf(widget.item);
     if (index != -1) {
+      // 백엔드 DTO 구조와 동일하게 맵 구성
       controller.historyItems[index] = {
-        'date': DateFormat('yyyy-MM-dd').format(_selectedDateTime),
-        'time': DateFormat('aa hh:mm', 'ko_KR').format(_selectedDateTime),
+        'spentAt': _selectedDateTime.toIso8601String(), // 키값 변경 및 포맷 통일
+        'title': _titleController.text, // content -> title
+        'amount': int.parse(_amountController.text.replaceAll(',', '')),
         'category': _selectedCategory,
-        'content': _contentController.text,
-        'amount': int.parse(_amountController.text),
         'memo': _memoController.text,
       };
       Get.back();

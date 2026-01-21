@@ -15,7 +15,7 @@ class ExpenseRegistrationScreen extends StatefulWidget {
 
 class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _memoController = TextEditingController();
 
   // 상단에 컨트롤러 선언 (State 클래스 내부)
@@ -128,7 +128,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
 
             _buildLabel("내용"),
             TextField(
-              controller: _contentController,
+              controller: _titleController,
               decoration: const InputDecoration(hintText: "어디에 쓰셨나요?"),
             ),
             const SizedBox(height: 20),
@@ -181,7 +181,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
                     onPressed: () {
                       // 1. 유효성 검사 (금액이나 내용이 비었는지 확인)
                       if (_amountController.text.isEmpty ||
-                          _contentController.text.isEmpty) {
+                          _titleController.text.isEmpty) {
                         Get.snackbar(
                           "입력 확인",
                           "금액과 내용을 입력해주세요.",
@@ -196,7 +196,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
                       controller.addExpense(
                         dateTime: _selectedDateTime,
                         category: _selectedCategory,
-                        content: _contentController.text,
+                        title: _titleController.text,
                         amount: int.parse(
                           _amountController.text.replaceAll(',', ''),
                         ),
