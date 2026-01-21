@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class LedgerController extends GetxController {
   // 1. UI 상태 관리 변수 추가
@@ -99,5 +100,36 @@ class LedgerController extends GetxController {
     return historyItems
         .where((item) => item['date'] == dateKey)
         .fold(0, (sum, item) => sum + (item['amount'] as int));
+  }
+
+  // ledger_controller.dart 내부에 추가
+
+  void addExpense({
+    required DateTime dateTime,
+    required String category,
+    required String content,
+    required int amount,
+    required String memo,
+  }) {
+    // UI에서 사용하는 데이터 형식에 맞춰 맵 생성
+    final newItem = {
+      'date': DateFormat('yyyy-MM-dd').format(dateTime),
+      'time': DateFormat('aa hh:mm', 'ko_KR').format(dateTime), // '오전 10:41' 형식
+      'category': category,
+      'content': content,
+      'amount': amount,
+      'memo': memo,
+    };
+
+    historyItems.add(newItem); // 리스트에 추가 (RxList이므로 UI 자동 갱신)
+
+    // 전체 지출 합계도 업데이트 (선택 사항)
+    _updateTotalExpense();
+  }
+
+// 상단 헤더의 총 지출액을 업데이트하는 함수
+  void _updateTotalExpense() {
+    int total = historyItems.fold(0, (sum, item) => sum + (item['amount'] as int));
+    totalExpense.value = total;
   }
 }
