@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/community_controller.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/dialog/group_dialog.dart';
 import './../components/app_nav_bar.dart';
 import './../../views/post_create_screen.dart';
@@ -8,12 +9,12 @@ import './../components/bottom_nav_bar.dart';
 import './../../../auth/views/dialog/gonggu_dialog.dart';
 
 class CommunityScreen extends StatelessWidget {
- // CommunityScreen({super.key});
 
+  // 커뮤니티 컨트롤러에있는 함수를 찾습니다.
   final Controller= Get.find<CommunityController>();
-  // final TextEditingController textController;
-// final CommunitysearchContoller = TextEditingController();
- 
+  final Controller2 = Get.find<CommunityController>();
+  
+
   // const CommunityScreen({
   //   super.key,
   //   required this.textController,
@@ -24,106 +25,92 @@ class CommunityScreen extends StatelessWidget {
       appBar: AppNavBar(title: "게시판"),
       body: Column(
         children: [
-        Expanded(
-          child: TextField(
-           //  controller: textController,
-            decoration: InputDecoration(
-              hintText: "게시글 검색",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+          // 1. 검색창 영역 (Expanded 대신 Padding을 사용하여 상단에 적절히 배치)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: Controller.searchController, // 컨트롤러 연결
+              decoration: InputDecoration(
+                hintText: "게시글 검색",
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    Controller.searchController.clear();
+                    Controller.fetchRooms(); // 지우면 다시 전체 목록
+                  },
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              // 키보드에서 엔터(완료) 버튼을 눌렀을 때 실행
+              onSubmitted: (value) {
+                // 뷰는 단순히 "이 값으로 검색해줘"라고 명령만 내립니다.
+                Controller.searchRooms(value); 
+              },
             ),
-         //    onSubmitted: (_) => onSearch(),
           ),
-        ),
 
-        Expanded(
-          child: Row(
-           //  controller: textController,
-            children: [
-              ElevatedButton(
-        onPressed: () {
-          // 수정 다이얼로그
-        },
-        child: const Text('전체 갈 텝'),
-      ),
-      ElevatedButton(
-        onPressed: () {
-          GongguDialog(context);
-        },
-        child: const Text('개인 방 생성하기'),
-      ),
-      // ElevatedButton(
-      //   onPressed: () {
-      //     GroupDialog(context);
-      //   },
-      //   child: const Text('공구 / 나눔 방 생성하기'),
-      // ),
-           
+          // --- [기존 주석 처리된 Row 영역이 들어갈 자리] ---
+          // 여기에 나중에 버튼들을 넣으실 때도 고정 높이로 배치하시면 됩니다.
 
-            ]
-         //    onSubmitted: (_) => onSearch(),
+          // 2. 리스트 영역 (남은 공간을 모두 차지하도록 Expanded 유지)
+          Expanded(
+            child: Obx(() {
+              if (Controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (Controller.gonguRooms.isEmpty) {
+                // 데이터가 없을 때도 화면 중앙에 위치하도록 함
+                return const Center(child: Text("주변에 생성된 공구 방이 없습니다."));
+              }
+
+              return RefreshIndicator(
+                onRefresh: () => Controller.fetchRooms(),
+                child: ListView.builder(
+                  // 키보드가 올라왔을 때 리스트가 잘 밀리도록 처리
+                  padding: const EdgeInsets.only(bottom: 80), 
+                  itemCount: Controller.gonguRooms.length,
+                  itemBuilder: (context, index) {
+                    final room = Controller.gonguRooms[index];
+                    return ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.orange, 
+                        child: Icon(Icons.group, color: Colors.white)
+                      ),
+                      title: Text(room['title'] ?? '제목 없음'),
+                      subtitle: Text("${room['meetPlaceText']} | ${room['priceTotal']}원"),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                      onTap: () {
+                        // 1. 서버가 주는 키값이 'post_id'인지 'postId'인지 확인하기 위해 둘 다 체크
+                        final dynamic idValue = room['postId'];
+                        
+                        if (idValue != null) {
+                          print("🎯 선택된 게시글 ID: $idValue");
+                          // 상세 페이지로 이동하며 ID 전달
+                          Get.toNamed(
+                            '/post-detail/$idValue',
+                            arguments: {'postId': idValue},);
+                        } else {
+                          // 2. 만약 둘 다 null이라면 전체 구조를 출력해서 눈으로 확인
+                          print("❌ ID를 찾을 수 없음. 전체 데이터 구조: $room");
+                        }
+                      },
+                    );
+                  },
+                ),
+              );
+            }),
           ),
-        ),
-        const SizedBox(width: 8),
-
-        // 3. 게시글/채팅방 리스트 (남은 화면을 꽉 채우도록 Expanded 사용)
-          // Expanded(
-          //   child: Obx(() {
-          //     // 컨트롤러 연결 확인 필요
-          //     if (Controller.myRooms.isEmpty) {
-          //       return const Center(child: Text("참여 중인 채팅방이 없습니다."));
-          //     }
-
-          //     return ListView.builder(
-          //       itemCount: Controller.myRooms.length,
-          //       itemBuilder: (context, index) {
-          //         final room = Controller.myRooms[index];
-          //         return ListTile(
-          //           leading: const CircleAvatar(
-          //             child: Icon(Icons.chat_bubble_outline),
-          //           ),
-          //           title: Text(room.roomName),
-          //           subtitle: Text(room.type),
-          //           onTap: () {
-          //             print("${room.roomId}번 방으로 이동");
-          //           },
-          //         );
-          //       },
-          //     );
-          //   }),
-          // ),
         ],
       ),
-        // ListView(
-        //   children: [
-        //     Text('12321213213213213'
-        //     ),
-        //   ],
-        // )
-        // Obx(() => searchController.isLoading.value
-        //     ? const SizedBox(
-        //   width: 24,
-        //   height: 24,
-        //   child: CircularProgressIndicator(strokeWidth: 2),
-        // )
-        //     : IconButton(
-        //   onPressed: (){},
-        //   icon: const Icon(Icons.search),
-        // )),
-         
-      // 게시글 작성 플로팅 버튼
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         child: const Icon(Icons.edit, color: Colors.white),
-        onPressed: () {
-          // Navigator를 이용한 화면 이동
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PostCreateScreen()),
-          );
-        },
+        onPressed: () => Get.toNamed(AppRoutes.POST),
       ),
       bottomNavigationBar: MyBottomNavigation(),
     );

@@ -1,4 +1,9 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/services/chat_service.dart';
+import 'package:honbop_mate/features/auth/services/gongu_service.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
 import 'package:honbop_mate/features/auth/views/dialog/gonggu_dialog.dart';
 import './../../../../features/auth/services/api_service.dart';
 import './../../models/chat_message_request.dart';
@@ -7,18 +12,38 @@ class CommunityController extends GetxController {
   // final TokenService _tokenService = TokenService();
   // final AuthService _authService = AuthService();
 
-  final ApiService apiService;
+  // Get.find<GonguService>()는 바인딩에서 등록된 인스턴스를 찾아옵니다. //필수입니다.
+  final GonguService _gonguService = Get.find<GonguService>();
+  final ApiService apiService;  
 
-  CommunityController(this.apiService);
+  var isLoading = false.obs; // .obs는 GetX의 메소드 - 해당 변수를 관찰하겠다는 뜻. 값이 바뀌면 자신(Obx) 내부에 있는 위젯만 즉시 새로고침
+  var errorMessage = ''.obs;
+
+  // 검색어 입력을 제어할 컨트롤러 추가
+  final TextEditingController searchController = TextEditingController();
 
   @override
-  onInit() {
-    super.onInit();
-    print('🎬 CommunityController 생성 및 onInit 실행');
-    fetchMyRooms(1); // 테스트를 위해 1번 유저로 조회 시도
-    // _fetchMessageist1();
-    // _checkAuthStatus();
+  void onClose() {
+    searchController.dispose(); // 메모리 누수 방지
+    super.onClose();
   }
+  // 1. 서버에서 받아온 공구 방 리스트를 담을 변수
+  var gonguRooms = [].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    print('✅ CommunityController 생성됨');
+  
+    // 페이지 열리자마자 공구방 목록 불러오기
+    fetchRooms(); 
+}
+  late final ChatService _chatService;
+  late final TokenService _tokenService;
+
+  CommunityController(this.apiService);
+  final RxString selectedType = 'PERSONAL'.obs;
+
 
   final postList1 = <ChatMessageRequest>[].obs;
   final currentIndex = 0.obs;
@@ -29,116 +54,86 @@ class CommunityController extends GetxController {
 
   final myRooms = <ChatMessageRequest>[].obs;
 
-  // ✅ 내 채팅방 목록 가져오기 (G
-  // Future<void> _fetchMessageist1() async {
-  //   try {
-  //     final response = await apiService.postRequest('main', {'user_id': userId});
-  //     final postIdList1 = List<int>.from(response['post_id']);
-
-  //     final postResponse = await apiService.postRequest('api/personal', {'post_id': postIdList1});
-
-  //     postList1.value = (postResponse['post'] as List).map((e) => Post.fromJson(e)).toList();
-
-
-
-  //     if (postList1.isNotEmpty) {
-  //       _initializePostListMap();
-  //       fetchPostList2();
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching postList1: $e');
-  //   }
-  // }
-
-  // // ✅ 앱 실행 시 토큰 검증 및 자동 로그인 처리
-  // Future<bool> checkAuthStatus() async {
-  //   bool isValid = await _tokenService.refreshToken();
-  //   isAuthenticated.value = isValid;
-  //   Get.offAllNamed(AppRoutes.LOGIN);
-  //   return isValid;
-  // }
-  // 서버에서 받은 채팅방 목록을 저장할 변수
+  final GetStorage _storage = Get.find<GetStorage>(); // GetStorage 인스턴스
   
-
-  // ✅ 내 채팅방 목록 가져오기 (상세 로그) Dto(ChatRoomRequest) -> getMyRooms
-  Future<void> fetchMyRooms(int userId) async {
-    print('🔍 [조회-1단계] fetchMyRooms 시작 (userId: $userId)');
-    try {
-      final String url = 'api/chat/rooms?userId=$userId';
-      print('📡 [조회-2단계] 서버 요청 전송: GET $url');
-
-      final response = await apiService.getRequest(url);
-
-      if (response != null) {
-        print('✅ [조회-3단계] 서버 응답 수신 성공: $response');
-        
-        // 데이터 파싱 로그
-        final List<dynamic> data = response as List;
-        print('📦 [조회-4단계] 파싱된 방 개수: ${data.length}');
-
-        // 만약 ChatRoomResponse 모델을 사용한다면 아래 주석 해제
-        // myRooms.value = data.map((e) => ChatRoomResponse.fromJson(e)).toList();
-      } else {
-        print('⚠️ [조회-주의] 서버 응답이 null입니다.');
-      }
-    } catch (e) {
-      print('❌ [조회-에러] 목록을 가져오는 중 오류 발생: $e');
-    }
-  }
-
-  // ✅ 새로운 공구/개인 방 생성 요청 (POST) Dto(ChatRoomResponse) -> createPersonalRoom
-// ✅ 새로운 공구/개인 방 생성 요청 (POST)
-  Future<void> createPersonalRoom(int userId, String roomName, String roomType) async {
-    // 1. 보낼 데이터 구성
-    String url = 'api/chat/room/personal?userId=$userId';
-    Map<String, dynamic> body = {
-      "roomName": roomName,
-      "type": roomType 
-    };
-
-    // 2. 서버에 보내기 직전에 "진짜 데이터" 출력
-    print('-----------------------------------------');
-    print('📡 [서버 전송 준비] POST 요청');
-    print('🔗 경로(URL): $url');
-    print('📦 바디(Body/Param): $body'); // 여기서 실제 보내는 값 확인!
-    print('-----------------------------------------');
-
-    try {
-      final response = await apiService.postRequest(url, body);
-      
-      print('✅ [서버 응답 성공] 응답값: $response');
-      
-      // 생성 후 목록 조회 자동 실행
-      await fetchMyRooms(userId);
-    } catch (e) {
-      print('❌ [전송 에러] 서버와 통신 실패: $e');
-    }
-  }
-
-  Future<void> createGroupRoom(int userId, String postId) async {
-  // 1. 서버 스펙에 맞춘 URL 구성 (Path + Query Parameter)
-  // 결과 예시: api/chat/room/group-buy/5?userId=1
-  String url = 'api/chat/room/group-buy/userId=$userId';
-
-  // 2. 서버 컨트롤러가 RequestBody를 쓰지 않으므로 바디는 비워서 보냄
-  Map<String, dynamic> body = {}; 
-
-  print('-----------------------------------------');
-  print('📡 [그룹 방 생성] 호출');
-  print('🔗 URL: $url');
-  print('📦 Body: (서버 요구사항 없음 - 비움)');
-  print('-----------------------------------------');
-
+  // =================================================
+  // 1. 채팅방 가져오는 메서드 API 호출 함수
+  // 2. 공구방 목록 불러오기
+  // 3. 내 주위에 있는 개인방 목록 불러오기
+  // =================================================
+  // community_controller.dart
+Future<void> fetchRooms() async {
   try {
-    // 서버가 Long(ID)을 반환하므로 postRequest 호출
-    final response = await apiService.postRequest(url, body);
+    print('🔄 [컨트롤러] fetchRooms 실행');
+    isLoading.value = true;
     
-    print('✅ [그룹 생성 성공] 서버 반환 ID: $response');
+    final result = await _gonguService.getLocalGonguRooms();
     
-    // 생성 성공 후 내 채팅방 목록 새로고침
-    await fetchMyRooms(userId);
+    if (result != null) {
+      gonguRooms.assignAll(result);
+      print('🎯 [컨트롤러] 데이터 할당 완료. 현재 개수: ${gonguRooms.length}');
+    } else {
+      print('🚫 [컨트롤러] 서버에서 빈 값을 받았습니다.');
+    }
   } catch (e) {
-    print('❌ [그룹 생성 실패]: $e');
+    print('❌ [컨트롤러] fetchRooms 에러 발생: $e');
+  } finally {
+    isLoading.value = false;
   }
 }
+
+// =================================================
+// 공구방 검색 함수
+// 검색란에 입력된 키워드로 공구방을 검색
+// =================================================
+
+Future<void> searchRooms(String keyword) async {
+  try {
+    if (keyword.trim().isEmpty) {
+      fetchRooms(); // 검색어가 없으면 전체 목록 로드
+      return;
+    }
+
+    print('🔍 [컨트롤러] 검색 시작: $keyword');
+    isLoading.value = true;
+    
+    // 새로 만드신 검색 서비스 호출
+    final result = await _gonguService.getLocalSearchRooms(keyword);
+    
+    if (result != null) {
+      gonguRooms.assignAll(result);
+      print('🎯 [검색 성공] 결과 개수: ${gonguRooms.length}');
+    } else {
+      gonguRooms.clear(); // 결과가 없으면 리스트 비움
+      print('🚫 [검색 결과 없음]');
+    }
+  } catch (e) {
+    print('❌ [검색 에러]: $e');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
+  // 채팅방을 생성하는 메서드
+  // chatService -> createRoom 메서드가 이미 존재함
+  // 1. 먼저 값에 스프링 시큐리티때문에 리프레쉬 토큰이 있는지 확인해야됨
+  // 2. 그 후에 createRoom을 호출해야됨
+  // 3. createRoom이 성공적으로 방을 만들면, 방 목록을 다시 불러와야됨
+  // 4. 방 목록을 불러오는 메서드는 fetchMyRooms로 이미 존재함 불러올 예정임
+  // 5. 방을 만들 때, 개인방인지 공구방인지 가족방인지 타입을 넘겨줘야됨 ex) GROUP_BUY, PERSONAL, FAMILY
+  // 6. 모든 방에는 postId도 같이 넘겨줘야됨
+  // 7. createRoom 메서드는 roomName, type, postId를 파라미터로 받음
+  // 8. createRoom 메서드는 성공적으로 방을 만들면 true를 반환하고, 실패하면 false를 반환함
+  // =================================================
+
+  // ✅ 내 채팅방 목록 가져오기 (상세 로그) Dto(ChatRoomRequest) -> getMyRooms
+  
+  // Future<void> createGroupRoom(int userId, String postId) async {
+  // // 1. 서버 스펙에 맞춘 URL 구성 (Path + Query Parameter)
+  // // 결과 예시: api/chat/room/group-buy/5?userId=1
+  // String url = 'api/chat/room/group-buy/userId=$userId';
+
+  // // 2. 서버 컨트롤러가 RequestBody를 쓰지 않으므로 바디는 비워서 보냄
+  // }
 }

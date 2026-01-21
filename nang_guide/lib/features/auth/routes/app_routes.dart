@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/views/post_create_screen.dart';
 
 // 바인딩
 import './../bindings/top_nav/alarm_binding.dart';
@@ -14,6 +15,7 @@ import './../bindings/top_nav/search_binding.dart';
 import './../bindings/login/signin_binding.dart';
 import './../bindings/login/signup_binding.dart';
 import './../bindings/bottom_nav/home_binding.dart';
+import './../bindings/post_detail_binding.dart';
 
 // 뷰
 import './../views/bottom_nav_screen/home_screen.dart';
@@ -25,6 +27,7 @@ import '../views/auth/email_signup_screen.dart';
 import '../views/auth/email_login_screen.dart';
 import './../views/splash_screen.dart';
 import '../views/auth/login_selection_screen.dart';
+import '../views/post_detail_screen.dart';
 
 class AppRoutes {
   static const SPLASH = '/';
@@ -40,6 +43,7 @@ class AppRoutes {
   static const PROFILE = '/profile'; // 프로필
   static const POST = '/post'; // 게시글 작성
   static const CHAT = '/chat'; // 채팅
+  static const POST_DETAIL = '/post-detail/:postId'; // 상세페이지
 
   static final routes = [
     GetPage(name: SPLASH, page: () => SplashScreen(), binding: AuthBinding()),
@@ -59,7 +63,13 @@ class AppRoutes {
     GetPage(name: RECOMMEND, page: () => RecommendScreen(), binding: RecommendBinding(),transition: Transition.noTransition,),
     GetPage(name: LEDGER, page: () => LedgerScreen(), binding: LedgerBinding(),transition: Transition.noTransition,),
     GetPage(name: PROFILE, page: () => ProfileScreen(), binding: ProfileBinding(),transition: Transition.noTransition,),
-    GetPage(name: POST, page: () => SplashScreen(), binding: PostBinding()),
+    GetPage(name: POST, page: () => PostCreateScreen(), binding: PostBinding(),transition: Transition.noTransition,),
     GetPage(name: CHAT, page: () => SplashScreen(), binding: ChatBinding()),
+    GetPage(
+      name: AppRoutes.POST_DETAIL,
+      page: () => PostDetailScreen(),
+      binding: PostDetailBinding(),
+      transition: Transition.noTransition,
+    ),
   ];
 }
