@@ -10,8 +10,9 @@ class PostCreateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 컨트롤러 주입
-    final controller = Get.find<PostController>();
+    
+    // 화면 위젯 상단에서 선언
+    final PostController controller = Get.put(PostController());
 
     return Scaffold(
       appBar: AppBar(
@@ -29,17 +30,55 @@ class PostCreateScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- 게시물 종류 (Dropdown) ---
-            _buildLabel("게시물 종류"),
-            Obx(() => DropdownButtonFormField<String>(
-                  value: controller.selectedType.value,
-                  items: ['공동구매', "식사", '나눔', '정보공유']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: controller.setType,
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                )),
-            const SizedBox(height: 20),
+// --- 게시물 종류 (Dropdown) ---
+_buildLabel("게시물 종류"),
+Obx(() => DropdownButtonFormField<String>(
+      // 1. value를 반드시 컨트롤러 변수와 연결해야 터지지 않습니다.
+      value: controller.selectedType.value, 
+      items: ['공동구매', "식사", '나눔', '정보공유']
+          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+          .toList(),
+      onChanged: (val) {
+        controller.setType(val);
+        // 종류가 바뀌면 음식 종류를 초기화해주는 것이 안전합니다.
+        if (val == '공동구매') controller.selectedFoodType.value = '육류';
+      },
+      decoration: const InputDecoration(border: OutlineInputBorder()),
+    )),
+const SizedBox(height: 20),
 
+// --- 음식 종류 (공동구매 클릭 시에만 노출) ---
+Obx(() {
+  if (controller.selectedType.value == '공동구매') {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel("음식 종류"),
+        DropdownButtonFormField<String>(
+          // 2. 초기값이 items 리스트 안에 반드시 포함되어 있어야 합니다.
+          value: controller.selectedFoodType.value, 
+          items: ['육류', '양념', '채소', '유제품', '해산물', '과일']
+              .map((type) => DropdownMenuItem(
+                    value: type,
+                    child: Text(type, style: const TextStyle(fontSize: 14)),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            // 3. .value를 직접 수정하여 상태 반영
+            if (value != null) controller.selectedFoodType.value = value;
+          },
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+  return const SizedBox.shrink();
+}),
+            
             // --- 제목 ---
             _buildLabel("게시물 제목"),
             TextField(

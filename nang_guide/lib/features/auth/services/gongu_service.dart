@@ -209,8 +209,8 @@ class GonguService extends GetxService {
           'meetPlaceText': meetPlaceText,
           'categoryId': categoryId,
           'neighborhoodId': neighborhoodId,
-          'startdate': startdate,
-          'enddate': enddate,
+          'startdate': startdate.toIso8601String(), // 이 부분!
+          'enddate': enddate.toIso8601String(),
         },
       );
 
@@ -219,7 +219,7 @@ class GonguService extends GetxService {
       print('data      : ${response.data}');
       print('================================');
 
-      return response.statusCode == 200 && response.data == true;
+      return response.statusCode == 200;
     } catch (e, stack) {
       print('❌ createGonguRoom ERROR');
       print(e);
@@ -354,12 +354,13 @@ class GonguService extends GetxService {
 
   /// =================================================
   /// 내 주변에 있는 방 제목을 검색할 수 있는 API 함수
-  /// - /api/group-buy?keyword={keyword}
+  /// - /api/group-buy/search?keyword={keyword}
   /// - 헤더에는 인증 토큰 포함 해야됩니다.
   /// - queryParameters : keyword
   /// =================================================
   Future<List<dynamic>?> getLocalSearchRooms(String keyword) async {
     try {
+      print('🚀 검색 시작 키워드: $keyword');
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== getLocalSearchRooms SERVICE ==========');
       print('baseUrl : ${_dio.options.baseUrl}');
@@ -367,13 +368,16 @@ class GonguService extends GetxService {
 
       // [수정] /api/group-buy -> /group-buy (BaseURL 중복 방지)
       final response = await _dio.get(
-        '/group-buy',
+        '/group-buy/search',
         queryParameters: {'keyword': keyword},
       );
 
       print('========== RESPONSE ==========');
       print('statusCode: ${response.statusCode}');
       print('================================');
+
+      // getLocalSearchRooms 내부에서 로그 추가
+      print('🎯 요청 전체 경로: ${_dio.options.baseUrl}/group-buy?keyword=$keyword');
 
       if (response.statusCode == 200 && response.data is List) {
         return response.data;

@@ -31,32 +31,32 @@ void GroupDialog(BuildContext context) { // postId를 인자로 받습니다.
               ),
 
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("취소"),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        // ✅ 2. 서버의 그룹 방 생성 API 호출 (postId 사용)
-                        // userId는 임시로 1 전달
-                        await communityController.createGroupRoom(1, nameController.text.trim(),);
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: ElevatedButton(
+              //         onPressed: () => Navigator.pop(context),
+              //         child: const Text("취소"),
+              //       ),
+              //     ),
+              //     const SizedBox(width: 10),
+              //     Expanded(
+              //       child: ElevatedButton(
+              //         onPressed: () async {
+              //           // ✅ 2. 서버의 그룹 방 생성 API 호출 (postId 사용)
+              //           // userId는 임시로 1 전달
+              //           await communityController.createGroupRoom(1, nameController.text.trim(),);
                         
-                        if (context.mounted) Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF8000)
-                      ),
-                      child: const Text("생성하기", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              )
+              //           if (context.mounted) Navigator.pop(context);
+              //         },
+              //         style: ElevatedButton.styleFrom(
+              //           backgroundColor: const Color(0xFFFF8000)
+              //         ),
+              //         child: const Text("생성하기", style: TextStyle(color: Colors.white)),
+              //       ),
+              //     ),
+              //   ],
+              // )
             ],
           ),
         ),

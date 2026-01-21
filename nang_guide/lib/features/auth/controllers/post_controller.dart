@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/gongu_service.dart'; // GonguService가 있는 경로
 
@@ -16,6 +17,7 @@ class PostController extends GetxController {
 
   // 상태 변수
   final RxString selectedType = '공동구매'.obs;
+  final RxString selectedFoodType = '육류'.obs;
   final RxString locationLabel = '장소를 선택해주세요'.obs;
   final Rx<LatLng> currentPosition = const LatLng(37.3402, 126.7335).obs;
   final RxSet<Marker> markers = <Marker>{}.obs;
@@ -45,10 +47,12 @@ class PostController extends GetxController {
   // 카테고리 문자열 -> ID 변환 (예시 로직)
   int _getCategoryId(String type) {
     switch (type) {
-      case '공동구매': return 1;
-      case '식사': return 2;
-      case '나눔': return 3;
-      case '정보공유': return 4;
+      case '육류': return 1;
+      case '양념': return 2;
+      case '채소': return 3;
+      case '유제품': return 4;
+      case '해산물': return 5;
+      case '과일': return 6;
       default: return 1;
     }
   }
@@ -81,55 +85,56 @@ class PostController extends GetxController {
 
   // --- [핵심] 글 작성 및 API 호출 ---
   Future<void> submitPost() async {
-    // 1. 유효성 검사
+    // 1. 유효성 검사 (날짜 검사 추가)
     if (titleController.text.isEmpty) {
       Get.snackbar("알림", "제목을 입력해주세요.");
       return;
     }
-    if (contentController.text.isEmpty) {
-      Get.snackbar("알림", "내용을 입력해주세요.");
+    if (startDate == null || endDate == null) {
+      Get.snackbar("알림", "기간을 선택해주세요.");
       return;
     }
-    if (locationLabel.value == '장소를 선택해주세요') {
-      Get.snackbar("알림", "만날 장소를 선택해주세요.");
-      return;
-    }
+    // ... (기타 유효성 검토)
 
-    // 로딩 시작
     isLoading.value = true;
 
     try {
-      // 2. 데이터 준비
-      final String title = titleController.text;
-      final String description = contentController.text;
-      final int price = int.tryParse(totalPriceController.text) ?? 0;
-      final String meetPlace = locationLabel.value;
-      final int categoryId = _getCategoryId(selectedType.value);
-      final int neighborhoodId = 11560; // 일단 하드코딩 (나중에 유저 정보에서 가져오기)
+    // 2. 데이터 준비
+    final String title = titleController.text;
+    final String description = contentController.text;
+    final int price = int.tryParse(totalPriceController.text) ?? 0;
+    final String meetPlace = locationLabel.value;
 
-      // 3. API 호출
-      bool isSuccess = await _gonguService.createGonguRoom(
-        title,
-        description,
-        price,
-        meetPlace,
-        categoryId,
-        neighborhoodId,
-        startDate!,
-        endDate!,
-      );
+    // 수정 포인트: selectedType이 아닌 selectedFoodType을 전달해야 함
+    // (만약 공구가 아닐 때의 처리도 필요하다면 아래 함수 내부에서 처리)
+    final int categoryId = _getCategoryId(selectedFoodType.value); 
+    
+    final int neighborhoodId = 11560;
 
-      // 4. 결과 처리
+    // 3. API 호출
+    bool isSuccess = await _gonguService.createGonguRoom(
+      title,
+      description,
+      price,
+      meetPlace,
+      categoryId,
+      neighborhoodId,
+      startDate!,
+      endDate!,
+    );
+
       if (isSuccess) {
-        Get.back(); // 작성 화면 닫기
-        Get.snackbar("성공", "게시글이 등록되었습니다!", backgroundColor: Colors.green.withOpacity(0.5));
-        // 필요한 경우 리스트 새로고침 로직 추가
+        //Get.toNamed(AppRoutes.COMMUNITY);
+        Get.back();
+        Get.snackbar("성공", "게시글이 등록되었습니다!", 
+            backgroundColor: Colors.green.withOpacity(0.5), colorText: Colors.white);
       } else {
-        Get.snackbar("실패", "게시글 등록에 실패했습니다.", backgroundColor: Colors.red.withOpacity(0.5));
+        Get.snackbar("실패", "서버 응답 오류가 발생했습니다.", 
+            backgroundColor: Colors.red.withOpacity(0.5), colorText: Colors.white);
       }
     } catch (e) {
-      print(e);
-      Get.snackbar("오류", "알 수 없는 오류가 발생했습니다.");
+      print("Error during submission: $e");
+      Get.snackbar("오류", "전송 중 오류가 발생했습니다.");
     } finally {
       isLoading.value = false;
     }

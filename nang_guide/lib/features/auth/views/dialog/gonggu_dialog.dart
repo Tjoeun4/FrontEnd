@@ -71,11 +71,12 @@ void GongguDialog(BuildContext context) {
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF8000)),
-                        onPressed: () => communityController.onCreateRoom(
-                          roomName: _roomnameController.text,
-                          type: selectedType.value,
-                          postId: 0,
-                        ),
+                        // onPressed: () => communityController.onCreateRoom(
+                        //   roomName: _roomnameController.text,
+                        //   type: selectedType.value,
+                        //   postId: 0,
+                        // ),
+                        onPressed: (){},
                       // onPressed: () => chatService.CreateRoom().then(
                       child: const Text("예", style: TextStyle(color: Colors.white)),
                     ),
