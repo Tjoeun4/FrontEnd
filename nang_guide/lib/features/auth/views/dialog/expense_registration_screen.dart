@@ -177,9 +177,9 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
             const SizedBox(height: 30),
             // OCR 촬영 버튼
             ElevatedButton.icon(
-              onPressed: _pickImage,
+              onPressed: _showImageSourceDialog, // 다이얼로그 호출
               icon: const Icon(Icons.camera_alt),
-              label: const Text("OCR로 촬영하기"),
+              label: const Text("영수증 불러오기"),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 backgroundColor: Colors.grey[700],
@@ -276,4 +276,44 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
       ),
     );
   }
-}
+
+// 이미지 선택 분기 다이얼로그
+  void _showImageSourceDialog() {
+    Get.bottomSheet(
+      // 1. 배경색이나 모양은 Container의 decoration에서 이미 처리하고 있습니다.
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration( // shape 대신 BoxDecoration을 사용하는 것이 더 확실합니다.
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Wrap(
+          children: [
+            const ListTile(
+              title: Text("영수증 불러오기", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Colors.blue),
+              title: const Text("영수증 촬영하기"),
+              onTap: () {
+                Get.back(); // 바텀시트 닫기
+                controller.processReceipt(ImageSource.camera); // 카메라 호출
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Colors.orange),
+              title: const Text("영수증 사진 선택 (갤러리)"),
+              onTap: () {
+                Get.back(); // 바텀시트 닫기
+                controller.processReceipt(ImageSource.gallery); // 갤러리 호출
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+      // 2. 만약 바텀시트 자체의 배경색을 투명하게 하고 싶다면 아래 옵션을 추가하세요.
+      backgroundColor: Colors.transparent,
+      isScrollControlled: false,
+    );
+  }}
