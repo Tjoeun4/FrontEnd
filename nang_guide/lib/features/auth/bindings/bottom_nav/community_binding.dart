@@ -40,7 +40,7 @@ class CommunityBinding extends Bindings {
     Get.lazyPut<CommunityController>(
       () => CommunityController(Get.find<ApiService>()),
     );
-    Get.lazyPut<PostDetailController>(() => PostDetailController());
+
     // 4. 네비게이션 컨트롤러 등 추가
     Get.lazyPut<NavController>(() => NavController());
 

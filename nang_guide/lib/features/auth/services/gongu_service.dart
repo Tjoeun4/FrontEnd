@@ -182,7 +182,6 @@ class GonguService extends GetxService {
     int priceTotal,
     String meetPlaceText,
     int categoryId,
-    int neighborhoodId,
     DateTime startdate,
     DateTime enddate,
   ) async {
@@ -195,7 +194,6 @@ class GonguService extends GetxService {
       print('priceTotal: $priceTotal (${priceTotal.runtimeType})');
       print('meetPlaceText: "$meetPlaceText" (${meetPlaceText.runtimeType})');
       print('categoryId: $categoryId (${categoryId.runtimeType})');
-      print('neighborhoodId: $neighborhoodId (${neighborhoodId.runtimeType})');
       print('startdate: $startdate (${startdate.runtimeType})');
       print('enddate: $enddate (${enddate.runtimeType})');
       print('=======================================');
@@ -208,7 +206,6 @@ class GonguService extends GetxService {
           'priceTotal': priceTotal,
           'meetPlaceText': meetPlaceText,
           'categoryId': categoryId,
-          'neighborhoodId': neighborhoodId,
           'startdate': startdate.toIso8601String(), // 이 부분!
           'enddate': enddate.toIso8601String(),
         },
