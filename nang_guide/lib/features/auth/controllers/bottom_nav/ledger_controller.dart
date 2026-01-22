@@ -190,35 +190,45 @@ class LedgerController extends GetxController {
   Future<void> deleteExpense(int expenseId) async {
     isLoading.value = true;
     try {
-      // 1. 서버에 삭제 요청 (DELETE /api/expenses/{id})
       bool success = await _apiClient.deleteExpense(expenseId);
 
       if (success) {
-        // 2. 서버 데이터와 일치시키기 위해 다시 불러오기
-        await fetchData();
+        await fetchData(); // 데이터 새로고침
 
-        Get.back(); // 상세/수정 창이 열려있다면 닫기
-        Get.snackbar("삭제 완료", "내역이 정상적으로 삭제되었습니다.");
+        // ✅ 핵심 수정:
+        // 만약 '삭제 확인 다이얼로그'가 떠 있는 상태에서 이 함수가 호출된다면
+        // 다이얼로그를 닫고(1번), 수정 화면까지 닫아야(2번) 목록으로 돌아갑니다.
+        if (Get.isDialogOpen ?? false) {
+          Get.back(); // 다이얼로그 닫기
+        }
+        Get.back(); // 수정 화면(ExpenseEditScreen) 닫기
+
+        Get.snackbar("삭제 완료", "내역이 정상적으로 삭제되었습니다.",
+            snackPosition: SnackPosition.BOTTOM);
       } else {
         Get.snackbar("삭제 실패", "내역을 삭제하지 못했습니다.");
       }
     } catch (e) {
       print("Error deleting expense: $e");
-      Get.snackbar("오류", "삭제 중 예상치 못한 오류가 발생했습니다.");
+      Get.snackbar("오류", "삭제 중 오류가 발생했습니다.");
     } finally {
       isLoading.value = false;
     }
   }
-  // LedgerController 내부에 추가 필요
+
   Future<void> updateExpense(int id, Map<String, dynamic> data) async {
     isLoading.value = true;
     try {
       bool success = await _apiClient.updateExpense(id, data);
       if (success) {
-        await fetchData(); // 서버에서 최신 데이터 다시 받아오기
-        Get.back(); // 수정 화면 닫기
+        await fetchData();
+        Get.back();
         Get.snackbar("수정 완료", "내역이 성공적으로 수정되었습니다.");
+      } else {
+        Get.snackbar("수정 실패", "서버 저장 중 오류가 발생했습니다.");
       }
+    } catch (e) {
+      print("Error updating expense: $e");
     } finally {
       isLoading.value = false;
     }

@@ -160,6 +160,8 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       textCancel: "취소",
       confirmTextColor: Colors.white,
       onConfirm: () {
+        // 1. 먼저 다이얼로그를 닫습니다.
+        Get.back();
         // ✅ 수정: 리스트 조작이 아닌 서버 API 호출 (expenseId 사용)
         controller.deleteExpense(widget.item['expenseId']);
         // deleteExpense 내부에서 Get.back()을 수행하므로 여기서는 다이얼로그만 닫힐 수 있음
