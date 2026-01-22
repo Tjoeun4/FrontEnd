@@ -9,12 +9,21 @@ import './../../controllers/bottom_nav/ledger_controller.dart';
 import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
 
+/// 📌 가계부 메인 화면 (View 레이어)
+/// - 월별 지출 요약
+/// - 내역 / 달력 탭 UI
+/// - 지출 추가, 수정, 조회 진입점
+///
+/// 👉 상태 관리와 비즈니스 로직은 모두 LedgerController에 위임
 class LedgerScreen extends StatelessWidget {
   LedgerScreen({super.key});
-
+  /// API Client & Controller 주입
+  /// - Screen 진입 시 한 번만 생성
   final LedgerApiClient apiClient = Get.put(LedgerApiClient());
   final LedgerController controller = Get.put(LedgerController());
-
+  // ============================================================
+  // 1️⃣ 화면 전체 레이아웃 구조
+  // ============================================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,11 +32,11 @@ class LedgerScreen extends StatelessWidget {
         children: [
           Column(
             children: [
-              // 1. 상단 월 선택 및 지출 요약 UI
+              // 상단: 연/월 이동 + 월 총 지출 요약
               _buildHeader(),
-              // 2. 내역/달력 전환 Segmented Control
+              // 내역 / 달력 탭 전환 컨트롤
               _buildTabSwitcher(),
-              // 3. 탭 내용 (달력 또는 내역 리스트)
+              // 선택된 탭에 따른 본문 영역
               Expanded(
                 child: Obx(
                   () => controller.selectedTabIndex.value == 0
@@ -37,14 +46,15 @@ class LedgerScreen extends StatelessWidget {
               ),
             ],
           ),
-
-          // 플로팅 버튼
+          // ====================================================
+          // 2️⃣ 지출 추가 Floating Action Button
+          // ====================================================
           Positioned(
             bottom: 36,
             right: 36,
             child: FloatingActionButton(
               onPressed: () {
-                // 다이얼로그 대신 새 페이지로 이동
+                // 지출 등록 화면으로 이동
                 Get.to(() => const ExpenseRegistrationScreen());
               },
               backgroundColor: Colors.amber,
@@ -53,17 +63,23 @@ class LedgerScreen extends StatelessWidget {
           ),
         ],
       ),
+      // 하단 네비게이션 바
       bottomNavigationBar: MyBottomNavigation(),
     );
   }
-
-  // 상단 헤더: [화살표 연도.월 화살표] ... [지출 금액]
+  // ============================================================
+  // 3️⃣ 상단 헤더 영역
+  // - 월 이동
+  // - 연/월 직접 선택
+  // - 월 총 지출 표시
+  // ============================================================
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // --- 연/월 이동 영역 ---
           Row(
             children: [
               IconButton(
@@ -74,7 +90,7 @@ class LedgerScreen extends StatelessWidget {
                   color: Colors.black87,
                 ),
               ),
-              // 클릭 시 바텀 시트 호출
+              // 연/월 클릭 시 바텀 시트 호출
               InkWell(
                 onTap: () => _showYearMonthPicker(),
                 child: Obx(
@@ -97,6 +113,7 @@ class LedgerScreen extends StatelessWidget {
               ),
             ],
           ),
+          // --- 월 총 지출 금액 표시 ---
           Obx(
             () => RichText(
               text: TextSpan(
@@ -118,8 +135,10 @@ class LedgerScreen extends StatelessWidget {
       ),
     );
   }
-
-  // 연월 선택 바텀 시트 함수
+  // ============================================================
+  // 4️⃣ 연/월 선택 바텀 시트
+  // - Cupertino Picker 사용
+  // ============================================================
   void _showYearMonthPicker() {
     int tempYear = controller.year.value;
     int tempMonth = controller.month.value;
@@ -127,7 +146,7 @@ class LedgerScreen extends StatelessWidget {
     Get.bottomSheet(
       Container(
         height: 300,
-        // 1. 내부 컨테이너에 배경색과 상단 라운드 처리를 적용합니다.
+        // 내부 컨테이너에 배경색과 상단 라운드 처리를 적용합니다.
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -135,6 +154,7 @@ class LedgerScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // --- 상단 액션 바 ---
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -161,6 +181,7 @@ class LedgerScreen extends StatelessWidget {
                 ),
               ],
             ),
+            // --- 연 / 월 선택 피커 ---
             Expanded(
               child: Row(
                 children: [
@@ -205,8 +226,9 @@ class LedgerScreen extends StatelessWidget {
       isScrollControlled: true, // 높이 조절을 유연하게 하기 위해 추가
     );
   }
-
-  // 탭 전환 위젯 (Segmented Control)
+  // ============================================================
+  // 5️⃣ 내역 / 달력 탭 전환 컨트롤
+  // ============================================================
   Widget _buildTabSwitcher() {
     return Container(
       width: double.infinity,
@@ -234,8 +256,10 @@ class LedgerScreen extends StatelessWidget {
       ),
     );
   }
-
-  // 내역 탭 UI (임시)
+  // ============================================================
+  // 6️⃣ 내역 탭
+  // - 날짜별 그룹화된 리스트 UI
+  // ============================================================
   Widget _buildHistoryTab() {
     final groupedData = controller.groupedItems;
     final sortedDates = groupedData.keys.toList()
@@ -250,6 +274,7 @@ class LedgerScreen extends StatelessWidget {
     return ListView.builder(
       itemCount: sortedDates.length,
       itemBuilder: (context, index) {
+        // 날짜별 섹션 + 해당 날짜의 지출 리스트 렌더링
         String dateStr = sortedDates[index];
         List<dynamic> items = groupedData[dateStr]!;
         DateTime dateTime = DateTime.parse(dateStr);
@@ -377,9 +402,11 @@ class LedgerScreen extends StatelessWidget {
       },
     );
   }
-
-  // 달력 탭 UI (기존 코드 활용)
-  // 1. 달력 탭 수정 (InkWell 추가)
+  // ============================================================
+  // 7️⃣ 달력 탭
+  // - 월 단위 달력 UI
+  // - 날짜 클릭 시 일별 상세 바텀 시트 표시
+  // ============================================================
   Widget _buildCalendarTab() {
     return ListView(
       children: [
@@ -446,7 +473,9 @@ class LedgerScreen extends StatelessWidget {
       ],
     );
   }
-
+  // ============================================================
+  // 8️⃣ 특정 날짜 지출 상세 바텀 시트
+  // ============================================================
   void _showDayDetailBottomSheet(int day) {
     String dateKey = "${controller.year.value}-${controller.month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
     // ✅ 수정: item['date'] 대신 spentAt의 앞부분(날짜)과 비교해야 합니다.
@@ -528,8 +557,9 @@ class LedgerScreen extends StatelessWidget {
       ),
     );
   }
-
-  // 요일 라벨 (일, 월, 화, 수, 목, 금, 토)을 만드는 위젯
+  // ============================================================
+  // 9️⃣ 요일 헤더 (일 ~ 토)
+  // ============================================================
   Widget _buildWeekLabels() {
     return Row(
       children: controller.weekLabels
