@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
+import 'package:http/http.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// 📌 가계부(지출) 관련 API 통신을 담당하는 전용 API Client
 /// - GetX Service로 등록되어 전역에서 재사용됨
@@ -135,4 +137,45 @@ class LedgerApiClient extends GetxService {
       return [];
     }
   }
-}
+
+  Future<int?> uploadReceipt(XFile imageFile) async {
+    try {
+      String fileName = imageFile.path.split('/').last;
+      String extension = fileName.split('.').last.toLowerCase();
+
+      // 확장자에 따른 타입 지정 (jpg, png 등)
+      String type = (extension == 'png') ? 'png' : 'jpeg';
+
+      dio.FormData formData = dio.FormData.fromMap({
+        "file": await dio.MultipartFile.fromFile(
+          imageFile.path,
+          filename: fileName,
+          // ✅ contentType을 명시적으로 추가하여 서버가 파일을 인식하게 돕습니다.
+          contentType: MediaType("image", type),
+        ),
+      });
+
+      final response = await _dio.post(
+        '/receipt/upload', // 👈 경로가 /api/receipt/upload 인지 /receipt/upload 인지 베이스 URL 확인 필요
+        data: formData,
+        // 일부 서버는 멀티파트 요청 시 헤더를 명시하는 것을 선호합니다.
+        options: dio.Options(
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // response.data가 Map 형태인 경우 'expenseId'를 꺼내야 할 수도 있습니다.
+        // 만약 순수 숫자만 온다면 아래 코드가 맞습니다.
+        return int.tryParse(response.data.toString());
+      }
+      return null;
+    } on dio.DioException catch (e) {
+      // 💡 400 에러의 구체적인 메시지를 확인하기 위해 response.data를 출력합니다.
+      print("영수증 업로드 서버 에러 메시지: ${e.response?.data}");
+      return null;
+    } catch (e) {
+      print("알 수 없는 에러: $e");
+      return null;
+    }
+  }}
