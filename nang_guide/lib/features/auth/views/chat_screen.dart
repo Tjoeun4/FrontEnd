@@ -20,11 +20,11 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ 에러 해결: 인자 개수를 컨트롤러 정의에 맞게 수정 (roomId만 전달)
-    chatController.fetchChatHistory(widget.roomId);
-
-    // 실시간 웹소켓 구독 시작
-    chatController.connect(widget.roomId);
+    // 비동기로 연결 및 내역 로드 수행
+    Future.microtask(() {
+      chatController.connect(widget.roomId);
+      chatController.fetchChatHistory(widget.roomId);
+    });
   }
 
   @override
@@ -100,13 +100,23 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildItemHeader() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      width: double.infinity, // 가로로 꽉 차게 설정
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // 위아래 여백과 글자 좌우 여백
       color: Colors.orange[50],
       child: Row(
         children: const [
-          Icon(Icons.shopping_basket, color: Colors.orange),
+          Icon(Icons.campaign_rounded, color: Colors.orange, size: 20),
           SizedBox(width: 10),
-          Expanded(child: Text("거래 중인 식재료 정보", style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(
+            child: Text(
+              "서로 예의를 지키며 따뜻한 대화를 나눠주세요. 😊",
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );
