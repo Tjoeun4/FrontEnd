@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart'; // Segmented Control용
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../services/ledger_api_client.dart';
 import '../dialog/expense_edit_screen.dart';
 import '../dialog/expense_registration_screen.dart';
 import './../../controllers/bottom_nav/ledger_controller.dart';
@@ -11,6 +12,7 @@ import './../components/bottom_nav_bar.dart';
 class LedgerScreen extends StatelessWidget {
   LedgerScreen({super.key});
 
+  final LedgerApiClient apiClient = Get.put(LedgerApiClient());
   final LedgerController controller = Get.put(LedgerController());
 
   @override

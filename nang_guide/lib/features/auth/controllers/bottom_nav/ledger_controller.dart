@@ -1,91 +1,111 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../services/ledger_api_client.dart'; // 실제 경로에 맞게 수정
 
 class LedgerController extends GetxController {
-  // 1. UI 상태 관리 변수 추가
-  var selectedTabIndex = 1.obs; // 0: 내역, 1: 달력
-  var totalExpense = 0.obs;    // 총 지출 (임시 0원)
+  final LedgerApiClient _apiClient = Get.find<LedgerApiClient>();
 
-  // 2. 날짜 관리 변수 (연도 추가)
+  // UI 상태 변수
+  var selectedTabIndex = 1.obs;
+  var totalExpense = 0.obs;
+  var isLoading = false.obs;
+
+  // 날짜 변수
   RxInt year = DateTime.now().year.obs;
   RxInt month = DateTime.now().month.obs;
-
   final weekLabels = ['일', '월', '화', '수', '목', '금', '토'];
   RxList<List<int>> days = <List<int>>[].obs;
 
-  var isLoading = false.obs;
+  // 서버 데이터 저장소
+  RxList<dynamic> historyItems = <dynamic>[].obs;
+  RxMap<String, int> dailySummaries = <String, int>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
     generateDays();
+    fetchData(); // 앱 실행 시 데이터 불러오기
   }
 
-  // 다음 달 이동 (연도 바뀜 처리 포함)
-  void nextMonth() {
-    if (month.value == 12) {
-      year.value++;
-      month.value = 1;
-    } else {
-      month.value++;
+  // --- 서버 통신 로직 ---
+
+  Future<void> fetchData() async {
+    isLoading.value = true;
+    try {
+      await Future.wait([
+        _fetchMonthlyExpenses(),
+        _fetchDailySummary(),
+      ]);
+    } finally {
+      isLoading.value = false;
     }
-    generateDays();
   }
 
-  // 이전 달 이동 (연도 바뀜 처리 포함)
-  void previousMonth() {
-    if (month.value == 1) {
-      year.value--;
-      month.value = 12;
-    } else {
-      month.value--;
+  Future<void> _fetchMonthlyExpenses() async {
+    final response = await _apiClient.getMonthlyExpenses(year.value, month.value);
+    if (response != null && response['content'] != null) {
+      historyItems.assignAll(response['content']);
     }
-    generateDays();
   }
 
-  // 달력 데이터 생성 로직 (현재 year.value 기준)
-  void generateDays() {
-    days.clear();
-
-    // DateTime.now().year 대신 상태값인 year.value를 사용합니다.
-    final firstDay = DateTime(year.value, month.value, 1);
-    final lastDay = DateTime(year.value, month.value + 1, 0).day;
-
-    int startWeekday = firstDay.weekday % 7; // 일요일=0
-    int day = 1;
-
-    while (day <= lastDay) {
-      List<int> week = List.filled(7, 0);
-      for (int i = startWeekday; i < 7 && day <= lastDay; i++) {
-        week[i] = day++;
+  Future<void> _fetchDailySummary() async {
+    final data = await _apiClient.getDailySummary(year.value, month.value);
+    if (data != null) {
+      final Map<String, int> summaries = {};
+      for (var item in data['dailyAmounts']) {
+        summaries[item['date']] = item['totalAmount'];
       }
-      days.add(week);
-      startWeekday = 0;
+      dailySummaries.assignAll(summaries);
+      totalExpense.value = data['monthTotalAmount'] ?? 0;
     }
   }
 
-  // ledger_controller.dart 내부에 추가
-  void updateYearMonth(int newYear, int newMonth) {
-    year.value = newYear;
-    month.value = newMonth;
-    generateDays(); // 달력 데이터 갱신
+  // --- UI 편의 기능 (삭제 금지!) ---
+
+  // 프론트엔드 선택용 카테고리 리스트 (UI에서 사용)
+  final List<String> categories = [
+    '식비', '식재료', '완제품/간편식', '주류/음료', '교통',
+    '쇼핑', '생활용품', '문화/여가', '의료/건강', '기타'
+  ];
+
+  // 카테고리별 이모지 매칭 (영문 Enum과 한글 모두 대응)
+  String getCategoryEmoji(String category) {
+    switch (category) {
+      case 'MEAL': case '식비':
+      return '🍜';
+      case 'INGREDIENT': case '식재료':
+      return '🥬';
+      case 'READY_MEAL': case '완제품/간편식':
+      return '🍱';
+      case 'DRINK': case '주류/음료':
+      return '🥤';
+      case 'TRANSPORT': case '교통':
+      return '🚌';
+      case 'SHOPPING': case '쇼핑':
+      return '🛍️';
+      case 'LIVING': case '생활용품':
+      return '🧼';
+      case 'CULTURE': case '문화/여가':
+      return '🎬';
+      case 'HEALTH': case '의료/건강':
+      return '🏥';
+      case 'RECEIPT': case '영수증':
+      return '🧾';
+      case 'ETC': case '기타':
+      default:
+        return '💰';
+    }
+  }
+  // --- 날짜 제어 및 기타 로직 ---
+  int getDayTotal(int day) {
+    if (day == 0) return 0;
+    String dateKey = "${year.value}-${month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+    return dailySummaries[dateKey] ?? 0;
   }
 
-  // ledger_controller.dart 내부에 추가
-  var historyItems = [
-    {
-      'spentAt': '2026-01-21T10:41:00', 'title': '김치찌개', 'category': '식비', 'amount': 5600, 'memo': ''
-    },
-    {
-      'spentAt': '2026-01-20T18:30:00', 'title': '택시비', 'category': '교통', 'amount': 20000, 'memo': '야근'
-    },
-  ].obs;
-
-// 날짜별로 그룹화하는 게터
   Map<String, List<dynamic>> get groupedItems {
     Map<String, List<dynamic>> data = {};
     for (var item in historyItems) {
-      // spentAt에서 날짜 부분(yyyy-MM-dd)만 추출하여 키로 사용
       String date = item['spentAt'].toString().substring(0, 10);
       if (data[date] == null) data[date] = [];
       data[date]!.add(item);
@@ -93,58 +113,86 @@ class LedgerController extends GetxController {
     return data;
   }
 
-  // ledger_controller.dart 내부에 추가
-  int getDayTotal(int day) {
-    if (day == 0) return 0;
-    String dateKey = "${year.value}-${month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-
-    return historyItems
-        .where((item) => item['spentAt'].toString().startsWith(dateKey)) // date 대신 spentAt 검사
-        .fold(0, (sum, item) => sum + (item['amount'] as int));
+  void nextMonth() {
+    if (month.value == 12) { year.value++; month.value = 1; }
+    else { month.value++; }
+    generateDays(); fetchData();
   }
 
-  // ledger_controller.dart 내 addExpense 함수 부분
-  void addExpense({
+  void previousMonth() {
+    if (month.value == 1) { year.value--; month.value = 12; }
+    else { month.value--; }
+    generateDays(); fetchData();
+  }
+
+  void updateYearMonth(int newYear, int newMonth) {
+    year.value = newYear; month.value = newMonth;
+    generateDays(); fetchData();
+  }
+
+  void generateDays() {
+    days.clear();
+    final firstDay = DateTime(year.value, month.value, 1);
+    final lastDay = DateTime(year.value, month.value + 1, 0).day;
+    int startWeekday = firstDay.weekday % 7;
+    int day = 1;
+    while (day <= lastDay) {
+      List<int> week = List.filled(7, 0);
+      for (int i = startWeekday; i < 7 && day <= lastDay; i++) { week[i] = day++; }
+      days.add(week);
+      startWeekday = 0;
+    }
+  }
+  // --- 지출 내역 생성 (서버 연동) ---
+  Future<void> addExpense({
     required DateTime dateTime,
     required String category,
-    required String title, // content -> title
+    required String title,
     required int amount,
     required String memo,
-  }) {
-    final newItem = {
-      'spentAt': dateTime.toIso8601String(), // 백엔드 전송을 위해 ISO 형식 권장
-      'title': title, // content 대신 title 사용
-      'amount': amount,
-      'category': category,
-      'memo': memo,
+  }) async {
+    isLoading.value = true;
+
+    final expenseData = {
+      "amount": amount,
+      "spentAt": dateTime.toIso8601String(),
+      "title": title,
+      "category": _mapToBackendCategory(category),
+      "memo": memo
     };
-    historyItems.add(newItem); // 리스트에 추가 (RxList이므로 UI 자동 갱신)
-    // 전체 지출 합계도 업데이트 (선택 사항)
-    _updateTotalExpense();
-  }
 
-// 상단 헤더의 총 지출액을 업데이트하는 함수
-  void _updateTotalExpense() {
-    int total = historyItems.fold(0, (sum, item) => sum + (item['amount'] as int));
-    totalExpense.value = total;
-  }
+    try {
+      // 1. 서버에 저장 요청
+      bool success = await _apiClient.createExpense(expenseData);
 
-  // ledger_controller.dart 내부에 추가
-  String getCategoryEmoji(String category) {
+      if (success) {
+        // 2. 중요: 서버에서 최신 데이터를 다시 긁어옵니다.
+        // 이렇게 해야 달력 요약(dailySummary)과 내역 목록이 서버 기준으로 갱신됩니다.
+        await fetchData();
+
+        Get.back(); // 등록창 닫기
+        Get.snackbar("저장 완료", "가계부 내역이 추가되었습니다.");
+      }
+    } catch (e) {
+      print("Error during addExpense: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  // 서버 전송을 위한 영문 Enum 변환 함수
+  String _mapToBackendCategory(String category) {
     switch (category) {
-      case '식비':
-        return '🍜';
-      case '교통':
-        return '🚕';
-      case '쇼핑':
-        return '🛍️';
-      case '식재료':
-        return '🥬';
-      case '생활용품':
-        return '🧼';
-      case '기타':
-      default:
-        return '💰'; // 기본 이모지
+      case '식비': return 'MEAL';
+      case '식재료': return 'INGREDIENT';
+      case '완제품/간편식': return 'READY_MEAL';
+      case '주류/음료': return 'DRINK';
+      case '교통': return 'TRANSPORT';
+      case '쇼핑': return 'SHOPPING';
+      case '생활용품': return 'LIVING';
+      case '문화/여가': return 'CULTURE';
+      case '의료/건강': return 'HEALTH';
+      case '영수증': return 'RECEIPT';
+      default: return 'ETC';
     }
   }
 }
