@@ -30,6 +30,8 @@ class GonguResponse {
   final String? join;
   final DateTime? startdate;
   final DateTime? enddate;
+  final int? currentParticipants;
+  final int? maxParticipants;
 
   // 이것도 사용할 예정이에요
   GonguResponse({
@@ -51,6 +53,8 @@ class GonguResponse {
     this.join,
     this.startdate,
     this.enddate,
+    this.currentParticipants,
+    this.maxParticipants,
   });
 
   // JSON 팩토리로 간단하게 전송 및 수신 가능
@@ -77,6 +81,8 @@ class GonguResponse {
       startdate:
           json['startdate'] != null ? DateTime.parse(json['startdate']) : null,
       enddate: json['enddate'] != null ? DateTime.parse(json['enddate']) : null,
+      currentParticipants: json['currentParticipants'],
+      maxParticipants: json['maxParticipants'],
     );
   }
 }
@@ -248,7 +254,7 @@ class GonguService extends GetxService {
       print('statusCode: ${response.statusCode}');
       print('================================');
 
-      return response.statusCode == 200 && response.data == true;
+      return response.statusCode == 200;
     } catch (e, stack) {
       print('❌ favoriteGonguRoom ERROR');
       print(e);
@@ -392,7 +398,7 @@ class GonguService extends GetxService {
   /// - 헤더에는 인증 토큰 포함 해야됩니다.
   /// - queryParameters : keyword
   /// =================================================
-  Future<List<dynamic>?> getLocalFilterCategoryRooms(String categoryId) async {
+  Future<List<dynamic>?> getLocalFilterCategoryRooms(int categoryId) async {
     try {
       // [수정] /api/group-buy/filter -> /group-buy/filter (BaseURL 중복 방지)
       final response = await _dio.get(

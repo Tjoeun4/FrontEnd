@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
-import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
-import 'package:honbop_mate/features/auth/services/auth_service.dart';
 import 'package:honbop_mate/features/auth/services/gongu_service.dart'; // GonguService가 있는 경로
 import 'package:get_storage/get_storage.dart';
 
@@ -100,7 +97,7 @@ class PostController extends GetxController {
     // return; // 실제 서비스라면 막아야 함
   }
 
-  final int userNeighborhoodId = storedId ?? 11560; // 정 안되면 기본값
+  final int userNeighborhoodId = storedId; // 정 안되면 기본값
 
       // 2. 저장된 유저 데이터에서 neighborhoodId 추출 (로그인 시 'user'라는 키로 저장했다고 가정)
       // 만약 숫자만 따로 저장했다면 storage.read('neighborhoodId') 로 바로 가져오면 됩니다.

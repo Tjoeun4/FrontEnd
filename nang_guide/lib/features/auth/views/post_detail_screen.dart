@@ -6,43 +6,153 @@ import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dar
 
 // post_detail_screen.dart
 class PostDetailScreen extends GetView<PostDetailController> {
-  final Controller = Get.find<PostDetailController>();
+  // GetView를 사용하므로 상단 find는 생략 가능합니다.
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("공구 상세 정보")),
+      appBar: AppBar(
+        title: const Text("공구 상세 정보"),
+        centerTitle: true,
+        actions: [
+          // 상단에도 공유나 신고 버튼 등을 넣을 수 있습니다.
+          IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
+        ],
+      ),
       body: Obx(() {
-        if (Controller.isLoading.value) return const Center(child: CircularProgressIndicator());
-        
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
         final data = controller.postData;
+        
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          physics: const BouncingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(data['title'] ?? '', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Text("가격:  ${NumberFormat('#,###').format(data['priceTotal'])}원", style: const TextStyle(fontSize: 18, color: Colors.orange)),
-              const Divider(height: 30),
-              const Text("상세 내용", style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Text(data['description'] ?? ''),
-              const SizedBox(height: 30),
-              // 여기에 구글 지도를 넣을 계획입니다.
+              // 1. 상단 이미지 영역 (없을 경우 대비 색상 박스)
+              Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[200],
+                child: const Icon(Icons.image, size: 80, color: Colors.grey),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 2. 카테고리 & 제목
+                    Text(
+                      "${data['categoryName'] ?? '카테고리'}",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      data['title'] ?? '',
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 3. 가격 정보
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${NumberFormat('#,###').format(data['priceTotal'] ?? 0)}원",
+                          style: const TextStyle(
+                            fontSize: 22, 
+                            fontWeight: FontWeight.w900, 
+                            color: Colors.orange
+                          ),
+                        ),
+                        // 모집 현황 표시 (예: 1/4명)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "모집중 ${data['currentParticipants']}/${data['maxParticipants']}명",
+                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    const Divider(height: 40),
+
+                    // 4. 상세 설명
+                    const Text("상세 내용", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    Text(
+                      data['description'] ?? '',
+                      style: const TextStyle(fontSize: 16, height: 1.5),
+                    ),
+                    
+                    const SizedBox(height: 30),
+                    
+                    // 5. 지도 영역 가이드
+                    Container(
+                      width: double.infinity,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.shade100),
+                      ),
+                      child: const Center(
+                        child: Text("📍 여기에 Google Map이 들어갈 예정입니다."),
+                      ),
+                    ),
+                    const SizedBox(height: 80), // 하단 버튼 공간 확보
+                  ],
+                ),
+              ),
             ],
           ),
         );
       }),
-      // 하단 참여하기 버튼
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-          onPressed: () {
-            // 채팅방 입장 또는 참여 로직
-          },
-          child: const Text("이 공구 참여하기"),
+
+      // 🎯 하단 고정 액션 바 (좋아요 + 참여하기)
+      bottomSheet: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 1)
+          ],
+        ),
+        child: Row(
+          children: [
+            // 좋아요 버튼
+            Obx(() => IconButton(
+              onPressed: () => controller.toggleFavorite(),
+              icon: Icon(
+                controller.isFavorite.value ? Icons.favorite : Icons.favorite_border,
+                color: controller.isFavorite.value ? Colors.red : Colors.grey,
+                size: 30,
+              ),
+            )),
+            const SizedBox(width: 10),
+            // 참여하기 버튼
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                onPressed: () => controller.joinGroupBuy(),
+                child: const Text("이 공구 참여하기", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ),
       ),
     );

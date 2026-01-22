@@ -101,95 +101,29 @@ class GonguController extends GetxController {
   /// 3. 해당 폼을 작성한다.
   /// 4. 백엔드에 파람값 전달한다. 
   /// 5. 백엔드에서 응답이 오면, 토스트 메세지가 뜨면서, 커뮤니티 페이지로 이동한다.
+  
   /// ==================================================
-  Future<void> PostWithGongu() async {
-    // google_auth_service.dart에 있는 함수와 이름은 같지만 다른 함수. 즉, 현재 클래스인 AuthController만의 함수
-    isLoading(true); // RxBoolean 타입 변수 isLoading의 값을 true로 변경
-    errorMessage(''); // errorMessage의 값을 공백으로 변경
+  // Future<void> PostWithGongu() async {
+  //   // google_auth_service.dart에 있는 함수와 이름은 같지만 다른 함수. 즉, 현재 클래스인 AuthController만의 함수
+  //   isLoading(true); // RxBoolean 타입 변수 isLoading의 값을 true로 변경
+  //   errorMessage(''); // errorMessage의 값을 공백으로 변경
 
-    try {
-      final googleUser = await _googleAuthService
-          .signInWithGoogle(); // 실제 구글 로그인을 실행하는 함수를 사용하여 return된 googleUser 객체를 googleUser에 저장
+  //   try {
+  //     final PostGongu = await _gonguService.createGonguRoom();
 
-      if (googleUser != null && googleUser.authentication != null) {
-        // 로그인 팝업 취소 등으로 실패해서 googleUser가 null로 반환되지 않을 때. 즉, 구글 로그인에 성공·토큰을 가져올 수 있는 상태일 때
-        final String? idToken = googleUser
-            .authentication!
-            .idToken; // googleUser객체의 인증정보 중 idToken을 가져와 idToken 변수에 저장(?로 null일 가능성 열어둠).
-
-        if (idToken != null) {
-          // idToken이 null이 아닐 때
-          print(
-            'Frontend: Received idToken: $idToken',
-          ); // idToken을 받았다는 문자열을 idToken과 함께 출력
-          final authResponse = await _authApiClient.googleSignIn(
-            idToken,
-          ); // authApiClient에 있는 백엔드와 통신하여 구글 로그인을 하는 함수를 (idToken을 매개변수로 하여)호출하여 반환된 결과를 authResponse 변수에 저장
-          /// -------------------------------
-          /// 신규 사용자 분기
-          /// - 추가 정보 입력 화면으로 이동
-          /// -------------------------------
-          if (authResponse.newUser == true) {
-            // 백엔드에서 반환한 newUser 필드가 true이면. 즉, 신규 가입 사용자(이메일이 DB에 없는 사용자)이면
-            print('Frontend: New user. Navigating to GoogleSignUpScreen.');
-            Get.offAll(
-              () => GoogleSignUpScreen(
-                // 쌓여 있는 모든 화면 지우고 구글 회원가입 위젯(간소화된 회원가입 페이지)으로 이동
-                email: authResponse
-                    .email!, // 백엔드에서 반환한 email 필드를 GoogleSignUpScreen 위젯에 있는 생성자의 매개변수로 전달
-                displayName:
-                    authResponse.nickname ??
-                    '사용자', // 같은 원리로 백엔드에서 반환한 nickname 필드를 생성자의 매개변수로 전달(email과 displayName은 GoogleSignUpScreen에서 required이기 때문에 반드시 전달해야 함)
-              ),
-            );
-
-            /// -------------------------------
-            /// 기존 사용자 또는 가입 완료 사용자
-            /// - JWT 저장 후 홈 화면 이동
-            /// -------------------------------
-          } else if (authResponse.token != null) {
-            // newUser 필드가 false이지만, token이 있다면. 즉, 이미 가입한 사용자 혹은 회원가입을 마친 사용자
-            print(
-              'Frontend: Login successful! JWT Token: ${authResponse.token}',
-            );
-            await _storage.write(
-              'jwt_token',
-              authResponse.token,
-            ); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
-            await _storage.write('refresh_token', authResponse.refreshToken);
-            print('Frontend: Existing user. Navigating to Home Screen.');
-            Get.offAllNamed(
-              AppRoutes.HOME,
-            ); // 홈 화면으로 이동 .offAllNames 메서드는 GetMaterialApp에 등록된 이름을 통해 이동하는 메서드.
-          } else {
-            // This case implies an actual authentication failure for an existing user,
-            // or an unexpected error from the backend for a new user flow.
-            errorMessage(
-              authResponse.error ?? 'Backend authentication failed.',
-            );
-            print(
-              'Frontend: Backend authentication failed: ${authResponse.error}',
-            );
-          }
-
-          /// -------------------------------
-          /// 인증 실패 또는 예외 응답
-          /// -------------------------------
-        } else {
-          errorMessage('Google ID Token is null.');
-          print('Frontend: Google ID Token is null.');
-        }
-      } else {
-        errorMessage('Google sign-in failed or user cancelled.');
-        print('Frontend: Google sign-in failed or user cancelled.');
-      }
-    } catch (e) {
-      errorMessage('An error occurred during Google sign-in: $e');
-      print('Frontend: Error during Google sign-in: $e');
-    } finally {
-      isLoading(false);
-    }
-  }
+  //     if (PostGongu != null) {
+  //       // 로그인 팝업 취소 등으로 실패해서 googleUser가 null로 반환되지 않을 때. 즉, 구글 로그인에 성공·토큰을 가져올 수 있는 상태일 때
+  //       final String? idToken = PostGongu
+  //           .authentication!
+  //           .idToken; // googleUser객체의 인증정보 중 idToken을 가져와 idToken 변수에 저장(?로 null일 가능성 열어둠).
+  //     }
+  //   } catch (e) {
+  //     errorMessage('An error occurred during Google sign-in: $e');
+  //     print('Frontend: Error during Google sign-in: $e');
+  //   } finally {
+  //     isLoading(false);
+  //   }
+  // }
 
   /// ==================================================
   /// Google 신규 회원 가입 완료 처리
