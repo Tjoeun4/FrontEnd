@@ -53,7 +53,15 @@ class LedgerController extends GetxController {
     if (data != null) {
       final Map<String, int> summaries = {};
       for (var item in data['dailyAmounts']) {
-        summaries[item['date']] = item['totalAmount'];
+        String date = item['date'];
+        int amount = item['totalAmount'];
+
+        // ✅ 기존 날짜에 값이 이미 있다면 더해줍니다. (덮어쓰기 방지)
+        if (summaries.containsKey(date)) {
+          summaries[date] = summaries[date]! + amount;
+        } else {
+          summaries[date] = amount;
+        }
       }
       dailySummaries.assignAll(summaries);
       totalExpense.value = data['monthTotalAmount'] ?? 0;
@@ -157,7 +165,7 @@ class LedgerController extends GetxController {
       "amount": amount,
       "spentAt": dateTime.toIso8601String(),
       "title": title,
-      "category": _mapToBackendCategory(category),
+      "category": mapToBackendCategory(category),
       "memo": memo
     };
 
@@ -179,8 +187,44 @@ class LedgerController extends GetxController {
       isLoading.value = false;
     }
   }
+  Future<void> deleteExpense(int expenseId) async {
+    isLoading.value = true;
+    try {
+      // 1. 서버에 삭제 요청 (DELETE /api/expenses/{id})
+      bool success = await _apiClient.deleteExpense(expenseId);
+
+      if (success) {
+        // 2. 서버 데이터와 일치시키기 위해 다시 불러오기
+        await fetchData();
+
+        Get.back(); // 상세/수정 창이 열려있다면 닫기
+        Get.snackbar("삭제 완료", "내역이 정상적으로 삭제되었습니다.");
+      } else {
+        Get.snackbar("삭제 실패", "내역을 삭제하지 못했습니다.");
+      }
+    } catch (e) {
+      print("Error deleting expense: $e");
+      Get.snackbar("오류", "삭제 중 예상치 못한 오류가 발생했습니다.");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+  // LedgerController 내부에 추가 필요
+  Future<void> updateExpense(int id, Map<String, dynamic> data) async {
+    isLoading.value = true;
+    try {
+      bool success = await _apiClient.updateExpense(id, data);
+      if (success) {
+        await fetchData(); // 서버에서 최신 데이터 다시 받아오기
+        Get.back(); // 수정 화면 닫기
+        Get.snackbar("수정 완료", "내역이 성공적으로 수정되었습니다.");
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
   // 서버 전송을 위한 영문 Enum 변환 함수
-  String _mapToBackendCategory(String category) {
+  String mapToBackendCategory(String category) {
     switch (category) {
       case '식비': return 'MEAL';
       case '식재료': return 'INGREDIENT';
@@ -195,4 +239,20 @@ class LedgerController extends GetxController {
       default: return 'ETC';
     }
   }
+  // LedgerController.dart 내부에 추가
+  String mapBackendToFrontendCategory(String backendEnum) {
+    switch (backendEnum) {
+      case 'MEAL': return '식비';
+      case 'INGREDIENT': return '식재료';
+      case 'READY_MEAL': return '완제품/간편식';
+      case 'DRINK': return '주류/음료';
+      case 'TRANSPORT': return '교통';
+      case 'SHOPPING': return '쇼핑';
+      case 'LIVING': return '생활용품';
+      case 'CULTURE': return '문화/여가';
+      case 'HEALTH': return '의료/건강';
+      default: return '기타';
+    }
+  }
+
 }
