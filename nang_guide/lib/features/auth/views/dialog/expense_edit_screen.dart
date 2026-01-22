@@ -77,7 +77,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             DropdownButton<String>(
               isExpanded: true,
               value: _selectedCategory,
-              items: _categories.map((String value) {
+              items: controller.categories.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
