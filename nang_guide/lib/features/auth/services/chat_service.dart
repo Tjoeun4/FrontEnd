@@ -252,7 +252,7 @@ class ChatService extends GetxService {
   Future<List<dynamic>?> getUserRooms(int userId) async {
     try {
       final response = await _dio.get(
-        '/api/chat/rooms',
+        '/chat/rooms',
         queryParameters: {'userId': userId},
       );
       if (response.statusCode == 200 && response.data is List) {
