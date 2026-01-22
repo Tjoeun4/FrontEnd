@@ -31,6 +31,8 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
     _memoController = TextEditingController(text: widget.item['memo'] ?? "");
     _selectedDateTime = DateTime.parse(widget.item['spentAt']); // date -> spentAt
     _selectedCategory = widget.item['category'];
+    // ✅ 수정: 서버의 영문 Enum 값을 프론트용 한글 이름으로 변환하여 초기값 설정
+    _selectedCategory = controller.mapBackendToFrontendCategory(widget.item['category']);
   }
 
   @override
@@ -158,27 +160,27 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       textCancel: "취소",
       confirmTextColor: Colors.white,
       onConfirm: () {
-        controller.historyItems.remove(widget.item);
-        Get.back(); // 다이얼로그 닫기
-        Get.back(); // 수정 페이지 닫기
+        // 1. 먼저 다이얼로그를 닫습니다.
+        Get.back();
+        // ✅ 수정: 리스트 조작이 아닌 서버 API 호출 (expenseId 사용)
+        controller.deleteExpense(widget.item['expenseId']);
+        // deleteExpense 내부에서 Get.back()을 수행하므로 여기서는 다이얼로그만 닫힐 수 있음
       },
     );
   }
-
   // 수정 로직
   void _updateExpense() {
-    int index = controller.historyItems.indexOf(widget.item);
-    if (index != -1) {
-      // 백엔드 DTO 구조와 동일하게 맵 구성
-      controller.historyItems[index] = {
-        'spentAt': _selectedDateTime.toIso8601String(), // 키값 변경 및 포맷 통일
-        'title': _titleController.text, // content -> title
-        'amount': int.parse(_amountController.text.replaceAll(',', '')),
-        'category': _selectedCategory,
-        'memo': _memoController.text,
-      };
-      Get.back();
-    }
+    // ✅ 수정: 서버가 기대하는 DTO 구조로 데이터 생성
+    final updateData = {
+      'spentAt': _selectedDateTime.toIso8601String(),
+      'title': _titleController.text,
+      'amount': int.parse(_amountController.text.replaceAll(',', '')),
+      'category': controller.mapToBackendCategory(_selectedCategory), // 다시 영문으로 변환
+      'memo': _memoController.text,
+    };
+
+    // ✅ 수정: 서버 API 호출
+    controller.updateExpense(widget.item['expenseId'], updateData);
   }
   // 1. 카테고리 리스트 추가 (Dropdown에서 사용)
   final List<String> _categories = ['식비', '교통', '쇼핑', '식재료', '생활용품', '기타'];

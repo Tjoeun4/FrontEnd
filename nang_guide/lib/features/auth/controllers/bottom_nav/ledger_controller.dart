@@ -53,7 +53,15 @@ class LedgerController extends GetxController {
     if (data != null) {
       final Map<String, int> summaries = {};
       for (var item in data['dailyAmounts']) {
-        summaries[item['date']] = item['totalAmount'];
+        String date = item['date'];
+        int amount = item['totalAmount'];
+
+        // ✅ 기존 날짜에 값이 이미 있다면 더해줍니다. (덮어쓰기 방지)
+        if (summaries.containsKey(date)) {
+          summaries[date] = summaries[date]! + amount;
+        } else {
+          summaries[date] = amount;
+        }
       }
       dailySummaries.assignAll(summaries);
       totalExpense.value = data['monthTotalAmount'] ?? 0;
@@ -157,7 +165,7 @@ class LedgerController extends GetxController {
       "amount": amount,
       "spentAt": dateTime.toIso8601String(),
       "title": title,
-      "category": _mapToBackendCategory(category),
+      "category": mapToBackendCategory(category),
       "memo": memo
     };
 
@@ -179,8 +187,54 @@ class LedgerController extends GetxController {
       isLoading.value = false;
     }
   }
+  Future<void> deleteExpense(int expenseId) async {
+    isLoading.value = true;
+    try {
+      bool success = await _apiClient.deleteExpense(expenseId);
+
+      if (success) {
+        await fetchData(); // 데이터 새로고침
+
+        // ✅ 핵심 수정:
+        // 만약 '삭제 확인 다이얼로그'가 떠 있는 상태에서 이 함수가 호출된다면
+        // 다이얼로그를 닫고(1번), 수정 화면까지 닫아야(2번) 목록으로 돌아갑니다.
+        if (Get.isDialogOpen ?? false) {
+          Get.back(); // 다이얼로그 닫기
+        }
+        Get.back(); // 수정 화면(ExpenseEditScreen) 닫기
+
+        Get.snackbar("삭제 완료", "내역이 정상적으로 삭제되었습니다.",
+            snackPosition: SnackPosition.BOTTOM);
+      } else {
+        Get.snackbar("삭제 실패", "내역을 삭제하지 못했습니다.");
+      }
+    } catch (e) {
+      print("Error deleting expense: $e");
+      Get.snackbar("오류", "삭제 중 오류가 발생했습니다.");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> updateExpense(int id, Map<String, dynamic> data) async {
+    isLoading.value = true;
+    try {
+      bool success = await _apiClient.updateExpense(id, data);
+      if (success) {
+        await fetchData();
+        Get.back();
+        Get.snackbar("수정 완료", "내역이 성공적으로 수정되었습니다.");
+      } else {
+        Get.snackbar("수정 실패", "서버 저장 중 오류가 발생했습니다.");
+      }
+    } catch (e) {
+      print("Error updating expense: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
   // 서버 전송을 위한 영문 Enum 변환 함수
-  String _mapToBackendCategory(String category) {
+  String mapToBackendCategory(String category) {
     switch (category) {
       case '식비': return 'MEAL';
       case '식재료': return 'INGREDIENT';
@@ -195,4 +249,20 @@ class LedgerController extends GetxController {
       default: return 'ETC';
     }
   }
+  // LedgerController.dart 내부에 추가
+  String mapBackendToFrontendCategory(String backendEnum) {
+    switch (backendEnum) {
+      case 'MEAL': return '식비';
+      case 'INGREDIENT': return '식재료';
+      case 'READY_MEAL': return '완제품/간편식';
+      case 'DRINK': return '주류/음료';
+      case 'TRANSPORT': return '교통';
+      case 'SHOPPING': return '쇼핑';
+      case 'LIVING': return '생활용품';
+      case 'CULTURE': return '문화/여가';
+      case 'HEALTH': return '의료/건강';
+      default: return '기타';
+    }
+  }
+
 }
