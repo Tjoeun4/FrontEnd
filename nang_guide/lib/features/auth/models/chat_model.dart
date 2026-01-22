@@ -8,7 +8,6 @@ class ChatRoom {
   final int roomId;
   final String roomName;
   final ChatRoomType type;
-  // 임시 구현
   final String? lastMessage;
   final String? lastMessageTime;
   final int unreadCount;
@@ -22,20 +21,32 @@ class ChatRoom {
     this.unreadCount = 0,
   });
 
+  // ✅ 실시간 업데이트를 위한 copyWith 메서드 추가
+  ChatRoom copyWith({
+    int? roomId,
+    String? roomName,
+    ChatRoomType? type,
+    String? lastMessage,
+    String? lastMessageTime,
+    int? unreadCount,
+  }) {
+    return ChatRoom(
+      roomId: roomId ?? this.roomId,
+      roomName: roomName ?? this.roomName,
+      type: type ?? this.type,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+      unreadCount: unreadCount ?? this.unreadCount,
+    );
+  }
+
   // JSON 데이터를 Dart 객체로 변환시키기 (백엔드가 응답할 수 있게)
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
     return ChatRoom(
       roomId: json['roomId'] as int,
       roomName: json['roomName'] as String,
-      // String으로 들어오는 타입을 enum으로 바꾸기
-      type: ChatRoomType
-          .values
-          .firstWhere((e) => e
-          .toString()
-          .split('.')
-          .last == json['type']),
-
-      // 서버 응답이 없으면 임시 데이터로
+      type: ChatRoomType.values.firstWhere(
+              (e) => e.toString().split('.').last == json['type']),
       lastMessage: json['lastMessage'],
       lastMessageTime: json['lastMessageTime'],
       unreadCount: json['unreadCount'] ?? 0,

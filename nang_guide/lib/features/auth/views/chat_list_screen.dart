@@ -48,7 +48,20 @@ class ChatListScreen extends StatelessWidget {
             final room = controller.chatRooms[index];
 
             return GestureDetector(
-              // onTap: () => Get.to(() => ChatScreen(roomId: room.roomId, roomName: room.roomName)),
+              onTap: () {
+                // 1. 해당 방의 웹소켓(STOMP) 연결 및 구독 시작
+                controller.connect(room.roomId);
+
+                // 2. 해당 방의 과거 메시지 내역 불러오기
+                controller.fetchChatHistory(room.roomId);
+
+                // 3. 채팅 상세 화면으로 이동 (전달 인자: roomId, roomName)
+                Get.to(() => ChatScreen(
+                    roomId: room.roomId,
+                    roomName: room.roomName
+                ));
+              },
+
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(16),
@@ -70,9 +83,23 @@ class ChatListScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(room.roomName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          Text(
+                              room.roomName,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16
+                              )
+                          ),
                           const SizedBox(height: 5),
-                          Text(room.lastMessage ?? "", style: const TextStyle(color: Colors.grey, fontSize: 13), overflow: TextOverflow.ellipsis),
+                          Text(
+                              room.lastMessage ?? "메시지가 없습니다", // 메시지가 없을 때에 대비
+                              style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13
+                              ),
+                              overflow: TextOverflow.ellipsis, // 메시지가 길면 ...으로 생략함
+                              maxLines: 1,
+                          ),
                         ],
                       ),
                     ),
