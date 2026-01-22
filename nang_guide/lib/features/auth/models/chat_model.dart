@@ -23,9 +23,6 @@ class ChatRoom {
 
   // ✅ 실시간 업데이트를 위한 copyWith 메서드 추가
   ChatRoom copyWith({
-    int? roomId,
-    String? roomName,
-    ChatRoomType? type,
     String? lastMessage,
     String? lastMessageTime,
     int? unreadCount,
@@ -47,6 +44,7 @@ class ChatRoom {
       roomName: json['roomName'] as String,
       type: ChatRoomType.values.firstWhere(
               (e) => e.toString().split('.').last == json['type']),
+      // ✅ 백엔드에서 추가된 필드들을 여기서 매핑합니다.
       lastMessage: json['lastMessage'],
       lastMessageTime: json['lastMessageTime'],
       unreadCount: json['unreadCount'] ?? 0,

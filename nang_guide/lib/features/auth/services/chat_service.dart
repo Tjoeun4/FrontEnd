@@ -1,4 +1,6 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
+import 'dart:convert';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/models/authentication_response.dart';
@@ -251,16 +253,28 @@ class ChatService extends GetxService {
   /// =================================================
   Future<List<dynamic>?> getUserRooms(int userId) async {
     try {
+      // 🔍 요청 경로 확인용 로그
+      print("📡 [요청 전송] PATH: /chat/rooms?userId=$userId");
+
       final response = await _dio.get(
         '/chat/rooms',
         queryParameters: {'userId': userId},
       );
-      if (response.statusCode == 200 && response.data is List) {
-        return response.data;
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        // ✨ 서버가 던진 '모든' 값을 JSON 형태로 예쁘게 출력
+        const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+        String prettyJson = encoder.convert(data);
+
+        print("🔥 [서버가 던진 전체 데이터 원본] 🔥\n$prettyJson");
+
+        return data;
       }
       return null;
     } catch (e) {
-      print('JSON Parsing Error: $e');
+      print('❌ 서버 통신 에러: $e');
       return null;
     }
   }
