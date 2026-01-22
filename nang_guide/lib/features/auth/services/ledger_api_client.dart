@@ -54,13 +54,14 @@ class LedgerApiClient extends GetxService {
     }
   }
 
-  /// 5. 내역 삭제 (DELETE /api/expenses/{id})
-  Future<bool> deleteExpense(int id) async {
+  /// 5. 지출 내역 삭제 (DELETE /api/expenses/{id})
+  Future<bool> deleteExpense(int expenseId) async {
     try {
-      final response = await _dio.delete('/expenses/$id');
-      return response.statusCode == 200;
+      final response = await _dio.delete('/expenses/$expenseId');
+      // ✅ 200(OK) 뿐만 아니라 204(No Content)도 성공으로 처리합니다.
+      return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      print('내역 삭제 실패: $e');
+      print('지출 내역 삭제 실패: $e');
       return false;
     }
   }
