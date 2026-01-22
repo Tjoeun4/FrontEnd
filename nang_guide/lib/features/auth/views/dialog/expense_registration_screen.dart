@@ -24,7 +24,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   // 1. 초기값을 현재 날짜와 시간으로 설정
   DateTime _selectedDateTime = DateTime.now();
   String _selectedCategory = '식비';
-  final List<String> _categories = ['식비', '교통', '쇼핑', '식재료', '생활용품', '기타'];
+  // final List<String> _categories = ['식비', '교통', '쇼핑', '식재료', '생활용품', '기타']; // 기존 카테고리 고정 코드.
 
   // 날짜 및 시간 선택 통합 함수
   Future<void> _pickDateTime(BuildContext context) async {
@@ -115,7 +115,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
             DropdownButton<String>(
               isExpanded: true,
               value: _selectedCategory,
-              items: _categories.map((String value) {
+              items: controller.categories.map((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
                   child: Text(value),
