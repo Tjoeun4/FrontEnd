@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../services/ledger_api_client.dart'; // 실제 경로에 맞게 수정
 
@@ -268,6 +269,40 @@ class LedgerController extends GetxController {
       print("Error updating expense: $e");
     } finally {
       isLoading.value = false;
+    }
+  }
+  // ============================================================
+  // 🔟 영수증 OCR 처리 (이미지 업로드 기반 자동 지출 등록)
+  // ============================================================
+  Future<void> processReceipt(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+
+    // 1. 선택한 소스(카메라 또는 갤러리)로부터 이미지 획득
+    final XFile? image = await picker.pickImage(
+      source: source,
+      maxWidth: 1920, // 이미지 최적화
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      isLoading.value = true;
+      try {
+        // 2. 서버에 업로드 (아까 만든 apiClient 메서드 호출)
+        final int? expenseId = await _apiClient.uploadReceipt(image);
+
+        if (expenseId != null) {
+          // 3. 성공 시 데이터 갱신 및 화면 이동
+          await fetchData();
+          Get.back(); // 이미지 선택 다이얼로그 닫기
+          Get.snackbar("성공", "영수증 분석 및 등록이 완료되었습니다.");
+        } else {
+          Get.snackbar("실패", "영수증 분석 중 오류가 발생했습니다.");
+        }
+      } catch (e) {
+        print("OCR 처리 중 에러: $e");
+      } finally {
+        isLoading.value = false;
+      }
     }
   }
   // ============================================================
