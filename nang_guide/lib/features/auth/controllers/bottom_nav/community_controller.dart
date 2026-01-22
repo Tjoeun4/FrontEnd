@@ -12,6 +12,7 @@ class CommunityController extends GetxController {
   // final TokenService _tokenService = TokenService();
   // final AuthService _authService = AuthService();
 
+  var selectedCategoryId = RxnInt(null);
   // Get.find<GonguService>()는 바인딩에서 등록된 인스턴스를 찾아옵니다. //필수입니다.
   final GonguService _gonguService = Get.find<GonguService>();
   final ApiService apiService;  
@@ -112,28 +113,25 @@ Future<void> searchRooms(String keyword) async {
   } finally {
     isLoading.value = false;
   }
+  // 🎯 카테고리 클릭 시 호출할 함수
+  Future<void> filterByCategory(int? categoryId) async {
+    selectedCategoryId.value = categoryId; // UI 하이라이트용
+    isLoading.value = true;
+
+    List<dynamic>? results;
+    if (categoryId == null) {
+      results = await _gonguService.getLocalGonguRooms(); // 전체 보기
+    } else {
+      // 🎯 덕배님이 만든 그 함수 호출!
+      results = await _gonguService.getLocalFilterCategoryRooms(categoryId);
+    }
+
+    if (results != null) {
+      gonguRooms.assignAll(results); // 리스트 갱신 -> Obx가 화면을 다시 그림
+    }
+    isLoading.value = false;
+  }
 }
 
-
-  // 채팅방을 생성하는 메서드
-  // chatService -> createRoom 메서드가 이미 존재함
-  // 1. 먼저 값에 스프링 시큐리티때문에 리프레쉬 토큰이 있는지 확인해야됨
-  // 2. 그 후에 createRoom을 호출해야됨
-  // 3. createRoom이 성공적으로 방을 만들면, 방 목록을 다시 불러와야됨
-  // 4. 방 목록을 불러오는 메서드는 fetchMyRooms로 이미 존재함 불러올 예정임
-  // 5. 방을 만들 때, 개인방인지 공구방인지 가족방인지 타입을 넘겨줘야됨 ex) GROUP_BUY, PERSONAL, FAMILY
-  // 6. 모든 방에는 postId도 같이 넘겨줘야됨
-  // 7. createRoom 메서드는 roomName, type, postId를 파라미터로 받음
-  // 8. createRoom 메서드는 성공적으로 방을 만들면 true를 반환하고, 실패하면 false를 반환함
-  // =================================================
-
-  // ✅ 내 채팅방 목록 가져오기 (상세 로그) Dto(ChatRoomRequest) -> getMyRooms
-  
-  // Future<void> createGroupRoom(int userId, String postId) async {
-  // // 1. 서버 스펙에 맞춘 URL 구성 (Path + Query Parameter)
-  // // 결과 예시: api/chat/room/group-buy/5?userId=1
-  // String url = 'api/chat/room/group-buy/userId=$userId';
-
-  // // 2. 서버 컨트롤러가 RequestBody를 쓰지 않으므로 바디는 비워서 보냄
-  // }
+  void filterByCategory(int? categoryId) {}
 }

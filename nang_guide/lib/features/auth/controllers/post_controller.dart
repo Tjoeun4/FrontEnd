@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:honbop_mate/features/auth/services/gongu_service.dart';
+import 'package:honbop_mate/features/auth/services/gongu_service.dart'; // GonguService가 있는 경로
 import 'package:get_storage/get_storage.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -107,6 +107,29 @@ class PostController extends GetxController {
   }
 
   Future<void> submitPost() async {
+      // 1. GetStorage 인스턴스 참조
+      final storage = GetStorage();
+      
+  final dynamic storedId = storage.read('neighborhood_id');
+  print("📍 글쓰기 전 읽어온 지역코드: $storedId");
+
+  // 2. 만약 null이면 하드코딩된 값을 쓰지 말고 유저에게 알리기 (디버깅용)
+  if (storedId == null) {
+    Get.snackbar("경고", "지역 정보가 없습니다. 다시 로그인해주세요.");
+    // return; // 실제 서비스라면 막아야 함
+  }
+
+  final int userNeighborhoodId = storedId; // 정 안되면 기본값
+
+      // 2. 저장된 유저 데이터에서 neighborhoodId 추출 (로그인 시 'user'라는 키로 저장했다고 가정)
+      // 만약 숫자만 따로 저장했다면 storage.read('neighborhoodId') 로 바로 가져오면 됩니다.
+      final userData = storage.read('user'); 
+      final int neighborhoodId = userData != null ? userData['neighborhoodId'] : 11560; 
+
+      print("📍 내 지역 코드: $neighborhoodId");
+  
+
+    // 1. 유효성 검사 (날짜 검사 추가)
     if (titleController.text.isEmpty) {
       Get.snackbar("알림", "제목을 입력해주세요.");
       return;

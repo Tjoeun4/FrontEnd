@@ -53,6 +53,26 @@ class CommunityScreen extends StatelessWidget {
             ),
           ),
 
+          // 🎯 2. 카테고리 필터 영역 추가
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Obx(() => Row(
+                  children: [
+                    // '전체' 버튼
+                    _buildFilterChip("전체", null), 
+                    const SizedBox(width: 8),
+                    // 백엔드에서 정의한 카테고리들 (예시)
+                    _buildFilterChip("육류", 1),
+                    const SizedBox(width: 8),
+                    // 위스키 앱 디자인을 참고한 카테고리도 좋겠네요!
+                    _buildFilterChip("생활용품", 2),
+                    const SizedBox(width: 8),
+                    _buildFilterChip("배달음식", 3),
+                  ],
+                )),
+              ),
+              const SizedBox(height: 10),
           // --- [기존 주석 처리된 Row 영역이 들어갈 자리] ---
           // 여기에 나중에 버튼들을 넣으실 때도 고정 높이로 배치하시면 됩니다.
 
@@ -115,4 +135,25 @@ class CommunityScreen extends StatelessWidget {
       bottomNavigationBar: MyBottomNavigation(),
     );
   }
+  Widget _buildFilterChip(String label, int? categoryId) {
+  // 현재 선택된 카테고리인지 확인
+  final isSelected = Controller.selectedCategoryId.value == categoryId;
+
+  return ChoiceChip(
+    label: Text(label),
+    selected: isSelected,
+    onSelected: (selected) {
+      if (selected) {
+        // 컨트롤러에 필터 변경 명령
+        Controller.filterByCategory(categoryId);
+      }
+    },
+    selectedColor: Colors.orange,
+    labelStyle: TextStyle(
+      color: isSelected ? Colors.white : Colors.black,
+      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    ),
+  );
 }
+}
+
