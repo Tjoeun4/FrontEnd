@@ -430,4 +430,30 @@ class GonguService extends GetxService {
       return null;
     }
   }
+
+   Future<bool?> MadeGonguRoom(
+    int postId,
+  ) async {
+    try {
+      // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
+      print('========== joinGonguRoom SERVICE ==========');
+      print('baseUrl : ${_dio.options.baseUrl}');
+      print('=======================================');
+
+      final response = await _dio.post(
+        '/group-buy/$postId/join',
+      );
+
+      print('========== RESPONSE ==========');
+      print('statusCode: ${response.statusCode}');
+      print('================================');
+
+      return response.statusCode == 200;
+    } catch (e, stack) {
+      print('❌ joinGonguRoom ERROR');
+      print(e);
+      print(stack);
+      return false;
+    }
+  }
 }
