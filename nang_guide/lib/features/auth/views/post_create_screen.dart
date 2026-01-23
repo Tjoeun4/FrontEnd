@@ -130,7 +130,7 @@ class PostCreateScreen extends StatelessWidget {
         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)
       ),
       
-      // 🎯 2. [추가] 실시간 선택 좌표 표시 (전공자 디버깅용)
+      // 🎯 2. [추가] 실시간 선택 좌표 표시 (전공자 디버깅용) // 삭제예정
       Text(
         "좌표: ${controller.currentPosition.value.latitude.toStringAsFixed(6)}, ${controller.currentPosition.value.longitude.toStringAsFixed(6)}",
         style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),

@@ -34,8 +34,8 @@ class GonguResponse {
   final DateTime? enddate;
   final int? currentParticipants;
   final int? maxParticipants;
-  final Double? lat;
-  final Double? lng;
+  final double? lat;
+  final double? lng;
 
   // 이것도 사용할 예정이에요
   GonguResponse({

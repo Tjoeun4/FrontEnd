@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/services/gongu_service.dart';
 import 'package:intl/intl.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,7 +11,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 // post_detail_screen.dart
 class PostDetailScreen extends GetView<PostDetailController> {
   // GetView를 사용하므로 상단 find는 생략 가능합니다.
-  
+  final controller = Get.find<PostDetailController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,9 +25,18 @@ class PostDetailScreen extends GetView<PostDetailController> {
         ],
       ),
       body: Obx(() {
+        // 1. 로딩 중일 때 처리
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
+
+        // 2. 서버에서 받은 데이터(Map)에서 좌표 꺼내기
+        // 🎯 중요: 서버 로그에 찍힌 키값 'lat', 'lng'을 그대로 사용합니다.
+        final double? lat = controller.postData['lat'];
+        final double? lng = controller.postData['lng'];
+
+        // 3. 만약 좌표가 없을 경우를 대비한 기본값 설정 (시흥시 정왕동 등)
+        final LatLng targetPos = LatLng(lat ?? 37.3402, lng ?? 126.7335);
 
         final data = controller.postData;
         
@@ -120,22 +131,24 @@ class PostDetailScreen extends GetView<PostDetailController> {
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         clipBehavior: Clip.antiAlias, // 모서리 둥글게 적용
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: controller.locationLatLng.value!, // 컨트롤러의 좌표 사용
-                            zoom: 16,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('meal_location'),
-                              position: controller.locationLatLng.value!,
-                            ),
-                          },
-                          // 스크롤 뷰 안에서 지도가 잘 움직이도록 제스처 설정
-                          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
-                            Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
-                          },
-                        ),
+                        child: // 상세 페이지 뷰 (PostDetailScreen 등)
+GoogleMap(
+    initialCameraPosition: CameraPosition(
+      target: targetPos,
+      zoom: 16,
+    ),
+    markers: {
+      Marker(
+        markerId: const MarkerId('meetLocation'),
+        position: targetPos,
+        // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
+        infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
+      ),
+    },
+    zoomGesturesEnabled: true,
+    scrollGesturesEnabled: true,
+  )
+                    
                       );
                     }),
                     const SizedBox(height: 80), // 하단 버튼 공간 확보
