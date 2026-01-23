@@ -1,4 +1,6 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
+import 'dart:ffi';
+
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/models/authentication_response.dart';
@@ -32,6 +34,8 @@ class GonguResponse {
   final DateTime? enddate;
   final int? currentParticipants;
   final int? maxParticipants;
+  final Double? lat;
+  final Double? lng;
 
   // 이것도 사용할 예정이에요
   GonguResponse({
@@ -55,6 +59,8 @@ class GonguResponse {
     this.enddate,
     this.currentParticipants,
     this.maxParticipants,
+    this.lat,
+    this.lng,
   });
 
   // JSON 팩토리로 간단하게 전송 및 수신 가능
@@ -83,6 +89,8 @@ class GonguResponse {
       enddate: json['enddate'] != null ? DateTime.parse(json['enddate']) : null,
       currentParticipants: json['currentParticipants'],
       maxParticipants: json['maxParticipants'],
+      lat: json['lat'] != null ? json['lat'].toDouble() : null,
+      lng: json['lng'] != null ? json['lng'].toDouble() : null,
     );
   }
 }
@@ -180,6 +188,8 @@ class GonguService extends GetxService {
       "neighborhoodId": 11560,
       "startdate": "2024-07-01T00:00:00",
       "enddate": "2024-07-10T00:00:00"
+      "lat" : 37.123456,
+      "lng" : 127.123456
   } */
   /// =================================================
   Future<bool> createGonguRoom(
@@ -190,6 +200,8 @@ class GonguService extends GetxService {
     int categoryId,
     DateTime startdate,
     DateTime enddate,
+    double lat,
+    double lng,
   ) async {
     try {
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
@@ -202,6 +214,8 @@ class GonguService extends GetxService {
       print('categoryId: $categoryId (${categoryId.runtimeType})');
       print('startdate: $startdate (${startdate.runtimeType})');
       print('enddate: $enddate (${enddate.runtimeType})');
+      print('lat: $lat (${lat.runtimeType})');
+      print('lng: $lng (${lng.runtimeType})');
       print('=======================================');
 
       final response = await _dio.post(
@@ -214,6 +228,8 @@ class GonguService extends GetxService {
           'categoryId': categoryId,
           'startdate': startdate.toIso8601String(), // 이 부분!
           'enddate': enddate.toIso8601String(),
+          'lat': lat,
+          'lng': lng,
         },
       );
 

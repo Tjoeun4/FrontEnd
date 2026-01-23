@@ -118,9 +118,26 @@ class PostCreateScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: Obx(() => Text(controller.locationLabel.value, 
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)))),
-                    const Icon(Icons.map_outlined, color: Colors.orange)
+                    Expanded(
+  child: Obx(() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      // 1. 변환된 주소 이름 (예: 강남구 역삼동)
+      Text(
+        controller.locationLabel.value, 
+        overflow: TextOverflow.ellipsis, 
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)
+      ),
+      
+      // 🎯 2. [추가] 실시간 선택 좌표 표시 (전공자 디버깅용)
+      Text(
+        "좌표: ${controller.currentPosition.value.latitude.toStringAsFixed(6)}, ${controller.currentPosition.value.longitude.toStringAsFixed(6)}",
+        style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),
+      ),
+    ],
+  )),
+),
                   ],
                 ),
               ),
