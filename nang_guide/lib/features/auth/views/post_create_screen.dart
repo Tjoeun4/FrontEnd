@@ -118,7 +118,8 @@ class PostCreateScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: Obx(() => Text(controller.locationLabel.value, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)))),
+                    Expanded(child: Obx(() => Text(controller.locationLabel.value, 
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)))),
                     const Icon(Icons.map_outlined, color: Colors.orange)
                   ],
                 ),

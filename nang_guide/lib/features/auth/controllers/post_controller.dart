@@ -20,6 +20,8 @@ class PostController extends GetxController {
   final RxSet<Marker> markers = <Marker>{}.obs;
   final RxBool isLoading = false.obs;
 
+  var selectedNeighborhoodId = 0.obs; // 지도에서 선택한 지역 코드를 담을 변수
+
   DateTime? startDate;
   DateTime? endDate;
   GoogleMapController? mapController;
@@ -110,23 +112,19 @@ class PostController extends GetxController {
       // 1. GetStorage 인스턴스 참조
       final storage = GetStorage();
       
+      // 1. dynamic으로 일단 받습니다.
   final dynamic storedId = storage.read('neighborhood_id');
-  print("📍 글쓰기 전 읽어온 지역코드: $storedId");
+  print("📍 읽어온 지역코드: $storedId");
 
-  // 2. 만약 null이면 하드코딩된 값을 쓰지 말고 유저에게 알리기 (디버깅용)
-  if (storedId == null) {
-    Get.snackbar("경고", "지역 정보가 없습니다. 다시 로그인해주세요.");
-    // return; // 실제 서비스라면 막아야 함
-  }
+  // 2. 🎯 null 체크와 동시에 int로 안전하게 변환합니다. (?? 사용)
+  // storedId가 null이면 뒤에 있는 11560이 들어갑니다.
+  final int userNeighborhoodId = (storedId as int?) ?? 11560; 
 
-  final int userNeighborhoodId = storedId; // 정 안되면 기본값
+  // 3. 나머지 userData 부분도 동일하게 처리하세요.
+  final userData = storage.read('user'); 
+  final int neighborhoodId = (userData != null) ? (userData['neighborhoodId'] as int) : 11560;
 
-      // 2. 저장된 유저 데이터에서 neighborhoodId 추출 (로그인 시 'user'라는 키로 저장했다고 가정)
-      // 만약 숫자만 따로 저장했다면 storage.read('neighborhoodId') 로 바로 가져오면 됩니다.
-      final userData = storage.read('user'); 
-      final int neighborhoodId = userData != null ? userData['neighborhoodId'] : 11560; 
-
-      print("📍 내 지역 코드: $neighborhoodId");
+   print("📍 내 지역 코드: $neighborhoodId");
   
 
     // 1. 유효성 검사 (날짜 검사 추가)
@@ -142,22 +140,39 @@ class PostController extends GetxController {
     }
 
     isLoading.value = true;
-    try {
-      final String title = titleController.text;
-      final String description = contentController.text;
-      final int price = selectedType.value == '공동구매' ? (int.tryParse(totalPriceController.text) ?? 0) : 0;
-      final String meetPlace = locationLabel.value;
-      final int categoryId = _getCategoryId(selectedFoodType.value);
+       try {
+    // 2. 데이터 준비
+    final String title = titleController.text;
+    final String description = contentController.text;
+    final int price = int.tryParse(totalPriceController.text) ?? 0;
+    final String meetPlace = locationLabel.value;
 
-      bool isSuccess = await _gonguService.createGonguRoom(
-        title, description, price, meetPlace, categoryId, startDate ?? DateTime.now(), endDate ?? DateTime.now(),
-      );
+    // 수정 포인트: selectedType이 아닌 selectedFoodType을 전달해야 함
+    // (만약 공구가 아닐 때의 처리도 필요하다면 아래 함수 내부에서 처리)
+    final int categoryId = _getCategoryId(selectedFoodType.value); 
 
-      if (isSuccess) {
+    // 3. API 호출
+    bool isSuccess = await _gonguService.createGonguRoom(
+      title,
+      description,
+      price,
+      meetPlace,
+      categoryId,
+      startDate!,
+      endDate!,
+    );
+    
+    if (isSuccess) {
         Get.back();
         Get.snackbar("성공", "게시글이 등록되었습니다!", backgroundColor: Colors.green.withOpacity(0.5), colorText: Colors.white);
       }
-    } catch (e) {
+      else {
+        Get.snackbar("실패", "서버 응답 오류가 발생했습니다.", 
+            backgroundColor: Colors.red.withOpacity(0.5), colorText: Colors.white);
+      }
+    } 
+       
+    catch (e) {
       Get.snackbar("오류", "전송 중 오류가 발생했습니다.");
     } finally {
       isLoading.value = false;
