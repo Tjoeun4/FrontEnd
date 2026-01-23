@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // post_detail_screen.dart
 class PostDetailScreen extends GetView<PostDetailController> {
@@ -96,18 +99,45 @@ class PostDetailScreen extends GetView<PostDetailController> {
                     const SizedBox(height: 30),
                     
                     // 5. 지도 영역 가이드
-                    Container(
-                      width: double.infinity,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.shade100),
-                      ),
-                      child: const Center(
-                        child: Text("📍 여기에 Google Map이 들어갈 예정입니다."),
-                      ),
-                    ),
+                    Obx(() {
+                      // 컨트롤러에 좌표가 로드될 때까지 대기
+                      if(controller.locationLatLng.value == null) {
+                        return Container(
+                          height: 180,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(child: CircularProgressIndicator()),
+                        );
+                      }
+
+                      return Container(
+                        width: double.infinity,
+                        height: 200, // 지도 높이
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        clipBehavior: Clip.antiAlias, // 모서리 둥글게 적용
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: controller.locationLatLng.value!, // 컨트롤러의 좌표 사용
+                            zoom: 16,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('meal_location'),
+                              position: controller.locationLatLng.value!,
+                            ),
+                          },
+                          // 스크롤 뷰 안에서 지도가 잘 움직이도록 제스처 설정
+                          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+                            Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()),
+                          },
+                        ),
+                      );
+                    }),
                     const SizedBox(height: 80), // 하단 버튼 공간 확보
                   ],
                 ),
