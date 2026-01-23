@@ -151,6 +151,25 @@ class PostController extends GetxController {
     // (만약 공구가 아닐 때의 처리도 필요하다면 아래 함수 내부에서 처리)
     final int categoryId = _getCategoryId(selectedFoodType.value); 
 
+    // 좌표 추가! 01.23
+    final double lat = currentPosition.value.latitude;
+    final double lng = currentPosition.value.longitude;
+
+// 디버그 출력
+    print("""
+      🚀 [서버 전송 시도]
+      -----------------------------------------
+      📍 제목: $title
+      📍 설명: $description
+      📍 가격: $price
+      📍 장소명: $meetPlace
+      📍 카테고리ID: $categoryId
+      📍 기간: ${startDate} ~ ${endDate}
+      📍 위도(Lat): $lat
+      📍 경도(Lng): $lng
+      -----------------------------------------
+      """);
+
     // 3. API 호출
     bool isSuccess = await _gonguService.createGonguRoom(
       title,
@@ -160,6 +179,8 @@ class PostController extends GetxController {
       categoryId,
       startDate!,
       endDate!,
+      lat!,
+      lng!
     );
     
     if (isSuccess) {
