@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:honbop_mate/features/auth/services/chat_service.dart';
 import 'package:honbop_mate/features/auth/services/gongu_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PostDetailController extends GetxController {
+  // 함수사용할꺼임
   final GonguService _gonguService = Get.find<GonguService>();
-  
+  final ChatService _chatService = Get.find<ChatService>();
+
   // 넘겨받은 ID (CommunityScreen에서 보낸 idValue)
   late final int postId = Get.arguments['postId'] ; 
   late final int totalPrice; // 여기에 int 값이 제대로 담겨야 함
+  
+  // Get.arguments에 userId가 들어있다고 가정할 때
+  late final int userId = Get.arguments['userId'];
+
   var postData = <String, dynamic>{}.obs;
   var locationLatLng = Rxn<LatLng>(); // 위도, 경도를 담은 변수
   var isLoading = true.obs;
@@ -85,13 +92,32 @@ class PostDetailController extends GetxController {
         final success = await _gonguService.joinGonguRoom(postId);
 
         if (success == true) {
+          // 2-1 성공시 서비스를 호출하고, 채팅방에 참여시키는 로직 추가
+          // 2단계: 채팅방 참여 (서버 500 에러 지점)
+          // 🎯 여기서 터져도 앱이 죽지 않게 try-catch로 감싸야 합니다.
+          try {
+             await _chatService.createGongGuRoom(postId);
+          } catch (e) {
+             print("❌ 채팅방 생성/참여 실패: $e");
+             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
+          }
+
           // 3. 성공 시 UI 업데이트 (예: 참여 인원 수 +1 하거나 버튼 비활성화)
           Get.snackbar("성공", "공동구매 참여가 완료되었습니다! 🎉");
 
           // 데이터 다시 불러와서 인원 수 갱신
           await loadDetail();
         } else {
+          try {
+             await _chatService.createGongGuRoom(postId);
+          } catch (e) {
+             print("❌ 채팅방 생성/참여 실패: $e");
+             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
+          }
+
           Get.snackbar("알림", "이미 참여하셨거나 인원이 가득 찼습니다.");
+          // 데이터 다시 불러와서 인원 수 갱신
+          await loadDetail();
         }
       },
     );

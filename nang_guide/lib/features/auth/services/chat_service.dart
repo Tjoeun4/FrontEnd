@@ -248,17 +248,16 @@ class ChatService extends GetxService {
 
   /// =================================================
   /// 채팅 방 보는 함수
-  /// - 파라미터 요청 userId
+  /// - 파라미터 요청 없음
   /// - 리퀘스트 바디 없음
   /// =================================================
-  Future<List<dynamic>?> getUserRooms(int userId) async {
+  Future<List<dynamic>?> getUserRooms() async {
     try {
       // 🔍 요청 경로 확인용 로그
-      print("📡 [요청 전송] PATH: /chat/rooms?userId=$userId");
+      print("📡 [요청 전송] PATH: /chat/rooms");
 
       final response = await _dio.get(
         '/chat/rooms',
-        queryParameters: {'userId': userId},
       );
 
       if (response.statusCode == 200) {
@@ -284,13 +283,10 @@ class ChatService extends GetxService {
   /// 요청 파라미터 : userId
   /// Variables : postId
   /// =================================================
-  Future<int?> createGroupRoom(int userId, int postId) async {
+  Future<int?> createGongGuRoom(int postId) async {
     try {
       final response = await _dio.post(
-        '/api/chat/room/group-buy/$postId', // ⭐ PathVariable 쓰는 경로
-        queryParameters: {
-          'userId': userId, // ⭐ RequestParam
-        },
+        '/chat/room/group-buy/$postId', // PathVariable 쓰는 경로
       );
 
       if (response.statusCode == 200) {

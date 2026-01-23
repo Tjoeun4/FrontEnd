@@ -50,12 +50,10 @@ class ChatController extends GetxController {
       try {
         final Map<String, dynamic> payload = _decodeJwt(token);
         final String email = payload['sub'];
-
-        if (email == "kshu2347@gmail.com") currentUserId = 2;
-        else if (email == "bright_8954@naver.com") currentUserId = 1;
-
+        currentUserId = payload['userId'];
+        debugPrint("현재 사용자 ID: $currentUserId, 이메일: $email");
         if (currentUserId != null) {
-          await fetchMyRooms(currentUserId!); // 1. 방 목록 먼저 가져오기
+          await fetchMyRooms(); // 1. 방 목록 먼저 가져오기
           _initStompClient(); // 2. 소켓 연결 및 모든 방 자동 구독
         }
       } catch (e) {
@@ -65,10 +63,10 @@ class ChatController extends GetxController {
   }
 
   // ✅ 초기 데이터 로드 시 모든 방 구독
-  Future<void> fetchMyRooms(int userId) async {
+  Future<void> fetchMyRooms() async {
     try {
       isLoading.value = true;
-      final List<dynamic>? data = await _chatService.getUserRooms(userId);
+      final List<dynamic>? data = await _chatService.getUserRooms();
       if (data != null) {
         chatRooms.assignAll(data.map((json) => ChatRoom.fromJson(json)).toList());
 
