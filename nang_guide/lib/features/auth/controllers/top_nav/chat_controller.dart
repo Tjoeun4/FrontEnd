@@ -17,6 +17,8 @@ class ChatController extends GetxController {
   var isLoading = false.obs;
   var isConnected = false.obs;
 
+  var chatingData = <String, dynamic>{}.obs;
+
   StompClient? stompClient;
 
   final String baseUrl = "http://172.16.252.206:8080/api/chat";
@@ -30,8 +32,12 @@ class ChatController extends GetxController {
   }
 
   void _initializeServices() {
-    _chatService = Get.isRegistered<ChatService>() ? Get.find<ChatService>() : Get.put(ChatService());
-    _tokenService = Get.isRegistered<TokenService>() ? Get.find<TokenService>() : Get.put(TokenService(Get.find()));
+    _chatService = Get.isRegistered<ChatService>()
+        ? Get.find<ChatService>()
+        : Get.put(ChatService());
+    _tokenService = Get.isRegistered<TokenService>()
+        ? Get.find<TokenService>()
+        : Get.put(TokenService(Get.find()));
   }
 
   // ✅ [에러 해결] UI에서 호출하는 connect 메서드를 명시적으로 정의
@@ -52,27 +58,33 @@ class ChatController extends GetxController {
         final String email = payload['sub'];
         currentUserId = payload['userId'];
         debugPrint("현재 사용자 ID: $currentUserId, 이메일: $email");
-        if (currentUserId != null) {
-          await fetchMyRooms(); // 1. 방 목록 먼저 가져오기
-          _initStompClient(); // 2. 소켓 연결 및 모든 방 자동 구독
-        }
+
+        await fetchChatMyRooms(); // 1. 방 목록 먼저 가져오기
+        /// _initStompClient(); // 2. 소켓 연결 및 모든 방 자동 구독
       } catch (e) {
         debugPrint("초기 데이터 로드 실패: $e");
       }
     }
   }
 
-  // ✅ 초기 데이터 로드 시 모든 방 구독
-  Future<void> fetchMyRooms() async {
+  /// ✅ 서비스로부터 방 목록을 가져와서 컨트롤러 상태 업데이트
+  Future<void> fetchChatMyRooms() async {
     try {
       isLoading.value = true;
-      final List<dynamic>? data = await _chatService.getUserRooms();
-      if (data != null) {
-        chatRooms.assignAll(data.map((json) => ChatRoom.fromJson(json)).toList());
+      // 1. 서비스에서 dynamic 리스트 가져오기
+      final List<dynamic>? data = await _chatService.fetchChatMyRooms();
 
-        // 🔥 앱 시작 시 혹은 목록 로딩 시 모든 방을 구독하여 실시간 갱신 대기
-        _initStompClient();
+      if (data != null) {
+        // 2. Map을 돌면서 ChatRoom 모델로 하나씩 변환 (핵심!)
+        final rooms = data.map((json) => ChatRoom.fromJson(json)).toList();
+
+        // 3. RxList에 할당하여 UI 갱신 유도
+        chatRooms.assignAll(rooms);
+
+        debugPrint("채팅방 ${chatRooms.length}개 로드 완료");
       }
+    } catch (e) {
+      debugPrint("방 목록 매핑 에러: $e"); // 여기서 에러 나면 모델 필드 문제임
     } finally {
       isLoading.value = false;
     }
@@ -90,7 +102,9 @@ class ChatController extends GetxController {
             _subscribeToRoom(room.roomId);
           }
         },
-        stompConnectHeaders: {'Authorization': 'Bearer ${_tokenService.getAccessToken()}'},
+        stompConnectHeaders: {
+          'Authorization': 'Bearer ${_tokenService.getAccessToken()}',
+        },
       ),
     );
     stompClient?.activate();
