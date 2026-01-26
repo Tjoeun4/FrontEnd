@@ -2,6 +2,9 @@ import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/views/post_create_screen.dart';
 
 // 바인딩
+import '../../fridge/bindings/fridge_binding.dart';
+import '../../fridge/views/fridge_add_step_screen.dart';
+import '../../fridge/views/fridge_list_screen.dart';
 import './../bindings/top_nav/alarm_binding.dart';
 import './../bindings/auth_binding.dart';
 import './../bindings/top_nav/chat_binding.dart';
@@ -49,6 +52,8 @@ class AppRoutes {
   static const POST_DETAIL = '/post-detail/:postId'; // 상세페이지
   static const CHAT_LIST = '/chat/list'; // 채팅목록
   static const CHAT_ROOM = '/chat/room/:roomId'; // 채팅방
+  static const FRIDGE = '/fridge'; // 내 냉장고 탭
+  static const FRIDGE_ADD = '/fridge/add'; // 냉장고에 식재료 추가
 
   static final routes = [
     GetPage(name: SPLASH, page: () => SplashScreen(), binding: AuthBinding()),
@@ -135,5 +140,8 @@ class AppRoutes {
       binding: ChatBinding(),
       transition: Transition.noTransition,
     ),
+    GetPage(name: AppRoutes.POST_DETAIL, page: () => PostDetailScreen(), binding: PostDetailBinding(), transition: Transition.noTransition,),
+    GetPage(name: FRIDGE, page: () => FridgeListScreen(), binding: FridgeBinding(), /* 👈 여기서 바인딩을 연결합니다. */transition: Transition.noTransition,),
+    GetPage(name: FRIDGE_ADD, page: () => const FridgeAddStepScreen(), binding: FridgeBinding(), /* 같은 바인딩 사용 (서비스/컨트롤러 공유) */transition: Transition.cupertino, /* 추가 화면은 슬라이드 효과 권장 */),
   ];
 }

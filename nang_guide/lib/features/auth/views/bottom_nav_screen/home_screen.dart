@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/nav_controller.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/community_screen.dart';
 
 import './../components/app_nav_bar.dart';
@@ -8,6 +9,8 @@ import './../../../auth/routes/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
+
+  final NavController navController = Get.find<NavController>();
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +74,7 @@ class HomeScreen extends StatelessWidget {
                       ElevatedButton(
                         onPressed: () {
                           Get.offNamed(AppRoutes.COMMUNITY);
+                          navController.changeIndex(1);
                         },
                         child: const Text('공구 게시판으로 갈 계획'),
                       ),

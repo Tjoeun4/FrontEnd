@@ -44,9 +44,43 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   /// - 카테고리는 기본값 '식비'
   /// =========================
   DateTime _selectedDateTime = DateTime.now();
-  String _selectedCategory = '식비';
+  late String _selectedCategory; // 초기값을 initState에서 설정
   // final List<String> _categories = ['식비', '교통', '쇼핑', '식재료', '생활용품', '기타']; // 기존 카테고리 고정 코드.
 
+  @override
+  void initState() {
+    super.initState();
+    // 컨트롤러에 정의된 카테고리 중 첫 번째 값을 기본값으로 설정
+    _selectedCategory = controller.categories.first;
+  }
+
+  /// =========================
+  /// 저장 로직 (리팩토링 포인트)
+  /// =========================
+  void _onSave() {
+    // 1. 유효성 검사
+    if (_amountController.text.isEmpty || _titleController.text.isEmpty) {
+      Get.snackbar(
+        "입력 확인",
+        "금액과 내용을 입력해주세요.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    // 2. 컨트롤러의 addExpense 호출
+    // 이미 controller.addExpense 내부에서 모델 생성, 서버 전송,
+    // 화면 닫기(Get.back), 성공 알림이 처리되도록 리팩토링했습니다.
+    controller.addExpense(
+      dateTime: _selectedDateTime,
+      category: _selectedCategory,
+      title: _titleController.text,
+      amount: int.parse(_amountController.text.replaceAll(',', '')),
+      memo: _memoController.text,
+    );
+  }
   /// =====================================
   /// 날짜 + 시간 선택 로직
   /// - DatePicker + TimePicker를 조합
@@ -101,15 +135,9 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
-        title: const Text(
-          "지출",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        title: const Text("지출 등록", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -117,80 +145,61 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 날짜 및 시간 표시 / 선택
             _buildLabel("날짜 및 시간"),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              // 포맷팅 예시: 2026년 01월 21일 13:45
-              title: Text(
-                DateFormat('yyyy년 MM월 dd일 HH:mm').format(_selectedDateTime),
-              ),
+              title: Text(DateFormat('yyyy년 MM월 dd일 HH:mm').format(_selectedDateTime)),
               trailing: const Icon(Icons.access_time),
               onTap: () => _pickDateTime(context),
             ),
             const Divider(),
-            // 금액 입력
             _buildLabel("금액"),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                hintText: "금액을 입력하세요",
-                suffixText: "원",
-              ),
+              decoration: const InputDecoration(hintText: "금액을 입력하세요", suffixText: "원"),
             ),
             const SizedBox(height: 20),
-            // 카테고리 선택
             _buildLabel("카테고리"),
             DropdownButton<String>(
               isExpanded: true,
               value: _selectedCategory,
               items: controller.categories.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
+                return DropdownMenuItem<String>(value: value, child: Text(value));
               }).toList(),
-              onChanged: (newValue) =>
-                  setState(() => _selectedCategory = newValue!),
+              onChanged: (newValue) => setState(() => _selectedCategory = newValue!),
             ),
             const SizedBox(height: 20),
-            // 지출 내용 입력
             _buildLabel("내용"),
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(hintText: "어디에 쓰셨나요?"),
             ),
             const SizedBox(height: 20),
-            // 메모 입력
             _buildLabel("메모"),
             TextField(
               controller: _memoController,
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: "추가 내용을 적어주세요",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
             const SizedBox(height: 30),
-            // OCR 촬영 버튼
+            // 영수증 OCR 버튼
             ElevatedButton.icon(
-              onPressed: _showImageSourceDialog, // 다이얼로그 호출
+              onPressed: () => _showImageSourceDialog(),
               icon: const Icon(Icons.camera_alt),
               label: const Text("영수증 불러오기"),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
                 backgroundColor: Colors.grey[700],
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
-            const SizedBox(height: 10),
-            // 취소 / 저장 버튼 영역
+            const SizedBox(height: 15),
+            // 저장/취소 버튼
             Row(
               children: [
                 Expanded(
@@ -198,9 +207,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
                     onPressed: () => Get.back(),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     child: const Text("취소"),
                   ),
@@ -208,51 +215,12 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      /// =========================
-                      /// 1. 입력값 유효성 검사
-                      /// =========================
-                      if (_amountController.text.isEmpty ||
-                          _titleController.text.isEmpty) {
-                        Get.snackbar(
-                          "입력 확인",
-                          "금액과 내용을 입력해주세요.",
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.redAccent,
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
-                      /// =========================
-                      /// 2. 서버 저장 요청
-                      /// =========================
-                      controller.addExpense(
-                        dateTime: _selectedDateTime,
-                        category: _selectedCategory,
-                        title: _titleController.text,
-                        amount: int.parse(
-                          _amountController.text.replaceAll(',', ''),
-                        ),
-                        // 콤마 제거 후 숫자로 변환
-                        memo: _memoController.text,
-                      );
-                      /// =========================
-                      /// 3. 화면 종료 + 알림
-                      /// =========================
-                      Get.back();
-                      Get.snackbar(
-                        "저장 완료",
-                        "가계부 내역이 추가되었습니다.",
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-                    },
+                    onPressed: _onSave,
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size.fromHeight(50),
                       backgroundColor: Colors.amber,
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     child: const Text("저장하기"),
                   ),
@@ -263,8 +231,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
         ),
       ),
     );
-  }
-  /// ==============================
+  }  /// ==============================
   /// 입력 섹션 제목(Label) 공통 위젯
   /// ==============================
   Widget _buildLabel(String label) {

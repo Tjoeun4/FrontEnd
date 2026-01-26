@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart'; // Segmented Control용
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../models/ledger_models.dart';
 import '../../services/ledger_api_client.dart';
 import '../dialog/expense_edit_screen.dart';
 import '../dialog/expense_registration_screen.dart';
@@ -261,9 +262,9 @@ class LedgerScreen extends StatelessWidget {
   // - 날짜별 그룹화된 리스트 UI
   // ============================================================
   Widget _buildHistoryTab() {
-    final groupedData = controller.groupedItems;
+    final groupedData = controller.groupedItems; // 이제 Map<String, List<ExpenseResponse>> 타입임
     final sortedDates = groupedData.keys.toList()
-      ..sort((a, b) => b.compareTo(a)); // 최신순 정렬
+      ..sort((a, b) => b.compareTo(a));
 
     if (sortedDates.isEmpty) {
       return const Center(
@@ -274,123 +275,46 @@ class LedgerScreen extends StatelessWidget {
     return ListView.builder(
       itemCount: sortedDates.length,
       itemBuilder: (context, index) {
-        // 날짜별 섹션 + 해당 날짜의 지출 리스트 렌더링
         String dateStr = sortedDates[index];
-        List<dynamic> items = groupedData[dateStr]!;
+        // ✅ 리스트의 타입을 모델 타입으로 명시
+        List<ExpenseResponse> items = groupedData[dateStr]!;
         DateTime dateTime = DateTime.parse(dateStr);
 
-        // 해당 날짜의 총 지출 계산
-        int dayTotal = items.fold(
-          0,
-          (sum, item) => sum + (item['amount'] as int),
-        );
+        // ✅ 모델의 속성을 사용한 합계 계산
+        int dayTotal = items.fold(0, (sum, item) => sum + item.amount);
 
         return Column(
           children: [
-            // --- 날짜 헤더 영역 ---
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Colors.grey[50], // 헤더 배경색
-              child: Row(
-                children: [
-                  Text(
-                    '${dateTime.day}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[400],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              DateFormat(
-                                'EEEE',
-                                'ko_KR',
-                              ).format(dateTime).substring(0, 3), // 수요일 등
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            DateFormat('yyyy.MM').format(dateTime),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${NumberFormat('#,###').format(dayTotal)}원',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildDayHeader(dateTime, dayTotal), // (헤더 코드는 기존과 유사)
             const Divider(height: 1),
-            // --- 상세 내역 리스트 영역 ---
             ...items.map((item) {
-              // ✅ 이 부분에 추가합니다. dynamic item을 Map으로 변환합니다.
-              final Map<String, dynamic> data = item as Map<String, dynamic>;
-
               return Column(
                 children: [
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.grey[100], // 배경을 살짝 넣어주면 더 예쁩니다
+                      backgroundColor: Colors.grey[100],
                       child: Text(
-                        controller.getCategoryEmoji(data['category'].toString()), // ✅ 자동 매칭
+                        controller.getCategoryEmoji(item.category), // ✅ item.category 사용
                         style: const TextStyle(fontSize: 20),
                       ),
                     ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // ✅ item 대신 data를 사용하여 안전하게 접근합니다.
+                        Text(item.title, style: const TextStyle(fontSize: 15)), // ✅ item.title 사용
                         Text(
-                          data['title'].toString(),
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        Text(
-                          '${NumberFormat('#,###').format(data['amount'])}원',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.redAccent,
-                          ),
+                          '${item.formattedAmount}원', // ✅ 모델의 getter 활용
+                          style: const TextStyle(fontSize: 15, color: Colors.redAccent),
                         ),
                       ],
                     ),
                     subtitle: Text(
-                      // ✅ data['time'] 대신 spentAt에서 시간을 추출하도록 수정
-                      '${data['category']}  |  ${data['spentAt'].toString().split('T').last.substring(0, 5)}',
+                      '${controller.mapBackendToFrontendCategory(item.category)}  |  ${item.timeOnly}', // ✅ getter 활용
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     onTap: () {
-                      // ✅ 정의한 data를 수정 페이지로 넘겨줍니다.
-                      Get.to(() => ExpenseEditScreen(item: data));
+                      // ✅ 수정 화면 진입 시 모델 객체 자체를 넘기거나 필요한 필드 전달
+                      Get.to(() => ExpenseEditScreen(item: item));
                     },
                   ),
                   const Divider(indent: 16, endIndent: 16, height: 1),
@@ -478,9 +402,10 @@ class LedgerScreen extends StatelessWidget {
   // ============================================================
   void _showDayDetailBottomSheet(int day) {
     String dateKey = "${controller.year.value}-${controller.month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
-    // ✅ 수정: item['date'] 대신 spentAt의 앞부분(날짜)과 비교해야 합니다.
+
+    // ✅ 모델 객체 리스트에서 해당 날짜 것만 필터링
     var dayItems = controller.historyItems
-        .where((item) => item['spentAt'].toString().startsWith(dateKey))
+        .where((item) => DateFormat('yyyy-MM-dd').format(item.spentAt) == dateKey)
         .toList();
 
     Get.bottomSheet(
@@ -524,33 +449,20 @@ class LedgerScreen extends StatelessWidget {
               )
             else
               ...dayItems.map((item) {
-                // ✅ 1. 여기서 item을 Map으로 캐스팅하여 'data' 변수에 담습니다.
-                final Map<String, dynamic> data = item as Map<String, dynamic>;
-
-                return ListTile(
-                  leading: Text(
-                    // ✅ 2. 이제 data 변수를 사용하여 이모지를 가져옵니다.
-                    controller.getCategoryEmoji(data['category'].toString()),
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                  // 3. 나머지 텍스트들도 data를 사용하면 더 안전합니다.
-                  title: Text(data['title'].toString()),
-                    // 더 안전한 시간 표시 방법
-                    subtitle: Text(
-                      data['spentAt'].toString().contains('T')
-                          ? data['spentAt'].toString().split('T')[1].substring(0, 5) // "10:41" 추출
-                          : data['spentAt'].toString(), // 형식이 다르면 전체 출력
-                    ),
-                  trailing: Text(
-                    '${NumberFormat('#,###').format(data['amount'])}원',
-                  ),
-                  onTap: () {
-                    Get.back();
-                    // 수정 페이지로 이동할 때도 캐스팅된 data를 넘겨줍니다.
-                    Get.to(() => ExpenseEditScreen(item: data));
-                  },
-                );
-              }).toList(),
+              return ListTile(
+                leading: Text(
+                  controller.getCategoryEmoji(item.category), // ✅ 모델 접근
+                  style: const TextStyle(fontSize: 24),
+                ),
+                title: Text(item.title), // ✅ 모델 접근
+                subtitle: Text(item.timeOnly), // ✅ 모델 getter 사용
+                trailing: Text('${item.formattedAmount}원'), // ✅ 모델 getter 사용
+                onTap: () {
+                  Get.back();
+                  Get.to(() => ExpenseEditScreen(item: item));
+                },
+              );
+            }).toList(),
             const SizedBox(height: 20),
           ],
         ),
@@ -581,4 +493,55 @@ class LedgerScreen extends StatelessWidget {
           .toList(),
     );
   }
+}
+
+// LedgerScreen 클래스 내부 하단에 추가
+Widget _buildDayHeader(DateTime dateTime, int dayTotal) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    color: Colors.grey[50],
+    child: Row(
+      children: [
+        Text(
+          '${dateTime.day}',
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    DateFormat('EEEE', 'ko_KR').format(dateTime).substring(0, 1), // '수' 형태로 표시
+                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  DateFormat('yyyy.MM').format(dateTime),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const Spacer(),
+        Text(
+          '${NumberFormat('#,###').format(dayTotal)}원',
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
 }

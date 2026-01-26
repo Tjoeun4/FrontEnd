@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
+import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 import '../../controllers/auth_controller.dart';
 
@@ -44,6 +45,14 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: () => Get.toNamed(AppRoutes.CHAT_LIST),
         ),
 
+        IconButton(
+          icon: Icon(Icons.settings),
+          onPressed: () {
+            //  authController.logout();
+            // GetX를 사용하여 내 프로필 화면으로 이동
+            Get.to(() => ProfileScreen());
+          },
+        ),
         /*
         IconButton(
           icon: Icon(Icons.logout),

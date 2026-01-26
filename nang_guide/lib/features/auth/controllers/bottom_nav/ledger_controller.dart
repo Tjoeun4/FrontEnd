@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../services/ledger_api_client.dart'; // 실제 경로에 맞게 수정
+import '../../models/ledger_models.dart'; // ✅ 새로 만든 모델 임포트
 
 /// 📌 가계부 화면 전반의 상태와 비즈니스 로직을 관리하는 Controller
 /// - 달력 UI, 월별/일별 데이터
@@ -13,80 +14,72 @@ class LedgerController extends GetxController {
 
   // ============================================================
   // 1️⃣ 공통 UI 상태 관리
-  // - 탭 선택, 로딩 상태, 월 총 지출 금액
   // ============================================================
   var selectedTabIndex = 1.obs;
   var totalExpense = 0.obs;
   var isLoading = false.obs;
 
   // ============================================================
-  // 2️⃣ 현재 선택된 날짜(연/월) 및 달력 UI용 데이터
+  // 2️⃣ 날짜 및 달력 데이터
   // ============================================================
   RxInt year = DateTime.now().year.obs;
   RxInt month = DateTime.now().month.obs;
-  /// 요일 라벨 (달력 헤더용)
   final weekLabels = ['일', '월', '화', '수', '목', '금', '토'];
-  /// 달력 UI에서 사용되는 주 단위 날짜 구조
-  /// 예: [[0,0,1,2,3,4,5], [6,7,8,9,10,11,12]]
   RxList<List<int>> days = <List<int>>[].obs;
 
   // ============================================================
-  // 3️⃣ 서버에서 내려온 원본 데이터 저장소
+  // 3️⃣ 모델 기반 데이터 저장소 (타입 지정)
   // ============================================================
-  /// 월별 지출 내역 리스트 (리스트 / 상세 화면 공용)
-  RxList<dynamic> historyItems = <dynamic>[].obs;
-  /// 날짜별 총 지출 금액 요약 (달력 점/금액 표시용)
+  /// ✅ dynamic 대신 ExpenseResponse 사용
+  RxList<ExpenseResponse> historyItems = <ExpenseResponse>[].obs;
+
+  /// 날짜별 총 지출 금액 요약
   RxMap<String, int> dailySummaries = <String, int>{}.obs;
-  // ============================================================
-  // 4️⃣ 초기 진입 시 처리 로직
-  // ============================================================
+
   @override
   void onInit() {
     super.onInit();
     generateDays();
-    fetchData(); // 앱 실행 시 데이터 불러오기
+    fetchData();
   }
 
   // ============================================================
-  // 5️⃣ 서버 데이터 로딩 통합 로직
-  // - 월 변경 / CRUD 이후 항상 이 메서드를 통해 갱신
+  // 5️⃣ 서버 데이터 로딩 통합 로직 (모델 적용)
   // ============================================================
   Future<void> fetchData() async {
     isLoading.value = true;
     try {
       await Future.wait([
-        _fetchMonthlyExpenses(), // 월별 지출 리스트
-        _fetchDailySummary(), // 월별 일자 요약
+        _fetchMonthlyExpenses(),
+        _fetchDailySummary(),
       ]);
     } finally {
       isLoading.value = false;
     }
   }
+
   /// 월별 지출 내역 리스트 조회
   Future<void> _fetchMonthlyExpenses() async {
     final response = await _apiClient.getMonthlyExpenses(year.value, month.value);
     if (response != null && response['content'] != null) {
-      historyItems.assignAll(response['content']);
+      // ✅ 서버 JSON 리스트를 ExpenseResponse 모델 리스트로 변환
+      final List<dynamic> content = response['content'];
+      historyItems.assignAll(
+        content.map((json) => ExpenseResponse.fromJson(json)).toList(),
+      );
     }
   }
+
   /// 월별 일자별 지출 요약 조회
-  /// - 달력 UI에서 날짜별 금액 표시용
   Future<void> _fetchDailySummary() async {
-    final data = await _apiClient.getDailySummary(year.value, month.value);
-    if (data != null) {
-      final Map<String, int> summaries = {};
-      for (var item in data['dailyAmounts']) {
-        String date = item['date'];
-        int amount = item['totalAmount'];
-        // 기존 날짜에 값이 이미 있다면 더해줍니다(덮어쓰기 방지). 동일 날짜 데이터 누적 처리
-        if (summaries.containsKey(date)) {
-          summaries[date] = summaries[date]! + amount;
-        } else {
-          summaries[date] = amount;
-        }
-      }
-      dailySummaries.assignAll(summaries);
-      totalExpense.value = data['monthTotalAmount'] ?? 0;
+    final response = await _apiClient.getDailySummary(year.value, month.value);
+    if (response != null) {
+      // ✅ MonthlyDailySummaryResponse 모델 사용
+      final summaryModel = MonthlyDailySummaryResponse.fromJson(response);
+
+      // ✅ 모델 내부의 유틸 메서드로 Map 갱신
+      dailySummaries.assignAll(summaryModel.toDailyMap());
+      totalExpense.value = summaryModel.monthTotalAmount;
     }
   }
 
@@ -138,11 +131,13 @@ class LedgerController extends GetxController {
     String dateKey = "${year.value}-${month.value.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
     return dailySummaries[dateKey] ?? 0;
   }
-  /// 지출 내역을 날짜별로 그룹화 (리스트 화면 섹션용)
-  Map<String, List<dynamic>> get groupedItems {
-    Map<String, List<dynamic>> data = {};
+
+  /// ✅ 내역 그룹화 로직 수정
+  Map<String, List<ExpenseResponse>> get groupedItems {
+    Map<String, List<ExpenseResponse>> data = {};
     for (var item in historyItems) {
-      String date = item['spentAt'].toString().substring(0, 10);
+      // ✅ 모델의 getter 사용 (spentAt이 DateTime이므로 format 사용)
+      String date = DateFormat('yyyy-MM-dd').format(item.spentAt);
       if (data[date] == null) data[date] = [];
       data[date]!.add(item);
     }
@@ -199,24 +194,22 @@ class LedgerController extends GetxController {
   }) async {
     isLoading.value = true;
 
-    final expenseData = {
-      "amount": amount,
-      "spentAt": dateTime.toIso8601String(),
-      "title": title,
-      "category": mapToBackendCategory(category),
-      "memo": memo
-    };
+    // ✅ ExpenseRequest 모델 생성 (날짜 포맷팅 로직이 모델 내부로 이동함)
+    final request = ExpenseRequest(
+      spentAt: dateTime,
+      amount: amount,
+      title: title,
+      category: mapToBackendCategory(category),
+      memo: memo,
+    );
 
     try {
-      // 1. 서버에 저장 요청
-      bool success = await _apiClient.createExpense(expenseData);
+      // ✅ request.toJson() 사용
+      bool success = await _apiClient.createExpense(request.toJson());
 
       if (success) {
-        // 2. 중요: 서버에서 최신 데이터를 다시 긁어옵니다.
-        // 이렇게 해야 달력 요약(dailySummary)과 내역 목록이 서버 기준으로 갱신됩니다.
         await fetchData();
-
-        Get.back(); // 등록창 닫기
+        Get.back();
         Get.snackbar("저장 완료", "가계부 내역이 추가되었습니다.");
       }
     } catch (e) {
@@ -224,8 +217,7 @@ class LedgerController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-  /// 지출 내역 삭제
+  }  /// 지출 내역 삭제
   /// - 다이얼로그 / 수정 화면 상태를 고려한 안전한 화면 복귀 처리
   Future<void> deleteExpense(int expenseId) async {
     isLoading.value = true;
@@ -254,24 +246,22 @@ class LedgerController extends GetxController {
     }
   }
   /// 지출 내역 수정
-  Future<void> updateExpense(int id, Map<String, dynamic> data) async {
+  Future<void> updateExpense(int id, ExpenseRequest request) async {
     isLoading.value = true;
     try {
-      bool success = await _apiClient.updateExpense(id, data);
+      // ✅ 파라미터로 받은 모델의 toJson() 사용
+      bool success = await _apiClient.updateExpense(id, request.toJson());
       if (success) {
         await fetchData();
         Get.back();
         Get.snackbar("수정 완료", "내역이 성공적으로 수정되었습니다.");
-      } else {
-        Get.snackbar("수정 실패", "서버 저장 중 오류가 발생했습니다.");
       }
     } catch (e) {
       print("Error updating expense: $e");
     } finally {
       isLoading.value = false;
     }
-  }
-  // ============================================================
+  }  // ============================================================
   // 🔟 영수증 OCR 처리 (이미지 업로드 기반 자동 지출 등록)
   // ============================================================
   Future<void> processReceipt(ImageSource source) async {

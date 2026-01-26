@@ -1,6 +1,7 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
@@ -210,7 +211,9 @@ class GonguService extends GetxService {
     double lat,
     double lng,
     // List<MultipartFile>? files, // 추후 파일 첨부 시 사용
-  ) async {
+    {
+    File? imageFile
+  }) async {
     try {
       // 1. 서버 주석에 명시된 postDto 구조 만들기
       final Map<String, dynamic> postDto = {
@@ -247,6 +250,19 @@ class GonguService extends GetxService {
       print('lat: $lat (${lat.runtimeType})');
       print('lng: $lng (${lng.runtimeType})');
       print('=======================================');
+
+      // 사진 파일 추가 (dio.MultipartFile 사용)
+      if(imageFile != null) {
+        formData.files.add(MapEntry(
+            "files",
+            await dio.MultipartFile.fromFile(
+              imageFile.path,
+              filename: "post_image.jpg",
+              contentType: dio.DioMediaType('image','jpeg'), // 컨텐츠 타입 명시
+            ),
+        ));
+        print("사진 파일 첨부 완료: ${imageFile.path}");
+      }
 
       final response = await _dio.post(
         '/group-buy',

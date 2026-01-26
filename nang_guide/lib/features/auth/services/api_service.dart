@@ -16,7 +16,7 @@ class ApiService {
     if (token == null) throw Exception("No token found");
     final url = "http://10.0.2.2:8080/$endpoint";
 
-    final springResponse = await http.get(
+    final httpResponse = await http.get(
       Uri.parse(url),
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -24,18 +24,25 @@ class ApiService {
       },
     );
 
-    final SpringResponse response = SpringResponse.fromJson(
-      jsonDecode(utf8.decode(springResponse.bodyBytes)),
-    );
+    // 🎯 핵심: SpringResponse를 거치지 않고 직접 Decoding 합니다.
+    final dynamic decodedData = jsonDecode(utf8.decode(httpResponse.bodyBytes));
 
-    // if (response.statusCode == 401) {
-    //   bool refreshed = await _authController.handle401();
-    //   if (refreshed) {
-    //     return getRequest(endpoint); // 다시 요청
-    //   }
-    // }
-    return response.body;
+    print("📍 [ApiService] Raw 데이터: $decodedData");
+
+    // 데이터가 Map이면 바로 반환합니다.
+    if (decodedData is Map<String, dynamic>) {
+      return decodedData;
+    }
+
+    return {};
   }
+
+  // if (response.statusCode == 401) {
+  //   bool refreshed = await _authController.handle401();
+  //   if (refreshed) {
+  //     return getRequest(endpoint); // 다시 요청
+  //   }
+  // }
 
   Future<Map<String, dynamic>> postRequest(
     String endpoint,
@@ -66,5 +73,9 @@ class ApiService {
     //   }
     // }
     return response.body;
+  }
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    return await getRequest("api/user/me");
   }
 }

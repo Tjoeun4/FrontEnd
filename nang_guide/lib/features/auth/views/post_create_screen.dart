@@ -25,6 +25,35 @@ class PostCreateScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 🎯 사진 첨부 칸 추가
+            _buildLabel("사진 등록"),
+            Obx(() => GestureDetector(
+              onTap: () => controller.pickImage(),
+              child: Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: controller.selectedImage.value != null
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(controller.selectedImage.value!, fit: BoxFit.cover),
+                )
+                    : const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text("사진을 첨부하려면 클릭하세요", style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            )),
+            const SizedBox(height: 20),
+
             _buildLabel("게시물 종류"),
             Obx(() => DropdownButtonFormField<String>(
               value: controller.selectedType.value,
@@ -119,25 +148,25 @@ class PostCreateScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
-  child: Obx(() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      // 1. 변환된 주소 이름 (예: 강남구 역삼동)
-      Text(
-        controller.locationLabel.value, 
-        overflow: TextOverflow.ellipsis, 
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)
-      ),
-      
-      // 🎯 2. [추가] 실시간 선택 좌표 표시 (전공자 디버깅용) // 삭제예정
-      Text(
-        "좌표: ${controller.currentPosition.value.latitude.toStringAsFixed(6)}, ${controller.currentPosition.value.longitude.toStringAsFixed(6)}",
-        style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),
-      ),
-    ],
-  )),
-),
+                      child: Obx(() => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // 1. 변환된 주소 이름 (예: 강남구 역삼동)
+                          Text(
+                            controller.locationLabel.value,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)
+                          ),
+
+                          // 🎯 2. [추가] 실시간 선택 좌표 표시 (전공자 디버깅용) // 삭제예정
+                          Text(
+                            "좌표: ${controller.currentPosition.value.latitude.toStringAsFixed(6)}, ${controller.currentPosition.value.longitude.toStringAsFixed(6)}",
+                            style: TextStyle(fontSize: 11, color: Colors.grey[600], fontFamily: 'monospace'),
+                          ),
+                        ],
+                      )),
+                    ),
                   ],
                 ),
               ),

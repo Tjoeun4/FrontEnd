@@ -2,6 +2,10 @@ import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
+
+import '../models/ledger_models.dart';
+
 
 /// 📌 가계부(지출) 관련 API 통신을 담당하는 전용 API Client
 /// - GetX Service로 등록되어 전역에서 재사용됨
@@ -20,7 +24,7 @@ class LedgerApiClient extends GetxService {
       final response = await _dio.post('/expenses', data: expenseData);
       return response.statusCode == 200 || response.statusCode == 201;
     } on dio.DioException catch (e) {
-      print('지출 생성 실패: ${e.message}');
+      print('지출 생성 실패: ${e.response?.data ?? e.message}');
       return false;
     }
   }
@@ -30,7 +34,11 @@ class LedgerApiClient extends GetxService {
   // - 리스트 화면(내역 탭)에서 사용
   // - page, size, sort를 통해 서버 페이징 기반 목록 관리
   // ============================================================
-  Future<Map<String, dynamic>?> getExpenses({int page = 0, int size = 15, String sort = 'spentAt,desc'}) async {
+  Future<Map<String, dynamic>?> getExpenses({
+    int page = 0,
+    int size = 15,
+    String sort = 'spentAt,desc',
+  }) async {
     try {
       final response = await _dio.get(
         '/expenses',
@@ -78,7 +86,6 @@ class LedgerApiClient extends GetxService {
   Future<bool> deleteExpense(int expenseId) async {
     try {
       final response = await _dio.delete('/expenses/$expenseId');
-      // ✅ 200(OK) 뿐만 아니라 204(No Content)도 성공으로 처리합니다.
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
       print('지출 내역 삭제 실패: $e');
@@ -91,15 +98,27 @@ class LedgerApiClient extends GetxService {
   // - 달력 탭 / 월별 리스트 화면에서 사용
   // - 특정 연/월 기준으로 지출 목록을 서버에서 조회
   // ============================================================
-  Future<Map<String, dynamic>?> getMonthlyExpenses(int year, int month, {int page = 0, int size = 15}) async {
+  Future<Map<String, dynamic>?> getMonthlyExpenses(
+    int year,
+    int month, {
+    int page = 0,
+    int size = 15,
+  }) async {
     try {
+      // ✅ 400 에러 방지: 모든 파라미터를 .toString()으로 명시적 변환
       final response = await _dio.get(
         '/expenses/monthly',
-        queryParameters: {'year': year, 'month': month, 'page': page, 'size': size},
+        queryParameters: {
+          'year': year.toString(),
+          'month': month.toString(),
+          'page': page.toString(),
+          'size': size.toString(),
+          'sort': 'spentAt,desc', // 기본 정렬 고정
+        },
       );
       return response.data;
-    } catch (e) {
-      print('월별 목록 조회 실패: $e');
+    } on dio.DioException catch (e) {
+      print('월별 목록 조회 실패: ${e.response?.data ?? e.message}');
       return null;
     }
   }
@@ -112,11 +131,11 @@ class LedgerApiClient extends GetxService {
     try {
       final response = await _dio.get(
         '/expenses/monthly/daily-summary',
-        queryParameters: {'year': year, 'month': month},
+        queryParameters: {'year': year.toString(), 'month': month.toString()},
       );
       return response.data;
-    } catch (e) {
-      print('일일 요약 조회 실패: $e');
+    } on dio.DioException catch (e) {
+      print('일일 요약 조회 실패: ${e.response?.data ?? e.message}');
       return null;
     }
   }
@@ -125,15 +144,23 @@ class LedgerApiClient extends GetxService {
   // 8️⃣ 특정 날짜의 지출 상세 목록 조회
   // - 달력에서 날짜 선택 시 해당 날짜의 내역을 보여줄 때 사용
   // ============================================================
-  Future<List<dynamic>> getDailyExpenses(String date) async {
+  Future<List<ExpenseResponse>> getDailyExpenses(String date) async {
     try {
       final response = await _dio.get(
         '/expenses/daily',
-        queryParameters: {'date': date},
+        // ✅ 400 에러 방지: date가 이미 String이라도 확실하게 toString() 처리
+        queryParameters: {'date': date.toString()},
       );
-      return response.data;
-    } catch (e) {
-      print('특정 날짜 조회 실패: $e');
+
+      // ✅ List<dynamic> 대신 List<ExpenseResponse> 모델 리스트로 변환하여 반환
+      if (response.data != null) {
+        final List<dynamic> data = response.data;
+        return data.map((json) => ExpenseResponse.fromJson(json)).toList();
+      }
+      return [];
+    } on dio.DioException catch (e) {
+      // ✅ 에러 로그 상세화
+      print('특정 날짜 조회 실패: ${e.response?.data ?? e.message}');
       return [];
     }
   }
@@ -156,12 +183,11 @@ class LedgerApiClient extends GetxService {
       });
 
       final response = await _dio.post(
-        '/receipt/upload', // 👈 경로가 /api/receipt/upload 인지 /receipt/upload 인지 베이스 URL 확인 필요
+        '/receipt/upload',
+        // 👈 경로가 /api/receipt/upload 인지 /receipt/upload 인지 베이스 URL 확인 필요
         data: formData,
         // 일부 서버는 멀티파트 요청 시 헤더를 명시하는 것을 선호합니다.
-        options: dio.Options(
-          contentType: 'multipart/form-data',
-        ),
+        options: dio.Options(contentType: 'multipart/form-data'),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -178,4 +204,5 @@ class LedgerApiClient extends GetxService {
       print("알 수 없는 에러: $e");
       return null;
     }
-  }}
+  }
+}
