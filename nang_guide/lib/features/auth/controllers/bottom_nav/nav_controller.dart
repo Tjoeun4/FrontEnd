@@ -18,4 +18,8 @@ class NavController extends GetxController {
       case 4: Get.offNamed(AppRoutes.LEDGER); break;
     }
   }
+
+  void changeIndex(int index) {
+    selectedIndex.value = index;
+  }
 }
