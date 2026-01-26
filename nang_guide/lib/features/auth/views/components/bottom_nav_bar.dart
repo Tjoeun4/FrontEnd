@@ -24,9 +24,10 @@ class MyBottomNavigation extends StatelessWidget {
       items: [
         _buildNavItem(HugeIcons.strokeRoundedHome01, "홈"),
         _buildNavItem(HugeIcons.strokeRoundedUserGroup, "게시판"),
+        _buildNavItem(HugeIcons.strokeRoundedFridge, "내 냉장고"),
         _buildNavItem(HugeIcons.strokeRoundedBookOpen01, "음식 추천"),
         _buildNavItem(HugeIcons.strokeRoundedPiggyBank, "가계부"),
-        _buildNavItem(HugeIcons.strokeRoundedUser, "내 프로필"),
+        //_buildNavItem(HugeIcons.strokeRoundedUser, "내 프로필"),
       ],
     ));
   }

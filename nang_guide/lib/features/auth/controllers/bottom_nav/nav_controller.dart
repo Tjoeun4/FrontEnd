@@ -14,8 +14,8 @@ class NavController extends GetxController {
       case 0: Get.offNamed(AppRoutes.HOME); break;
       case 1: Get.offNamed(AppRoutes.COMMUNITY); break;
       case 2: Get.offNamed(AppRoutes.RECOMMEND); break;
-      case 3: Get.offNamed(AppRoutes.LEDGER); break;
-      case 4: Get.offNamed(AppRoutes.PROFILE); break;
+      case 3: Get.offNamed(AppRoutes.RECOMMEND); break;
+      case 4: Get.offNamed(AppRoutes.LEDGER); break;
     }
   }
 }
