@@ -13,8 +13,12 @@ class RecommendBinding extends Bindings {
   @override
   void dependencies() {
     // Servcies
+    // 1. 네트워크 및 저장소 서비스 재등록
+    // (이미 AuthBinding에서 등록했다면 생략 가능하지만, 독립적 실행을 위해 명시되어 있음)
     Get.put(GetStorage(), permanent: true); // GetX패키지의 의존성 주입(인스턴스 생성 후 메모리에 올림) 메서드. 매번 GetStorage()를 새로 생성할 필요 없이, 메모리에 딱 하나 올라가 있는 '싱글톤(Singleton)' 객체를 공유해서 쓰기 위함
     Get.put(Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/api')), permanent: true);
+
+    // 2. 토큰 및 API 서비스: 추천 데이터를 서버에서 가져오기 위한 의존성 주입
     // Register TokenService, injecting the Dio instance
     Get.put<TokenService>(TokenService(Get.find<Dio>()), permanent: true);
     // AuthApiClient now relies on TokenService, so it should be put after TokenService
@@ -22,7 +26,6 @@ class RecommendBinding extends Bindings {
 
     // Controllers
     Get.put<NavController>(NavController(), permanent: true); // NavController를 영구 종속성으로 추가
-
     Get.lazyPut<RecommendController>(() => RecommendController());
     Get.lazyPut<AuthController>(() => AuthController());
     // Get.lazyPut<TokenService>(() => TokenService());
