@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../controllers/bottom_nav/ledger_controller.dart';
+import '../../models/ledger_models.dart'; // ✅ 모델 임포트
 // =========================
 // 지출 수정 / 삭제 화면
 // - 기존 지출 데이터를 받아 수정
@@ -19,7 +20,7 @@ import '../../controllers/bottom_nav/ledger_controller.dart';
 /// - item(Map) 형태로 서버에서 내려온 지출 데이터 전달받음
 /// =====================================================
 class ExpenseEditScreen extends StatefulWidget {
-  final Map<String, dynamic> item; // 수정 대상 지출 데이터
+  final ExpenseResponse item;
   const ExpenseEditScreen({super.key, required this.item});
 
   @override
@@ -45,13 +46,14 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   /// ==========================================
   void initState() {
     super.initState();
-    _amountController = TextEditingController(text: widget.item['amount'].toString());
-    _titleController = TextEditingController(text: widget.item['title']); // content -> title
-    _memoController = TextEditingController(text: widget.item['memo'] ?? "");
-    _selectedDateTime = DateTime.parse(widget.item['spentAt']); // date -> spentAt
-    _selectedCategory = widget.item['category'];
-    // 서버 Enum → 프론트 표시용 카테고리(서버의 영문 Enum 값을 프론트용 한글 이름으로 변환하여 초기값 설정)
-    _selectedCategory = controller.mapBackendToFrontendCategory(widget.item['category']);
+    // ✅ widget.item.속성명 으로 안전하게 접근
+    _amountController = TextEditingController(text: widget.item.amount.toString());
+    _titleController = TextEditingController(text: widget.item.title);
+    _memoController = TextEditingController(text: widget.item.memo ?? "");
+    _selectedDateTime = widget.item.spentAt;
+
+    // ✅ 서버 Enum을 한글 카테고리로 변환하여 초기값 세팅
+    _selectedCategory = controller.mapBackendToFrontendCategory(widget.item.category);
   }
   /// =================================
   /// 화면 UI 구성
@@ -184,32 +186,35 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       textConfirm: "삭제",
       textCancel: "취소",
       confirmTextColor: Colors.white,
+      buttonColor: Colors.red,
       onConfirm: () {
         Get.back(); // 다이얼로그 닫기
-        // 리스트 조작이 아닌 서버 API 호출 (expenseId 사용)
-        controller.deleteExpense(widget.item['expenseId']);
-        // deleteExpense 내부에서 Get.back()을 수행하므로 여기서는 다이얼로그만 닫힐 수 있음
+        controller.deleteExpense(widget.item.expenseId); // ✅ id 접근
       },
     );
-  }
-  /// ================================
+  }  /// ================================
   /// 지출 수정 처리
   /// - 서버 DTO 형식에 맞게 데이터 가공
   /// - 프론트 카테고리 → 서버 Enum 변환
   /// ================================
   void _updateExpense() {
-    // ✅ 수정: 서버가 기대하는 DTO 구조로 데이터 생성
-    final updateData = {
-      'spentAt': _selectedDateTime.toIso8601String(),
-      'title': _titleController.text,
-      'amount': int.parse(_amountController.text.replaceAll(',', '')),
-      'category': controller.mapToBackendCategory(_selectedCategory), // 다시 영문으로 변환
-      'memo': _memoController.text,
-    };
-    // 서버 API 호출
-    controller.updateExpense(widget.item['expenseId'], updateData);
-  }
-  // 1. 카테고리 리스트 추가 (Dropdown에서 사용)
+    if (_amountController.text.isEmpty || _titleController.text.isEmpty) {
+      Get.snackbar("입력 오류", "금액과 내용을 입력해주세요.");
+      return;
+    }
+
+    // ✅ 서버 전송용 ExpenseRequest 모델 생성
+    final request = ExpenseRequest(
+      spentAt: _selectedDateTime,
+      title: _titleController.text,
+      amount: int.parse(_amountController.text.replaceAll(',', '')),
+      category: controller.mapToBackendCategory(_selectedCategory),
+      memo: _memoController.text,
+    );
+
+    // ✅ 컨트롤러에 모델 전달
+    controller.updateExpense(widget.item.expenseId, request);
+  }  // 1. 카테고리 리스트 추가 (Dropdown에서 사용)
   final List<String> _categories = ['식비', '교통', '쇼핑', '식재료', '생활용품', '기타'];
 
   /// ==============================
