@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart';
 import '../../controllers/bottom_nav/nav_controller.dart';
+import '../profile_edit_screen.dart';
 import './../components/app_nav_bar.dart';
 import './../components/bottom_nav_bar.dart';
 
@@ -12,6 +14,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // 컨트롤러 등록
     final controller = Get.put(NavController());
+    final profileController = Get.put(ProfileController());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -28,7 +31,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
               // 1. 상단 프로필
-              _buildProfileCard(),
+              _buildProfileCard(profileController),
               const SizedBox(height: 30),
               // 2. 설정 섹션 (알림, 로그아웃, 탈퇴)
               _buildMenuSection([
@@ -67,7 +70,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // 상단 프로필 카드 (이미지, 이름, 정보 수정 버튼)
-  Widget _buildProfileCard() {
+  Widget _buildProfileCard(ProfileController profileController) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -76,25 +79,27 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person, color: Colors.grey, size: 40), // 추후 이미지 데이터 연동
+          GestureDetector(
+            child: CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.white,
+              child: Icon(Icons.person, color: Colors.grey, size: 40), // 추후 이미지 데이터 연동
+            ),
           ),
           const SizedBox(width: 15),
-          const Expanded(
-            child: Text(
-              '위시밀',
-              style: TextStyle(
+          Expanded(
+            child: Obx(() => Text(
+              profileController.nickname.value, // 상태에 따라 자동 갱신
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Pretendard',
+                color: Colors.black,
               ),
-            ),
+            )),
           ),
           GestureDetector(
             onTap: () {
-              // 정보 수정 페이지 이동 로직
+              Get.to(() => ProfileEditScreen());
             },
             child: const Text(
               '정보 수정하기',
