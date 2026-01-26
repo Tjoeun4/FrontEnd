@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/services/auth_service.dart';
+import 'package:honbop_mate/features/auth/services/stomp_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import '../../models/chat_model.dart';
@@ -8,10 +11,16 @@ import '../../services/chat_service.dart';
 import '../../services/token_service.dart';
 
 class ChatController extends GetxController {
+  // ✅ AuthService를 찾아옵니다.
+  final AuthService _authService = Get.find<AuthService>();
+
+  // ✅ 이제 AuthService의 userId를 그대로 가져다 씁니다.
+  // (AuthService의 userId가 Rxn<int>이므로 .value로 접근)
+  int? get currentUserId => _authService.userId.value;
+
   late final ChatService _chatService;
   late final TokenService _tokenService;
 
-  int? currentUserId;
   var chatRooms = <ChatRoom>[].obs; // 채팅방 목록 (Obx로 화면 갱신)
   var messages = <ChatMessage>[].obs; // 현재 방의 메시지 내역
   var isLoading = false.obs;
@@ -21,14 +30,48 @@ class ChatController extends GetxController {
 
   StompClient? stompClient;
 
-  final String baseUrl = "http://172.16.252.206:8080/api/chat";
-  final String wsUrl = "ws://172.16.252.206:8080/ws-stomp";
+  final String baseUrl = "http://10.0.2.2:8080/api/chat";
+  final String wsUrl = "ws://10.0.2.2:8080/ws-stomp";
 
   @override
   void onInit() {
     super.onInit();
     _initializeServices();
     loadInitialData(); // 초기 데이터 로드 및 소켓 연결
+  }
+
+  void _initStompClient() {
+    final token = _tokenService.getAccessToken();
+    if (token == null) return;
+
+    stompClient = StompClient(
+      config: StompConfig(
+        url: wsUrl,
+        onConnect: (frame) {
+          isConnected.value = true;
+          print("✅ [소켓 연결 성공] 모든 방 구독을 시작합니다.");
+
+          // 이미 불러온 방 목록이 있다면 모두 구독
+          for (var room in chatRooms) {
+            _subscribeToRoom(room.roomId);
+          }
+        },
+        // 🔍 [핵심] 서버와 오고 가는 모든 날것의 데이터를 로그로 찍습니다.
+        // 이게 켜져 있어야 SEND 후 MESSAGE가 오는지 확인 가능합니다.
+        onDebugMessage: (log) => print("[STOMP 상세로그] $log"),
+
+        stompConnectHeaders: {
+          'Authorization': 'Bearer $token', // 'Bearer ' 띄어쓰기 확인!
+        },
+        onStompError: (frame) => print("❌ [STOMP 에러]: ${frame.body}"),
+        onWebSocketError: (error) => print("❌ [웹소켓 에러]: $error"),
+        onDisconnect: (frame) {
+          isConnected.value = false;
+          print("ℹ️ 소켓 연결 종료");
+        },
+      ),
+    );
+    stompClient?.activate();
   }
 
   void _initializeServices() {
@@ -56,11 +99,10 @@ class ChatController extends GetxController {
       try {
         final Map<String, dynamic> payload = _decodeJwt(token);
         final String email = payload['sub'];
-        currentUserId = payload['userId'];
         debugPrint("현재 사용자 ID: $currentUserId, 이메일: $email");
 
         await fetchChatMyRooms(); // 1. 방 목록 먼저 가져오기
-        /// _initStompClient(); // 2. 소켓 연결 및 모든 방 자동 구독
+        _initStompClient(); // 2. 소켓 연결 및 모든 방 자동 구독
       } catch (e) {
         debugPrint("초기 데이터 로드 실패: $e");
       }
@@ -91,20 +133,24 @@ class ChatController extends GetxController {
   }
 
   // ✅ 초기 로딩 시 모든 방을 실시간 구독 상태로 만듭니다.
-  void _initStompClient() {
+  void _initStompClient2() {
+    final token = _tokenService.getAccessToken(); // 토큰 다시 확인
+    if (token == null) return;
+
     stompClient = StompClient(
       config: StompConfig(
         url: wsUrl,
         onConnect: (frame) {
           isConnected.value = true;
-          // 🔥 모든 방을 구독하여 어디서든 메시지를 받으면 목록이 갱신되게 함
+          print("✅ 소켓 연결 성공!"); // 👈 이 로그가 찍혀야 구독 가능
           for (var room in chatRooms) {
             _subscribeToRoom(room.roomId);
           }
         },
         stompConnectHeaders: {
-          'Authorization': 'Bearer ${_tokenService.getAccessToken()}',
+          'Authorization': 'Bearer $token', // 👈 변수명 확인
         },
+        onStompError: (frame) => print('❌ STOMP 에러: ${frame.body}'),
       ),
     );
     stompClient?.activate();
@@ -112,41 +158,31 @@ class ChatController extends GetxController {
 
   /// ✅ 실시간 메시지 수신 및 채팅 목록(미리보기) 갱신
   void _subscribeToRoom(int roomId) {
+    // 1. 🛡️ 방어 코드 추가: 진짜로 연결됐는지 한 번 더 체크!
+    if (stompClient == null || !stompClient!.connected) {
+      print("⚠️ [구독 대기] 아직 소켓이 '완전하게' 연결되지 않았습니다. (방 ID: $roomId)");
+      return; // 연결 안 됐으면 여기서 멈춤!
+    }
+
+    // 2. ✅ 연결이 확실할 때만 구독 실행
     stompClient?.subscribe(
       destination: '/sub/chat/room/$roomId',
       callback: (frame) {
         if (frame.body != null) {
           final newMessage = ChatMessage.fromJson(json.decode(frame.body!));
-
-          // 현재 채팅방 내부라면 메시지 리스트에 추가
           messages.insert(0, newMessage);
-
-          // 🔴 목록의 '마지막 메시지'를 실시간으로 갈아끼우고 맨 위로 올림
-          int index = chatRooms.indexWhere((r) => r.roomId == roomId);
-          if (index != -1) {
-            chatRooms[index] = chatRooms[index].copyWith(
-              lastMessage: newMessage.content,
-              lastMessageTime: DateTime.now().toString(),
-            );
-
-            // 최신 메시지가 온 방을 리스트 맨 위로 이동 (정렬 유지)
-            final updatedRoom = chatRooms.removeAt(index);
-            chatRooms.insert(0, updatedRoom);
-
-            chatRooms.refresh(); // GetX Obx UI 갱신
-          }
+          // ... 나머지 리스트 갱신 로직
         }
       },
     );
+    print("🔔 [구독 완료] 방 ID: $roomId");
   }
 
   /// ✅ 메시지 전송
-  void sendMessage(int roomId, String text) {
-    if (text.trim().isEmpty || !isConnected.value) return;
-
+  void sendMessage(int roomId, int senderId, String text) {
     final msgRequest = {
       'roomId': roomId,
-      'senderId': currentUserId,
+      'senderId': senderId,
       'content': text,
       'type': 'TEXT',
     };
@@ -155,29 +191,6 @@ class ChatController extends GetxController {
       destination: '/pub/chat/message',
       body: json.encode(msgRequest),
     );
-  }
-
-  /// ✅ 과거 메시지 내역 로드 (방 입장 시 호출)
-  Future<void> fetchChatHistory(int roomId) async {
-    try {
-      isLoading.value = true;
-      messages.clear(); // 기존 내역 비우기
-
-      final response = await http.get(
-        Uri.parse('$baseUrl/room/$roomId'),
-        headers: {'Authorization': 'Bearer ${_tokenService.getAccessToken()}'},
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(utf8.decode(response.bodyBytes));
-        final history = ChatHistoryResponse.fromJson(data);
-        messages.assignAll(history.messages); // 과거 메시지 할당
-      }
-    } catch (e) {
-      debugPrint("내역 로드 에러: $e");
-    } finally {
-      isLoading.value = false;
-    }
   }
 
   Map<String, dynamic> _decodeJwt(String token) {

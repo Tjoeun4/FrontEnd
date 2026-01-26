@@ -15,6 +15,8 @@ import './../bindings/login/signin_binding.dart';
 import './../bindings/login/signup_binding.dart';
 import './../bindings/bottom_nav/home_binding.dart';
 import './../bindings/post_detail_binding.dart';
+import './../bindings/top_nav/chat_room_binding.dart';
+import './../bindings/top_nav/chat_binding.dart';
 
 // 뷰
 import './../views/bottom_nav_screen/home_screen.dart';
@@ -27,6 +29,8 @@ import '../views/auth/email_login_screen.dart';
 import './../views/splash_screen.dart';
 import '../views/auth/login_selection_screen.dart';
 import '../views/post_detail_screen.dart';
+import '../views/chat_screen.dart';
+import '../views/chat_list_screen.dart';
 
 class AppRoutes {
   static const SPLASH = '/';
@@ -43,6 +47,8 @@ class AppRoutes {
   static const POST = '/post'; // 게시글 작성
   static const CHAT = '/chat'; // 채팅
   static const POST_DETAIL = '/post-detail/:postId'; // 상세페이지
+  static const CHAT_LIST = '/chat/list'; // 채팅목록
+  static const CHAT_ROOM = '/chat/room/:roomId'; // 채팅방
 
   static final routes = [
     GetPage(name: SPLASH, page: () => SplashScreen(), binding: AuthBinding()),
@@ -107,6 +113,26 @@ class AppRoutes {
       name: AppRoutes.POST_DETAIL,
       page: () => PostDetailScreen(),
       binding: PostDetailBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.CHAT_ROOM,
+      page: () {
+        // 💡 Get.toNamed에서 보낸 arguments를 여기서 꺼냅니다.
+        final args = Get.arguments as Map<String, dynamic>;
+        return ChatScreen(
+          roomId: args['roomId'],
+          roomName: args['roomName'],
+          currentUserId: args['currentUserId'],
+        );
+      },
+      binding: ChatRoomBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: AppRoutes.CHAT_LIST,
+      page: () => ChatListScreen(),
+      binding: ChatBinding(),
       transition: Transition.noTransition,
     ),
   ];

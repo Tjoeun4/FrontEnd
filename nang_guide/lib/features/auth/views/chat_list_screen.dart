@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import '../controllers/top_nav/chat_controller.dart';
 import 'chat_screen.dart';
 import '../models/chat_model.dart';
@@ -14,8 +16,10 @@ class ChatListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("채팅 목록",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "채팅 목록",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         elevation: 0.5,
         leading: IconButton(
@@ -37,12 +41,22 @@ class ChatListScreen extends StatelessWidget {
 
             return GestureDetector(
               onTap: () {
+                final storage = GetStorage();
+                final myId = storage.read('userId'); // 👈 여기서 꺼내 쓰기!
+
+                if (myId == null) {
+                  print("❌ 아직 로그인이 덜 됐나 봐요! ID가 없어요.");
+                  return;
+                }
                 controller.connect(room.roomId);
-                controller.fetchChatHistory(room.roomId);
-                Get.to(() => ChatScreen(
-                    roomId: room.roomId,
-                    roomName: room.roomName
-                ));
+                Get.toNamed(
+                  AppRoutes.CHAT_ROOM, // 'chat/room/1' 이런 식보다 상수를 쓰는 게 안전합니다.
+                  arguments: {
+                    'roomId': room.roomId,
+                    'roomName': room.roomName,
+                    'currentUserId': controller.currentUserId ?? 0, // null 방지
+                  },
+                );
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12, left: 8, right: 8),
@@ -52,9 +66,10 @@ class ChatListScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 10)
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 2,
+                      blurRadius: 10,
+                    ),
                   ],
                 ),
                 child: Row(
@@ -69,13 +84,18 @@ class ChatListScreen extends StatelessWidget {
                           Text(
                             room.roomName,
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           const SizedBox(height: 5),
                           // 🔴 실시간 반영되는 마지막 메시지 영역
                           Text(
                             room.lastMessage ?? "메시지가 없습니다",
-                            style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -87,13 +107,16 @@ class ChatListScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: const BoxDecoration(
-                            color: Colors.red, shape: BoxShape.circle),
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
                         child: Text(
                           "${room.unreadCount}",
                           style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                   ],

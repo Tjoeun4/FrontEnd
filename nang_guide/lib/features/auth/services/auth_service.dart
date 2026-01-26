@@ -9,6 +9,7 @@ class AuthService extends GetxService {
 
   // 🎯 유저 정보를 관찰 가능한 변수로 선언
   final Rxn<int> neighborhoodId = Rxn<int>();
+  final Rxn<int> userId = Rxn<int>();
   final RxString nickname = ''.obs;
 
   @override
@@ -22,7 +23,7 @@ class AuthService extends GetxService {
     // GetStorage에서 유저 관련 데이터 읽기
     final id = _storage.read('neighborhood_id');
     if (id != null) neighborhoodId.value = id;
-    
+
     final name = _storage.read('nickname');
     if (name != null) nickname.value = name;
   }
@@ -31,6 +32,7 @@ class AuthService extends GetxService {
   Future<void> loginSuccess(Map<String, dynamic> userData) async {
     neighborhoodId.value = userData['neighborhoodId'];
     await _storage.write('neighborhood_id', userData['neighborhoodId']);
-    // ... 기타 정보 저장
+    userId.value = userData['userId'];
+    await _storage.write('userId', userData['userId']);
   }
 }
