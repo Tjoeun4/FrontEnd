@@ -1,4 +1,5 @@
 // FrontEnd/nang_guide/lib/features/auth/services/auth_api_client.dart
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:dio/dio.dart' as dio;
@@ -84,8 +85,9 @@ class GonguResponse {
       keyword: json['keyword'],
       favorite: json['favorite'],
       join: json['join'],
-      startdate:
-          json['startdate'] != null ? DateTime.parse(json['startdate']) : null,
+      startdate: json['startdate'] != null
+          ? DateTime.parse(json['startdate'])
+          : null,
       enddate: json['enddate'] != null ? DateTime.parse(json['enddate']) : null,
       currentParticipants: json['currentParticipants'],
       maxParticipants: json['maxParticipants'],
@@ -101,7 +103,8 @@ class GonguResponse {
 /// - 토큰 자동 갱신 인터셉터 포함
 /// ---------------------------------------------
 class GonguService extends GetxService {
-  final dio.Dio _dio = Get.find<dio.Dio>(); // Base URL이 http://10.0.2.2:8080/api 로 설정된채로 가져와짐
+  final dio.Dio _dio =
+      Get.find<dio.Dio>(); // Base URL이 http://10.0.2.2:8080/api 로 설정된채로 가져와짐
   final GetStorage _storage = Get.find<GetStorage>();
   final TokenService _tokenService = Get.find<TokenService>();
 
@@ -178,19 +181,23 @@ class GonguService extends GetxService {
   /// 공구 방 생성하는 API 함수
   /// - /api/group-buy
   /// - 헤더에는 인증 토큰 포함 해야됩니다.
-  /// - 리퀘스트 바디 예시
-  /* {
-      "title": "생수 살사212212132",
-      "description": "제곧2323내2",
-      "priceTotal": 50000,
-      "meetPlaceText": "고깃23232집",
-      "categoryId": 1,
-      "neighborhoodId": 11560,
-      "startdate": "2024-07-01T00:00:00",
-      "enddate": "2024-07-10T00:00:00"
-      "lat" : 37.123456,
-      "lng" : 127.123456
-  } */
+  /// - 리퀘스트 바디 예시 수정
+  /// 01.25 수정함
+  /// form-data
+  /// postDto : {
+  //     "title": "생수 살사212212132",
+  //     "description": "제곧2323내2",
+  //     "priceTotal": 50000,
+  //     "meetPlaceText": "고깃23232집",
+  //     "categoryId": 1,
+  //     "neighborhoodId": 11560,
+  //     "startdate": "2024-07-01T00:00:00",
+  //     "enddate": "2024-07-10T00:00:00"
+  //     "lat" : 37.123456,
+  //     "lng" : 127.123456
+  // }
+  // file : [파일들...] // 이건 추후
+  // */
   /// =================================================
   Future<bool> createGonguRoom(
     String title,
@@ -202,8 +209,31 @@ class GonguService extends GetxService {
     DateTime enddate,
     double lat,
     double lng,
+    // List<MultipartFile>? files, // 추후 파일 첨부 시 사용
   ) async {
     try {
+      // 1. 서버 주석에 명시된 postDto 구조 만들기
+      final Map<String, dynamic> postDto = {
+        "title": title,
+        "description": description,
+        "priceTotal": priceTotal,
+        "meetPlaceText": meetPlaceText,
+        "categoryId": categoryId,
+        "neighborhoodId": 11560, // 주석 예시에 있는 고정값 또는 파라미터화
+        "startdate": startdate.toIso8601String(),
+        "enddate": enddate.toIso8601String(),
+        "lat": lat,
+        "lng": lng,
+      };
+
+      // FormData 구성 (방법 1 적용)
+      final formData = dio.FormData.fromMap({
+        'postDto': dio.MultipartFile.fromString(
+          jsonEncode(postDto),
+          contentType: dio.DioMediaType('application', 'json'),
+        ),
+      });
+
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== createRoom SERVICE ==========');
       print('baseUrl : ${_dio.options.baseUrl}');
@@ -220,17 +250,8 @@ class GonguService extends GetxService {
 
       final response = await _dio.post(
         '/group-buy',
-        data: {
-          'title': title,
-          'description': description,
-          'priceTotal': priceTotal,
-          'meetPlaceText': meetPlaceText,
-          'categoryId': categoryId,
-          'startdate': startdate.toIso8601String(), // 이 부분!
-          'enddate': enddate.toIso8601String(),
-          'lat': lat,
-          'lng': lng,
-        },
+        data: formData, // JSON 대신 formData를 전송
+        options: dio.Options(contentType: 'multipart/form-data'),
       );
 
       print('========== RESPONSE ==========');
@@ -253,18 +274,14 @@ class GonguService extends GetxService {
   /// - 헤더에는 인증 토큰 포함 해야됩니다.
   /// - pathVariable : postId // 필수
   /// =================================================
-  Future<bool?> favoriteGonguRoom(
-    int postId,
-  ) async {
+  Future<bool?> favoriteGonguRoom(int postId) async {
     try {
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== favoriteGonguRoom SERVICE ==========');
       print('baseUrl : ${_dio.options.baseUrl}');
       print('=======================================');
 
-      final response = await _dio.post(
-        '/group-buy/$postId/favorite',
-      );
+      final response = await _dio.post('/group-buy/$postId/favorite');
 
       print('========== RESPONSE ==========');
       print('statusCode: ${response.statusCode}');
@@ -285,18 +302,14 @@ class GonguService extends GetxService {
   /// - 헤더에는 인증 토큰 포함 해야됩니다.
   /// - pathVariable : postId // 필수
   /// =================================================
-  Future<bool?> joinGonguRoom(
-    int postId,
-  ) async {
+  Future<bool?> joinGonguRoom(int postId) async {
     try {
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== joinGonguRoom SERVICE ==========');
       print('baseUrl : ${_dio.options.baseUrl}');
       print('=======================================');
 
-      final response = await _dio.post(
-        '/group-buy/$postId/join',
-      );
+      final response = await _dio.post('/group-buy/$postId/join');
 
       print('========== RESPONSE ==========');
       print('statusCode: ${response.statusCode}');
@@ -352,9 +365,7 @@ class GonguService extends GetxService {
       print('baseUrl : ${_dio.options.baseUrl}');
       print('=======================================');
 
-      final response = await _dio.get(
-        '/group-buy/$postId',
-      );
+      final response = await _dio.get('/group-buy/$postId');
 
       print('========== RESPONSE ==========');
       print('statusCode: ${response.statusCode}');
@@ -431,18 +442,14 @@ class GonguService extends GetxService {
     }
   }
 
-   Future<bool?> MadeGonguRoom(
-    int postId,
-  ) async {
+  Future<bool?> MadeGonguRoom(int postId) async {
     try {
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== joinGonguRoom SERVICE ==========');
       print('baseUrl : ${_dio.options.baseUrl}');
       print('=======================================');
 
-      final response = await _dio.post(
-        '/group-buy/$postId/join',
-      );
+      final response = await _dio.post('/group-buy/$postId/join');
 
       print('========== RESPONSE ==========');
       print('statusCode: ${response.statusCode}');

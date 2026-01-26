@@ -11,9 +11,9 @@ class PostDetailController extends GetxController {
   final ChatService _chatService = Get.find<ChatService>();
 
   // 넘겨받은 ID (CommunityScreen에서 보낸 idValue)
-  late final int postId = Get.arguments['postId'] ; 
+  late final int postId = Get.arguments['postId'];
   late final int totalPrice; // 여기에 int 값이 제대로 담겨야 함
-  
+
   // Get.arguments에 userId가 들어있다고 가정할 때
   late final int userId = Get.arguments['userId'];
 
@@ -27,7 +27,6 @@ class PostDetailController extends GetxController {
   void onInit() {
     super.onInit();
     loadDetail();
-    
   }
 
   Future<void> loadDetail() async {
@@ -35,7 +34,7 @@ class PostDetailController extends GetxController {
     final result = await _gonguService.getLocalGonguRoomDetails(postId);
     if (result != null) {
       postData.value = result;
-      print("📦 서버가 준 실제 키들: ${result.keys.toList()}"); 
+      print("📦 서버가 준 실제 키들: ${result.keys.toList()}");
       print("💰 실제 데이터: $result");
 
       // DB의 MEET_PLACE_TEXT 컬럼 값이 'meetPlaceText' 키로 들어온다고 가정
@@ -96,10 +95,10 @@ class PostDetailController extends GetxController {
           // 2단계: 채팅방 참여 (서버 500 에러 지점)
           // 🎯 여기서 터져도 앱이 죽지 않게 try-catch로 감싸야 합니다.
           try {
-             await _chatService.createGongGuRoom(postId);
+            await _gonguService.MadeGonguRoom(postId);
           } catch (e) {
-             print("❌ 채팅방 생성/참여 실패: $e");
-             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
+            print("❌ 채팅방 생성/참여 실패: $e");
+            // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
           }
 
           // 3. 성공 시 UI 업데이트 (예: 참여 인원 수 +1 하거나 버튼 비활성화)
@@ -109,10 +108,10 @@ class PostDetailController extends GetxController {
           await loadDetail();
         } else {
           try {
-             await _chatService.createGongGuRoom(postId);
+            await _gonguService.MadeGonguRoom(postId);
           } catch (e) {
-             print("❌ 채팅방 생성/참여 실패: $e");
-             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
+            print("❌ 채팅방 생성/참여 실패: $e");
+            // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
           }
 
           Get.snackbar("알림", "이미 참여하셨거나 인원이 가득 찼습니다.");
@@ -131,7 +130,10 @@ class PostDetailController extends GetxController {
 
       if (locations.isNotEmpty) {
         // 가장 정확한 첫 번째 좌표를 사용합니다.
-        locationLatLng.value = LatLng(locations[0].latitude, locations[0].longitude);
+        locationLatLng.value = LatLng(
+          locations[0].latitude,
+          locations[0].longitude,
+        );
       }
     } catch (e) {
       print("좌표 변환 실패: $e");
