@@ -5,6 +5,7 @@ import './features/auth/bindings/auth_binding.dart';
 import './features/auth/routes/app_routes.dart';
 import 'features/auth/services/google_auth_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 // void main() {
 //   runApp(const MyApp());
@@ -30,7 +31,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   await GoogleAuthService.initialize(); // GoogleSignIn 초기화 (한 번만!)
-
+  await _initializeGoogleMap(); // 현시점 구글 지도 때문에 애뮬 터질려 함
   // 3. 한국어(ko_KR) 로케일 데이터를 초기화합니다.
   await initializeDateFormatting('ko_KR');
   // await _initializeNaverMap();
@@ -47,9 +48,18 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false, // 앱 실행 시 디버그 리본 제거
       initialRoute: AppRoutes.SPLASH, // 앱이 켜졌을 때 스플래쉬 화면을 가장 먼저 보여줌
       getPages: AppRoutes.routes, // 앱에서 사용할 모든 화면(Route)의 지도를 등록
-      initialBinding: AuthBinding(), // 앱이 시작될 때 가장 먼저 메모리에 올려둘 컨트롤러를 AuthBinding으로 설정
+      initialBinding:
+          AuthBinding(), // 앱이 시작될 때 가장 먼저 메모리에 올려둘 컨트롤러를 AuthBinding으로 설정
       theme: ThemeData(fontFamily: 'Pretendard'),
     );
+  }
+}
+
+Future<void> _initializeGoogleMap() async {
+  try {
+    print("🗺️ 구글 지도 초기화 준비 완료");
+  } catch (e) {
+    print("❌ 지도 초기화 중 에러 발생: $e");
   }
 }
 

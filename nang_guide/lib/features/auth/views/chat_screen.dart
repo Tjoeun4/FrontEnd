@@ -1,154 +1,130 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/top_nav/chat_controller.dart';
-import '../models/chat_model.dart';
+import 'package:honbop_mate/features/auth/controllers/top_nav/chat_room_controller.dart';
+import 'package:honbop_mate/features/auth/services/stomp_service.dart';
 
-class ChatScreen extends StatefulWidget {
+class ChatScreen extends StatelessWidget {
   final int roomId;
   final String roomName;
+  final int currentUserId;
 
-  const ChatScreen({super.key, required this.roomId, required this.roomName});
-
-  @override
-  State<ChatScreen> createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _textController = TextEditingController();
-  final ChatController chatController = Get.find<ChatController>();
-
-  @override
-  void initState() {
-    super.initState();
-    // 비동기로 연결 및 내역 로드 수행
-    Future.microtask(() {
-      chatController.connect(widget.roomId);
-      chatController.fetchChatHistory(widget.roomId);
-    });
-  }
-
+  ChatScreen({
+    super.key,
+    required this.roomId,
+    required this.roomName,
+    required this.currentUserId,
+  });
   @override
   Widget build(BuildContext context) {
+    // 💡 방 입장 시 컨트롤러 생성, 나갈 때 자동 삭제 (tag 사용으로 방 중복 방지)
+    final controller = Get.put(
+      ChatRoomController(roomId),
+      tag: roomId.toString(),
+    );
+
+    final TextEditingController textController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.roomName, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(roomName),
         backgroundColor: Colors.white,
-        elevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
+        foregroundColor: Colors.black,
       ),
       body: Column(
         children: [
-          _buildItemHeader(),
+          // 1. 메시지 리스트 영역
           Expanded(
-            child: Obx(() => ListView.builder(
-              reverse: true, // 최신 메시지가 아래에 오도록 설정 (messages.insert(0, ...)와 짝꿍)
-              padding: const EdgeInsets.all(16),
-              itemCount: chatController.messages.length,
-              itemBuilder: (context, index) {
-                final msg = chatController.messages[index];
-                return _buildChatBubble(msg);
-              },
-            )),
-          ),
-          _buildInputArea(),
-        ],
-      ),
-    );
-  }
+            child: Obx(
+              () => ListView.builder(
+                reverse: true, // 👈 최신 메시지가 아래에 붙도록 (컨트롤러에서 insert(0) 하니까)
+                itemCount: controller.messages.length,
+                itemBuilder: (context, index) {
+                  final msg = controller.messages[index];
+                  // 나인지 상대방인지 구분 (AuthService나 GetStorage ID와 비교)
+                  bool isMe = msg.senderId == controller.currentUserId;
 
-  // 말풍선 UI
-  Widget _buildChatBubble(ChatMessage msg) {
-    // ✅ 중요: 컨트롤러에 저장된 현재 유저 ID와 비교하여 '나'인지 판단
-    // (이전 코드의 하드코딩된 myId 제거)
-    bool isMe = msg.senderId == chatController.currentUserId;
-
-    String formattedTime = "${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}";
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMe) ...[
-            const CircleAvatar(radius: 16, child: Icon(Icons.person, size: 20)),
-            const SizedBox(width: 8),
-          ],
-          if (isMe) _buildTimeText(formattedTime),
-          Container(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.6),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isMe ? Colors.orange[200] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(msg.content),
-          ),
-          if (!isMe) _buildTimeText(formattedTime),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeText(String time) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4),
-    child: Text(time, style: const TextStyle(fontSize: 10, color: Colors.grey)),
-  );
-
-  Widget _buildItemHeader() {
-    return Container(
-      width: double.infinity, // 가로로 꽉 차게 설정
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16), // 위아래 여백과 글자 좌우 여백
-      color: Colors.orange[50],
-      child: Row(
-        children: const [
-          Icon(Icons.campaign_rounded, color: Colors.orange, size: 20),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              "서로 예의를 지키며 따뜻한 대화를 나눠주세요. 😊",
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500,
+                  return ChatBubble(message: msg, isMe: isMe);
+                },
               ),
             ),
           ),
+          _buildInput(controller, textController),
         ],
       ),
     );
   }
 
-  Widget _buildInputArea() {
+  Widget _buildBubble(ChatMessageResponse msg, bool isMe) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.orange[200] : Colors.grey[300],
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Text(msg.content ?? 'ㅇㅇㅇㅇㅇ'),
+      ),
+    );
+  }
+
+  Widget _buildInput(ChatRoomController controller, TextEditingController tc) {
     return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.grey[200]!))),
+      padding: const EdgeInsets.all(10),
       child: Row(
         children: [
           Expanded(
             child: TextField(
-              controller: _textController,
-              decoration: const InputDecoration(hintText: "메시지를 입력하세요...", border: InputBorder.none),
-              onSubmitted: (_) => _onSendMessage(), // 엔터 키 지원
+              controller: tc,
+              decoration: const InputDecoration(hintText: "메시지 입력"),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.send, color: Colors.orange),
-            onPressed: _onSendMessage,
+            icon: const Icon(Icons.send),
+            onPressed: () {
+              controller.sendMessage(tc.text);
+              tc.clear();
+            },
           ),
         ],
       ),
     );
   }
+}
 
-  void _onSendMessage() {
-    if (_textController.text.trim().isEmpty) return;
+class ChatBubble extends StatelessWidget {
+  final ChatMessageResponse message;
+  final bool isMe;
 
-    // ✅ 에러 해결: 인자 개수 수정 (roomId와 text만 전달)
-    chatController.sendMessage(widget.roomId, _textController.text);
-    _textController.clear();
+  const ChatBubble({required this.message, required this.isMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.yellow : Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
+          children: [
+            if (!isMe)
+              Text(
+                message.nickname ?? "상대방",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            Text(message.content ?? ""),
+          ],
+        ),
+      ),
+    );
   }
 }

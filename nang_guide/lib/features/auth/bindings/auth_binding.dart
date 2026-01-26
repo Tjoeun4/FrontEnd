@@ -7,9 +7,11 @@ import '../services/auth_api_client.dart';
 import '../services/google_auth_service.dart';
 import '../services/token_service.dart'; // TokenService import
 
-class AuthBinding extends Bindings { // Bindings 클래스는 "앱이 특정 화면에 진입하거나 시작될 때, 필요한 도구(컨트롤러, 서비스 등)를 메모리에 미리 준비해두는 설정 파일" 역할
+class AuthBinding extends Bindings {
+  // Bindings 클래스는 "앱이 특정 화면에 진입하거나 시작될 때, 필요한 도구(컨트롤러, 서비스 등)를 메모리에 미리 준비해두는 설정 파일" 역할
   @override
-  void dependencies() { // 이 메서드 안에 우리가 메모리에 올리고 싶은 클래스들을 정의
+  void dependencies() {
+    // 이 메서드 안에 우리가 메모리에 올리고 싶은 클래스들을 정의
     // Services
 
     // 1. 로컬 저장소 서비스: 로그인 토큰, 유저 설정 등을 기기에 영구 저장하기 위해 사용

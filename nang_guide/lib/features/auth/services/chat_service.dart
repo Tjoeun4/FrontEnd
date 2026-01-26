@@ -6,7 +6,8 @@ import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/models/authentication_response.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/token_service.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
+import 'package:stomp_dart_client/stomp_dart_client.dart'; // AppRoutes import 추가
 
 /// ---------------------------------------------
 // 채팅방 룸 모델입니다 따로 뺄 예정
@@ -143,6 +144,64 @@ class ChatService extends GetxService {
         },
       ),
     );
+  }
+
+  // ✅ 추가할 부분: 소켓 클라이언트 변수
+  StompClient? _stompClient;
+
+  // ✅ ChatController에서 부르는 그 'connect' 함수입니다.
+  void connect({
+    required String token,
+    required Function onConnect,
+    required Function(dynamic) onError,
+  }) {
+    _stompClient = StompClient(
+      config: StompConfig(
+        url: 'ws://172.16.252.206:8080/ws-stomp', // 👈 본인 서버 주소 확인!
+        onConnect: (frame) {
+          onConnect(); // 연결 성공 시 컨트롤러의 콜백 실행
+        },
+        onStompError: (frame) {
+          onError(frame.body);
+        },
+        onWebSocketError: (err) => onError(err),
+        stompConnectHeaders: {'Authorization': 'Bearer $token'},
+      ),
+    );
+    _stompClient?.activate();
+  }
+
+  // ✅ 구독 기능을 위해 stompClient를 외부에 노출하거나 여기서 처리
+  void subscribe(String destination, Function(StompFrame) callback) {
+    _stompClient?.subscribe(destination: destination, callback: callback);
+  }
+
+  /// =================================================
+  /// 과거 메시지 내역 로드 (방 입장 시 호출)
+  /// roomId: 방 ID
+  /// path : roomId
+  /// 경로 : /api/chat/room/{roomId}
+  /// =================================================
+  Future<List<dynamic>?> fetchChatHistory(int roomId) async {
+    try {
+      final response = await _dio.get('/chat/room/$roomId');
+
+      print('🔍 [DEBUG] 서버가 준 진짜 데이터: ${response.data}'); // 👈 이 줄을 꼭 추가하세요!
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+
+        // 서버 응답 구조가 보통 아래 3개 중 하나입니다. 맞는 걸로 리턴될 거예요.
+        if (data is List) return data;
+        if (data is Map) {
+          return data['content'] ?? data['messages'] ?? data['data'] ?? null;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('❌ API 요청 에러: $e');
+      return null;
+    }
   }
 
   // =============================================

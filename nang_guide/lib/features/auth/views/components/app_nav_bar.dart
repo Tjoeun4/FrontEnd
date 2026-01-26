@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 import '../../controllers/auth_controller.dart';
@@ -20,12 +21,14 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title,
-          style: const TextStyle(
-            color: Colors.black,
-            fontFamily: 'Pretendard',
-            fontWeight: FontWeight.w900,
-          )),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.black,
+          fontFamily: 'Pretendard',
+          fontWeight: FontWeight.w900,
+        ),
+      ),
       centerTitle: centerTitle,
       backgroundColor: Colors.white,
       elevation: 0, // 하단 구분선 제거 (디자인에 맞춰 조정)
@@ -34,17 +37,14 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: Icon(Icons.alarm_on),
           onPressed: () {
-           //  authController.logout();
+            //  authController.logout();
           },
         ),
         IconButton(
           icon: Icon(Icons.telegram),
-          onPressed: () {
-           //  authController.logout();
-            // GetX를 사용하여 채팅방 목록 화면으로 이동
-            Get.to(() => ChatListScreen());
-          },
+          onPressed: () => Get.toNamed(AppRoutes.CHAT_LIST),
         ),
+
         IconButton(
           icon: Icon(Icons.settings),
           onPressed: () {

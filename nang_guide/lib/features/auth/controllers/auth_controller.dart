@@ -7,7 +7,7 @@ import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
 import 'package:honbop_mate/features/auth/services/token_service.dart'; // TokenService import
 import 'package:honbop_mate/features/auth/routes/app_routes.dart'; // AppRoutes import 추가
 import 'package:honbop_mate/features/auth/views/auth/welcome_dialog.dart';
-import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart';// welcome_dialog.dart import 추가
+import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart'; // welcome_dialog.dart import 추가
 
 /// --------------------------------------------------
 /// 인증 상태 및 인증 플로우를 총괄하는 GetX 컨트롤러
@@ -33,7 +33,10 @@ class AuthController extends GetxController {
   void onInit() {
     // onInit() 메서드는 GetX 라이브러리의 컨트롤러(GetxController)가 생성될 때 가장 먼저 호출되는 초기화 메서드(플러터의 initState()와 비슷한 역할). AuthController(현재 클래스)가 메모리에 생성될 때 호출됨
     super.onInit(); // 부모 클래스(GetXController)의 기본 초기화 로직을 먼저 실행
-    _googleAuthService = Get.find<GoogleAuthService>(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
+    _googleAuthService =
+        Get.find<
+          GoogleAuthService
+        >(); // .find 메서드는 이미 메모리에 생성되어 있는 객체(컨트롤러(여기서는 GoogleAuthService 인스턴스))를 찾아서 가져와라라는 뜻의 메서드. Get.find()는 반드시 어딘가에서 Get.put()으로 메모리에 등록이 되어있어야 사용 가능. 인스턴스를 가져왔다는 뜻은 필요할 때 해당 객체의 메서드를 호출할 수 있는 상태가 되었다는 뜻. 일반적으로 Get.put으로 등록된 인스턴스는 앱 종료시까지 살아있음
     _authApiClient = Get.find<AuthApiClient>();
     _storage = Get.find<GetStorage>();
     _tokenService = Get.find<TokenService>();
@@ -56,8 +59,10 @@ class AuthController extends GetxController {
   /// --------------------------------------------------
   Future<void> _checkLoginStatus() async {
     // accessToken과 refreshToken의 존재 여부 체크
-    final String? accessToken = _tokenService.getAccessToken(); // 로컬 저장소에 저장된 accessToken을 가져옴
-    final String? refreshToken = _tokenService.getRefreshToken(); // 로컬 저장소에 저장된 refreshToken을 가져옴
+    final String? accessToken = _tokenService
+        .getAccessToken(); // 로컬 저장소에 저장된 accessToken을 가져옴
+    final String? refreshToken = _tokenService
+        .getRefreshToken(); // 로컬 저장소에 저장된 refreshToken을 가져옴
 
     if (accessToken != null && refreshToken != null) {
       // accessToken과 refreshToken이 있다면
@@ -153,7 +158,9 @@ class AuthController extends GetxController {
             ); // 로컬 저장소에 저장(키·값 쌍으로 이루어져있고, write메서드로 덮어쓰기 때문에 로컬저장소에 영구저장하더라고 용량이 쌓일 걱정은 없음)
             await _storage.write('refresh_token', authResponse.refreshToken);
             await _handleLoginSuccess(
-                authResponse.onboardingSurveyCompleted ?? false, false);
+              authResponse.onboardingSurveyCompleted ?? false,
+              false,
+            );
           } else {
             // This case implies an actual authentication failure for an existing user,
             // or an unexpected error from the backend for a new user flow.
@@ -207,7 +214,9 @@ class AuthController extends GetxController {
         await _storage.write('jwt_token', authResponse.token);
         await _storage.write('refresh_token', authResponse.refreshToken);
         await _handleLoginSuccess(
-            authResponse.onboardingSurveyCompleted ?? false, true);
+          authResponse.onboardingSurveyCompleted ?? false,
+          true,
+        );
       } else {
         errorMessage(authResponse.error ?? 'Registration failed.');
         print('Frontend: Registration failed: ${authResponse.error}');
@@ -221,7 +230,9 @@ class AuthController extends GetxController {
   }
 
   Future<void> _handleLoginSuccess(
-      bool onboardingSurveyCompleted, bool isNewUser) async {
+    bool onboardingSurveyCompleted,
+    bool isNewUser,
+  ) async {
     Get.offAllNamed(AppRoutes.HOME);
 
     if (!onboardingSurveyCompleted) {
@@ -243,8 +254,18 @@ class AuthController extends GetxController {
       if (authResponse.accessToken != null) {
         await _storage.write('jwt_token', authResponse.accessToken);
         await _storage.write('refresh_token', authResponse.refreshToken);
+
+        /// 1.22 추가
+        final int savedId = authResponse.userId ?? 1;
+        await _storage.write('userId', savedId);
+
+        print("✅ 로그인 성공 & 유저 ID 저장: $savedId");
+
+        ///
         await _handleLoginSuccess(
-            authResponse.onboardingSurveyCompleted ?? false, false);
+          authResponse.onboardingSurveyCompleted ?? false,
+          false,
+        );
       } else {
         errorMessage(authResponse.error ?? 'Login failed.');
       }
@@ -267,7 +288,9 @@ class AuthController extends GetxController {
         await _storage.write('jwt_token', authResponse.accessToken);
         await _storage.write('refresh_token', authResponse.refreshToken);
         await _handleLoginSuccess(
-            authResponse.onboardingSurveyCompleted ?? false, true);
+          authResponse.onboardingSurveyCompleted ?? false,
+          true,
+        );
       } else {
         errorMessage(authResponse.error ?? 'Registration failed.');
       }

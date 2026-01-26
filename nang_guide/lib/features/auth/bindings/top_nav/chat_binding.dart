@@ -1,23 +1,42 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/features/auth/controllers/top_nav/chat_controller.dart';
+import 'package:honbop_mate/features/auth/services/api_service.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
+import 'package:honbop_mate/features/auth/services/auth_service.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
-import './../../controllers/top_nav/chat_controller.dart';
-
-// 서비스 추가할 예정
+import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+import 'package:honbop_mate/features/auth/services/token_service.dart';
 
 class ChatBinding extends Bindings {
   @override
   void dependencies() {
+    // 1. 가장 기초가 되는 저장소와 통신 객체
+    Get.put(GetStorage(), permanent: true);
+    final dio = Get.put(
+      Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/')),
+      permanent: true,
+    );
 
-    // 1. 채팅 서비스: 서버와의 실시간 연결(Socket 등)을 유지해야 하므로 permanent: true로 설정합니다.
+    // 2. 인증의 핵심 토큰 서비스 (Dio를 필요로 함)
+    Get.put<TokenService>(TokenService(dio), permanent: true);
+
+    // 3. 유저 정보를 관리하는 서비스 (TokenService를 내부에서 find함)
+    // ✅ AuthService가 ChatController보다 먼저 메모리에 올라가야 함!
+    Get.put<AuthService>(AuthService(), permanent: true);
+
+    // 4. 나머지 API 클라이언트 및 구글 인증
+    Get.put<GoogleAuthService>(GoogleAuthService(), permanent: true);
+    Get.put<AuthApiClient>(AuthApiClient(), permanent: true);
+
+    // 5. 실시간 채팅 서비스
     Get.put<ChatService>(ChatService(), permanent: true);
 
-    // 2. 로컬 저장소: 채팅 방 목록이나 이전 대화 내역을 기기에 임시 저장하기 위해 사용합니다.
-    Get.put(GetStorage(), permanent: true); // GetX패키지의 의존성 주입(인스턴스 생성 후 메모리에 올림) 메서드. 매번 GetStorage()를 새로 생성할 필요 없이, 메모리에 딱 하나 올라가 있는 '싱글톤(Singleton)' 객체를 공유해서 쓰기 위함
-    
-    // 3. 채팅 컨트롤러: 특정 채팅방의 메시지 리스트와 입력창 상태를 관리합니다.
-    Get.lazyPut<ChatController>(() => ChatController());
-    // Get.lazyPut<TokenService>(() => TokenService());
+    // 6. 🟢 드디어 컨트롤러! (AuthService를 참조할 준비가 완벽함)
+    // lazyPut보다는 put을 써서 바인딩 시점에 확실히 로드합시다.
+    Get.put<ChatController>(ChatController());
+
+    Get.lazyPut<ApiService>(() => ApiService());
   }
 }
