@@ -37,32 +37,37 @@ class ChatRoomController extends GetxController {
     int retryCount = 0;
     const int maxRetries = 10;
 
+    // 1️⃣ 서비스가 연결되지 않았다면 강제로 연결 시도
+    if (!_stompService.isConnected.value) {
+      print("📡 [ChatRoom] 소켓이 꺼져있음. 강제 연결 시도...");
+      _stompService.connect();
+    }
+
     while (retryCount < maxRetries) {
-      // ⭐️ 핵심: 서비스가 연결되었는지 확인
       if (_stompService.isConnected.value) {
         print("✅ [ChatRoom] 서비스 연결 확인! 구독 시작: $roomId");
 
         _stompService.subscribeToRoom(roomId, (data) {
-          print("📡 [데이터 수신]: $data");
           try {
             final Map<String, dynamic> jsonData = (data is String)
                 ? json.decode(data)
                 : data;
             final newMessage = ChatMessageResponse.fromJson(jsonData);
 
-            messages.insert(0, newMessage); // 새 메시지 추가
+            // 2️⃣ 중복 추가 방지 (이미 내가 insert(0) 한 메시지인지 확인)
+            // 💡 서버에서 내려오는 메시지와 로컬 가짜 메시지의 ID가 같다면 스킵하는 로직이 필요할 수 있습니다.
+            messages.insert(0, newMessage);
           } catch (e) {
             print("❌ 파싱 에러: $e");
           }
         });
-        return; // 구독 성공 시 탈출
+        return;
       }
 
       retryCount++;
       print("⏳ 소켓 연결 대기 중... ($retryCount/$maxRetries)");
       await Future.delayed(const Duration(seconds: 1));
     }
-    print("❌ 10초간 연결 안됨. 구독 포기.");
   }
 
   /// ✅ 과거 내역 가져오기
@@ -96,38 +101,45 @@ class ChatRoomController extends GetxController {
     }
   }
 
-  /// ✅ 메시지 보내기 (서비스의 sendMessage 호출)
   void sendMessage(String text) {
-    if (text.trim().isEmpty) return;
-    if (currentUserId == null) return;
+    print("📝 [1. 함수 진입] 입력값: '$text'");
+
+    if (text.trim().isEmpty) {
+      print("⚠️ [중단] 메시지가 비어있습니다.");
+      return;
+    }
+
+    int? effectiveUserId = currentUserId;
+    if (effectiveUserId == null) {
+      effectiveUserId = GetStorage().read('userId');
+    }
+
+    if (effectiveUserId == null) {
+      print("❌ [중단] 진짜로 유저 ID가 없습니다. 로그인을 다시 해야 할 것 같아요.");
+      return;
+    }
 
     final trimmedText = text.trim();
 
-    // 1️⃣ [즉각 반영] 서버 응답 기다리지 않고 내 리스트에 먼저 추가!
-    final myFakeMessage = ChatMessageResponse(
-      roomId: roomId,
-      senderId: currentUserId,
-      content: trimmedText,
-      message: trimmedText,
-      createdAt: DateTime.now(), // 지금 시간으로 일단 표시
-    );
+    messages.refresh();
 
-    messages.insert(0, myFakeMessage); // 리스트 맨 위에 즉시 삽입!
-    messages.refresh(); // 화면 즉시 갱신
+    // 2️⃣ 서버 전송 시도
+    print("📡 [3. 소켓 상태 확인] isConnected: ${_stompService.isConnected.value}");
 
-    // 2️⃣ 그 다음에 서버로 전송 시도
     try {
       if (_stompService.isConnected.value) {
-        _stompService.sendMessage(roomId, currentUserId!, trimmedText);
-        print("✅ 서버 전송 명령 완료");
+        print("📤 [4. 전송 시작] roomId: $roomId, senderId: $effectiveUserId");
+
+        _stompService.sendMessage(roomId, effectiveUserId, trimmedText);
+
+        print("✅ [5. 전송 명령 끝] 이제 서비스 내부 로그(SEND/MESSAGE)를 확인하세요.");
       } else {
-        print("⚠️ 미연결 상태 - 전송 예약");
-        // 여기서 연결 시도 로직을 넣거나 에러 처리를 합니다.
+        print("⚠️ [실패] 현재 소켓 연결이 끊어져 있습니다!");
+        // 💡 여기서 강제로 재연결을 시도할 수도 있습니다.
+        // _stompService.connect();
       }
     } catch (e) {
-      print("❌ 전송 실패: $e");
-      // 실무에서는 여기서 전송 실패 시 리스트에서 해당 메시지를 삭제하거나
-      // '재전송' 버튼을 띄우는 처리를 합니다.
+      print("🔥 [에러 발생] 전송 중 예외 발생: $e");
     }
   }
 }
