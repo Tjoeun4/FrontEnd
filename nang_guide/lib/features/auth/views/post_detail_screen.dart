@@ -46,12 +46,42 @@ class PostDetailScreen extends GetView<PostDetailController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. 상단 이미지 영역 (없을 경우 대비 색상 박스)
-              Container(
-                width: double.infinity,
-                height: 250,
-                color: Colors.grey[200],
-                child: const Icon(Icons.image, size: 80, color: Colors.grey),
-              ),
+              Builder(builder: (context) {
+                // 서버 로그에 찍힌 키값 'imageUrls'를 사용합니다.
+                final List<dynamic>? imageUrls = data['imageUrls'];
+
+                if(imageUrls != null && imageUrls.isNotEmpty) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 300, // 높이 50 더 늘림
+                    child: PageView.builder(
+                      itemCount: imageUrls.length,
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          imageUrls[index],
+                          fit: BoxFit.cover,
+                          // 로딩 중 표시
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(child: CircularProgressIndicator(
+                             value: loadingProgress.expectedTotalBytes != null
+                                 ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                 : null,
+                            ));
+                          },
+                          // 에러 발생 시 (S3 권한 문제 등)
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }),
 
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -132,23 +162,22 @@ class PostDetailScreen extends GetView<PostDetailController> {
                         ),
                         clipBehavior: Clip.antiAlias, // 모서리 둥글게 적용
                         child: // 상세 페이지 뷰 (PostDetailScreen 등)
-GoogleMap(
-    initialCameraPosition: CameraPosition(
-      target: targetPos,
-      zoom: 16,
-    ),
-    markers: {
-      Marker(
-        markerId: const MarkerId('meetLocation'),
-        position: targetPos,
-        // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
-        infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
-      ),
-    },
-    zoomGesturesEnabled: true,
-    scrollGesturesEnabled: true,
-  )
-                    
+                        GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: targetPos,
+                            zoom: 16,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('meetLocation'),
+                              position: targetPos,
+                              // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
+                              infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
+                            ),
+                          },
+                          zoomGesturesEnabled: true,
+                          scrollGesturesEnabled: true,
+                        )
                       );
                     }),
                     const SizedBox(height: 80), // 하단 버튼 공간 확보
