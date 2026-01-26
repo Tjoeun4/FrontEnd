@@ -87,7 +87,6 @@ class PostDetailController extends GetxController {
       onConfirm: () async {
         Get.back(); // 다이얼로그 닫기
 
-        // 2. 서비스 호출 (덕배님이 만든 joinGonguRoom 실행)
         final success = await _gonguService.joinGonguRoom(postId);
 
         if (success == true) {
@@ -96,6 +95,8 @@ class PostDetailController extends GetxController {
           // 🎯 여기서 터져도 앱이 죽지 않게 try-catch로 감싸야 합니다.
           try {
             await _gonguService.MadeGonguRoom(postId);
+
+            await _gonguService.createGonguChattingRoom(postId);
           } catch (e) {
             print("❌ 채팅방 생성/참여 실패: $e");
             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
@@ -109,13 +110,11 @@ class PostDetailController extends GetxController {
         } else {
           try {
             await _gonguService.MadeGonguRoom(postId);
+            await _gonguService.createGonguChattingRoom(postId);
           } catch (e) {
             print("❌ 채팅방 생성/참여 실패: $e");
             // 채팅방은 실패해도 공구 참여는 성공했을 수 있으니 알림 처리
           }
-
-          Get.snackbar("알림", "이미 참여하셨거나 인원이 가득 찼습니다.");
-          // 데이터 다시 불러와서 인원 수 갱신
           await loadDetail();
         }
       },

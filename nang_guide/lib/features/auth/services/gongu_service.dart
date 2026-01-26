@@ -427,11 +427,20 @@ class GonguService extends GetxService {
   /// =================================================
   Future<List<dynamic>?> getLocalFilterCategoryRooms(int categoryId) async {
     try {
-      // [수정] /api/group-buy/filter -> /group-buy/filter (BaseURL 중복 방지)
+      // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
+      print('========== getLocalFilterCategoryRooms SERVICE ==========');
+      print('baseUrl : ${_dio.options.baseUrl}');
+      print('=======================================');
+
       final response = await _dio.get(
         '/group-buy/filter',
         queryParameters: {'categoryId': categoryId},
       );
+
+      print('========== RESPONSE ==========');
+      print('statusCode: ${response.statusCode}');
+      print('================================');
+
       if (response.statusCode == 200 && response.data is List) {
         return response.data;
       }
@@ -461,6 +470,40 @@ class GonguService extends GetxService {
       print(e);
       print(stack);
       return false;
+    }
+  }
+
+  /// =================================================
+  /// 공구 채팅방을 만드는 함수입니다.
+  /// - /api/group-buy/{postId}
+  /// - 헤더에는 인증 토큰 포함 해야됩니다.
+  /// - queryParameters : postId
+  /// =================================================
+  Future<void> createGonguChattingRoom(int postId) async {
+    print("📡 [Service] 채팅방 생성 시도 - PostID: $postId");
+    try {
+      // 🔍 여기서 GET인지 POST인지 백엔드 명세서를 꼭 확인하세요!
+      // 생성이라면 보통 .post일 확률이 높습니다.
+      final response = await _dio.post('/chat/room/group-buy/$postId');
+
+      print("📥 [Service] 응답 수신 - Status: ${response.statusCode}");
+      print("📦 [Service] 데이터 내용: ${response.data}");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("✅ [Service] 채팅방 생성/조회 성공");
+      } else {
+        print("⚠️ [Service] 서버 응답이 성공이 아님: ${response.statusCode}");
+      }
+    } catch (e) {
+      if (e is dio.DioException) {
+        print("❌ [Service] Dio 에러 발생!");
+        print("🚩 에러 타입: ${e.type}");
+        print("🚩 응답 데이터: ${e.response?.data}");
+        print("🚩 상태 코드: ${e.response?.statusCode}");
+      } else {
+        print("❌ [Service] 알 수 없는 에러: $e");
+      }
+      rethrow; // 에러를 위로 던져서 Controller가 알게 합니다.
     }
   }
 }

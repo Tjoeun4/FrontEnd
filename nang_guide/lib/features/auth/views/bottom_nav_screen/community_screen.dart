@@ -9,11 +9,9 @@ import './../components/bottom_nav_bar.dart';
 import './../../../auth/views/dialog/gonggu_dialog.dart';
 
 class CommunityScreen extends StatelessWidget {
-
   // 커뮤니티 컨트롤러에있는 함수를 찾습니다.
-  final Controller= Get.find<CommunityController>();
+  final Controller = Get.find<CommunityController>();
   final Controller2 = Get.find<CommunityController>();
-  
 
   // const CommunityScreen({
   //   super.key,
@@ -48,31 +46,36 @@ class CommunityScreen extends StatelessWidget {
               // 키보드에서 엔터(완료) 버튼을 눌렀을 때 실행
               onSubmitted: (value) {
                 // 뷰는 단순히 "이 값으로 검색해줘"라고 명령만 내립니다.
-                Controller.searchRooms(value); 
+                Controller.searchRooms(value);
               },
             ),
           ),
 
           // 🎯 2. 카테고리 필터 영역 추가
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Obx(() => Row(
-                  children: [
-                    // '전체' 버튼
-                    _buildFilterChip("전체", null), 
-                    const SizedBox(width: 8),
-                    // 백엔드에서 정의한 카테고리들 (예시)
-                    _buildFilterChip("육류", 1),
-                    const SizedBox(width: 8),
-                    // 위스키 앱 디자인을 참고한 카테고리도 좋겠네요!
-                    _buildFilterChip("생활용품", 2),
-                    const SizedBox(width: 8),
-                    _buildFilterChip("배달음식", 3),
-                  ],
-                )),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Obx(
+              () => Row(
+                children: [
+                  _buildFilterChip("전체", null),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("육류", 1),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("양념", 2),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("채소", 3),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("유제품", 4),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("해산물", 5),
+                  const SizedBox(width: 8),
+                  _buildFilterChip("과일", 6),
+                ],
               ),
-              const SizedBox(height: 10),
+            ),
+          ),
+          const SizedBox(height: 10),
           // --- [기존 주석 처리된 Row 영역이 들어갈 자리] ---
           // 여기에 나중에 버튼들을 넣으실 때도 고정 높이로 배치하시면 됩니다.
 
@@ -92,28 +95,31 @@ class CommunityScreen extends StatelessWidget {
                 onRefresh: () => Controller.fetchRooms(),
                 child: ListView.builder(
                   // 키보드가 올라왔을 때 리스트가 잘 밀리도록 처리
-                  padding: const EdgeInsets.only(bottom: 80), 
+                  padding: const EdgeInsets.only(bottom: 80),
                   itemCount: Controller.gonguRooms.length,
                   itemBuilder: (context, index) {
                     final room = Controller.gonguRooms[index];
                     return ListTile(
                       leading: const CircleAvatar(
-                        backgroundColor: Colors.orange, 
-                        child: Icon(Icons.group, color: Colors.white)
+                        backgroundColor: Colors.orange,
+                        child: Icon(Icons.group, color: Colors.white),
                       ),
                       title: Text(room['title'] ?? '제목 없음'),
-                      subtitle: Text("${room['meetPlaceText']} | ${room['priceTotal']}원"),
+                      subtitle: Text(
+                        "${room['meetPlaceText']} | ${room['priceTotal']}원",
+                      ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 14),
                       onTap: () {
                         // 1. 서버가 주는 키값이 'post_id'인지 'postId'인지 확인하기 위해 둘 다 체크
                         final dynamic idValue = room['postId'];
-                        
+
                         if (idValue != null) {
                           print("🎯 선택된 게시글 ID: $idValue");
                           // 상세 페이지로 이동하며 ID 전달
                           Get.toNamed(
                             '/post-detail/$idValue',
-                            arguments: {'postId': idValue},);
+                            arguments: {'postId': idValue},
+                          );
                         } else {
                           // 2. 만약 둘 다 null이라면 전체 구조를 출력해서 눈으로 확인
                           print("❌ ID를 찾을 수 없음. 전체 데이터 구조: $room");
@@ -135,25 +141,25 @@ class CommunityScreen extends StatelessWidget {
       bottomNavigationBar: MyBottomNavigation(),
     );
   }
+
   Widget _buildFilterChip(String label, int? categoryId) {
-  // 현재 선택된 카테고리인지 확인
-  final isSelected = Controller.selectedCategoryId.value == categoryId;
+    // 현재 선택된 카테고리인지 확인
+    final isSelected = Controller.selectedCategoryId.value == categoryId;
 
-  return ChoiceChip(
-    label: Text(label),
-    selected: isSelected,
-    onSelected: (selected) {
-      if (selected) {
-        // 컨트롤러에 필터 변경 명령
-        Controller.filterByCategory(categoryId);
-      }
-    },
-    selectedColor: Colors.orange,
-    labelStyle: TextStyle(
-      color: isSelected ? Colors.white : Colors.black,
-      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-    ),
-  );
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          // 컨트롤러에 필터 변경 명령
+          Controller.filterByCategory(categoryId);
+        }
+      },
+      selectedColor: Colors.orange,
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.black,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+    );
+  }
 }
-}
-

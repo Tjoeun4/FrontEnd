@@ -4,15 +4,12 @@ import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
 import 'package:honbop_mate/features/auth/services/gongu_service.dart';
 import 'package:honbop_mate/features/auth/services/token_service.dart';
-import 'package:honbop_mate/features/auth/views/dialog/gonggu_dialog.dart';
 import './../../../../features/auth/services/api_service.dart';
 import './../../models/chat_message_request.dart';
 
 class CommunityController extends GetxController {
   // final TokenService _tokenService = TokenService();
   // final AuthService _authService = AuthService();
-
-  var selectedCategoryId = RxnInt(null);
   // Get.find<GonguService>()는 바인딩에서 등록된 인스턴스를 찾아옵니다. //필수입니다.
   final GonguService _gonguService = Get.find<GonguService>();
   final ApiService apiService;
@@ -21,6 +18,8 @@ class CommunityController extends GetxController {
       .obs; // .obs는 GetX의 메소드 - 해당 변수를 관찰하겠다는 뜻. 값이 바뀌면 자신(Obx) 내부에 있는 위젯만 즉시 새로고침
   var errorMessage = ''.obs;
 
+  // 선택된 카테고리 ID를 저장할 변수 (상단에 선언되어 있어야 함)
+  var selectedCategoryId = Rxn<int?>(null);
   // 검색어 입력을 제어할 컨트롤러 추가
   final TextEditingController searchController = TextEditingController();
 
@@ -115,25 +114,30 @@ class CommunityController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-    // 🎯 카테고리 클릭 시 호출할 함수
-    Future<void> filterByCategory(int? categoryId) async {
-      selectedCategoryId.value = categoryId; // UI 하이라이트용
-      isLoading.value = true;
+  }
 
+  // 🎯 카테고리 클릭 시 호출할 함수
+  Future<void> filterByCategory(int? categoryId) async {
+    selectedCategoryId.value = categoryId; // UI 하이라이트용
+    isLoading.value = true;
+
+    try {
       List<dynamic>? results;
       if (categoryId == null) {
         results = await _gonguService.getLocalGonguRooms(); // 전체 보기
       } else {
-        // 🎯 덕배님이 만든 그 함수 호출!
-        results = await _gonguService.getLocalFilterCategoryRooms(categoryId);
+        results = await _gonguService.getLocalFilterCategoryRooms(
+          categoryId,
+        ); // 필터링
       }
 
       if (results != null) {
-        gonguRooms.assignAll(results); // 리스트 갱신 -> Obx가 화면을 다시 그림
+        gonguRooms.assignAll(results); // 리스트 갱신
       }
+    } catch (e) {
+      print("❌ 카테고리 필터링 에러: $e");
+    } finally {
       isLoading.value = false;
     }
   }
-
-  void filterByCategory(int? categoryId) {}
 }
