@@ -125,11 +125,7 @@ class AppRoutes {
       page: () {
         // 💡 Get.toNamed에서 보낸 arguments를 여기서 꺼냅니다.
         final args = Get.arguments as Map<String, dynamic>;
-        return ChatScreen(
-          roomId: args['roomId'],
-          roomName: args['roomName'],
-          currentUserId: args['currentUserId'],
-        );
+        return ChatScreen(roomId: args['roomId'], roomName: args['roomName']);
       },
       binding: ChatRoomBinding(),
       transition: Transition.noTransition,
@@ -140,8 +136,24 @@ class AppRoutes {
       binding: ChatBinding(),
       transition: Transition.noTransition,
     ),
-    GetPage(name: AppRoutes.POST_DETAIL, page: () => PostDetailScreen(), binding: PostDetailBinding(), transition: Transition.noTransition,),
-    GetPage(name: FRIDGE, page: () => FridgeListScreen(), binding: FridgeBinding(), /* 👈 여기서 바인딩을 연결합니다. */transition: Transition.noTransition,),
-    GetPage(name: FRIDGE_ADD, page: () => const FridgeAddStepScreen(), binding: FridgeBinding(), /* 같은 바인딩 사용 (서비스/컨트롤러 공유) */transition: Transition.cupertino, /* 추가 화면은 슬라이드 효과 권장 */),
+    GetPage(
+      name: AppRoutes.POST_DETAIL,
+      page: () => PostDetailScreen(),
+      binding: PostDetailBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: FRIDGE,
+      page: () => FridgeListScreen(),
+      binding: FridgeBinding(),
+      /* 👈 여기서 바인딩을 연결합니다. */ transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: FRIDGE_ADD,
+      page: () => const FridgeAddStepScreen(),
+      binding: FridgeBinding(),
+      /* 같은 바인딩 사용 (서비스/컨트롤러 공유) */ transition:
+          Transition.cupertino /* 추가 화면은 슬라이드 효과 권장 */,
+    ),
   ];
 }

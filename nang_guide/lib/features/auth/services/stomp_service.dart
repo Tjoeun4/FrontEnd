@@ -49,25 +49,25 @@ class ChatStompService extends GetxService {
   final Map<int, StompUnsubscribe> _subscriptions = {};
 
   var isConnected = false.obs;
-  late StompClient stompClient;
 
   Future<void> connect() async {
-    // 이미 연결되어 있다면 중복 연결 방지
+    // 1. 이미 연결되어 있다면 중복 방지 (안전하게 ?. 사용)
     if (_client != null && _client!.connected) {
       print("✅ 이미 소켓이 연결되어 있습니다.");
       return;
     }
 
     final token = Get.find<TokenService>().getAccessToken();
-    final String targetUrl = 'ws://10.0.2.2:8080/ws-stomp'; // 👈 주소 끝까지 확인!
+    final String targetUrl = 'ws://10.0.2.2:8080/ws-stomp';
 
     print("📡 [소켓 시도] 주소: $targetUrl");
 
+    // 2. _client가 late가 아니므로 이제 안전하게 새로 할당 가능합니다.
     _client = StompClient(
       config: StompConfig(
         url: targetUrl,
         onConnect: (frame) {
-          isConnected.value = true; // 👈 여기서 true가 되어야 컨트롤러가 움직임!
+          isConnected.value = true;
           print("🔓 [소켓 개통] 드디어 연결 성공!");
         },
         stompConnectHeaders: {'Authorization': 'Bearer $token'},
@@ -75,7 +75,7 @@ class ChatStompService extends GetxService {
         onStompError: (frame) => print("❌ STOMP 에러: ${frame.body}"),
         onDisconnect: (frame) {
           isConnected.value = false;
-          print("🔌 소켓 연결 끊김");
+          print("🔌 소켓 연결 종료");
         },
       ),
     );
@@ -86,8 +86,8 @@ class ChatStompService extends GetxService {
   // ✅ 2. 빠져있던 구독(Subscribe) 메서드 추가
   void subscribeToRoom(int roomId, Function(dynamic) onMessage) {
     // 1. 라이브러리 내부의 진짜 연결 상태를 체크합니다.
-    if (stompClient != null && stompClient!.connected) {
-      stompClient!.subscribe(
+    if (_client != null && _client!.connected) {
+      _client!.subscribe(
         destination: '/sub/chat/room/$roomId',
         callback: (frame) {
           if (frame.body != null) {
