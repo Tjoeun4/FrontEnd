@@ -11,7 +11,6 @@ import './../bindings/login/login_binding.dart';
 import './../bindings/post_binding.dart';
 import './../bindings/bottom_nav/profile_binding.dart';
 import './../bindings/bottom_nav/recommend_binding.dart';
-import './../bindings/top_nav/search_binding.dart';
 import './../bindings/login/signin_binding.dart';
 import './../bindings/login/signup_binding.dart';
 import './../bindings/bottom_nav/home_binding.dart';
@@ -47,8 +46,18 @@ class AppRoutes {
 
   static final routes = [
     GetPage(name: SPLASH, page: () => SplashScreen(), binding: AuthBinding()),
-    GetPage(name: SIGNUP, page: () => EmailSignUpScreen(), binding: SignupBinding(),transition: Transition.noTransition,),
-    GetPage(name: SIGNIN, page: () => EmailLoginScreen(), binding: SigninBinding(),transition: Transition.noTransition,),
+    GetPage(
+      name: SIGNUP,
+      page: () => EmailSignUpScreen(),
+      binding: SignupBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: SIGNIN,
+      page: () => EmailLoginScreen(),
+      binding: SigninBinding(),
+      transition: Transition.noTransition,
+    ),
     GetPage(
       name: LOGIN,
       page: () => LoginSelectionScreen(),
@@ -56,14 +65,43 @@ class AppRoutes {
       // middlewares: [AuthMiddleware(), OwnerMiddleware()],
       transition: Transition.noTransition,
     ),
-    GetPage(name: HOME, page: () => HomeScreen(), binding: HomeBinding(),transition: Transition.noTransition,), // name과 page 요소는 각각 라우트 경로와 해당 위젯을 매핑, binding은 해당 위젯으로 이동할 때 주입할 의존성 관리 파일(컨트롤러), transition은 화면 전환 혹은 화면 전환 전 조건 검사
-    GetPage(name: SEARCH, page: () => SplashScreen(), binding: SearchBinding()),
+    GetPage(
+      name: HOME,
+      page: () => HomeScreen(),
+      binding: HomeBinding(),
+      transition: Transition.noTransition,
+    ), // name과 page 요소는 각각 라우트 경로와 해당 위젯을 매핑, binding은 해당 위젯으로 이동할 때 주입할 의존성 관리 파일(컨트롤러), transition은 화면 전환 혹은 화면 전환 전 조건 검사
     GetPage(name: ALARM, page: () => SplashScreen(), binding: AlarmBinding()),
-    GetPage(name: COMMUNITY, page: () => CommunityScreen(), binding: CommunityBinding(),transition: Transition.noTransition,),
-    GetPage(name: RECOMMEND, page: () => RecommendScreen(), binding: RecommendBinding(),transition: Transition.noTransition,),
-    GetPage(name: LEDGER, page: () => LedgerScreen(), binding: LedgerBinding(),transition: Transition.noTransition,),
-    GetPage(name: PROFILE, page: () => ProfileScreen(), binding: ProfileBinding(),transition: Transition.noTransition,),
-    GetPage(name: POST, page: () => PostCreateScreen(), binding: PostBinding(),transition: Transition.noTransition,),
+    GetPage(
+      name: COMMUNITY,
+      page: () => CommunityScreen(),
+      binding: CommunityBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: RECOMMEND,
+      page: () => RecommendScreen(),
+      binding: RecommendBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: LEDGER,
+      page: () => LedgerScreen(),
+      binding: LedgerBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: PROFILE,
+      page: () => ProfileScreen(),
+      binding: ProfileBinding(),
+      transition: Transition.noTransition,
+    ),
+    GetPage(
+      name: POST,
+      page: () => PostCreateScreen(),
+      binding: PostBinding(),
+      transition: Transition.noTransition,
+    ),
     GetPage(name: CHAT, page: () => SplashScreen(), binding: ChatBinding()),
     GetPage(
       name: AppRoutes.POST_DETAIL,
