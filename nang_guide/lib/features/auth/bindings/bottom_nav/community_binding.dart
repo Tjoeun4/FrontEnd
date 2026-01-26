@@ -19,8 +19,11 @@ class CommunityBinding extends Bindings {
   void dependencies() {
     
     // Services
+    // 채팅 서비스와 공구(공동구매) 서비스는 실시간성이 중요하거나 여러 곳에서 쓰이므로 permanent로 등록
     Get.put<ChatService>(ChatService(), permanent: true);
     Get.put(GetStorage(), permanent: true); // GetX패키지의 의존성 주입(인스턴스 생성 후 메모리에 올림) 메서드. 매번 GetStorage()를 새로 생성할 필요 없이, 메모리에 딱 하나 올라가 있는 '싱글톤(Singleton)' 객체를 공유해서 쓰기 위함
+    
+    // 기본 서비스들 (Dio, TokenService 등)을 다시 한번 확인하며 등록
     Get.put(Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/')), permanent: true);
     Get.put<GoogleAuthService>(GoogleAuthService(), permanent: true);
     // Register TokenService, injecting the Dio instance
@@ -29,7 +32,10 @@ class CommunityBinding extends Bindings {
     Get.put<AuthApiClient>(AuthApiClient(), permanent: true);
 
     // 1. 가장 먼저 ApiService를 등록 (다른 컨트롤러들이 사용해야 하므로)
+    // ApiService는 비동기적으로 생성될 수 있도록 lazyPut 사용
     Get.lazyPut<ApiService>(() => ApiService());
+
+    // CommunityController 생성 시, 위에서 등록한 ApiService를 찾아 주입함
     Get.lazyPut(() => CommunityController(Get.find<ApiService>()));
 
     // 26.01.21 수정 // 공구서비스 불러오기
