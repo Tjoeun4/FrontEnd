@@ -93,6 +93,7 @@ class LedgerApiClient extends GetxService {
   // ============================================================
   Future<Map<String, dynamic>?> getMonthlyExpenses(int year, int month, {int page = 0, int size = 15}) async {
     try {
+      print("요청 파라미터 확인: year=$year, month=$month");
       final response = await _dio.get(
         '/expenses/monthly',
         queryParameters: {'year': year, 'month': month, 'page': page, 'size': size},
