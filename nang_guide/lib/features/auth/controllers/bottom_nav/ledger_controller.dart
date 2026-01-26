@@ -199,9 +199,12 @@ class LedgerController extends GetxController {
   }) async {
     isLoading.value = true;
 
+    // ✅ ISO8601 포맷에서 밀리초 등을 제외하고 깔끔하게 서버가 좋아하는 형식으로 변환
+    String formattedDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(dateTime);
+
     final expenseData = {
       "amount": amount,
-      "spentAt": dateTime.toIso8601String(),
+      "spentAt": formattedDate,
       "title": title,
       "category": mapToBackendCategory(category),
       "memo": memo
