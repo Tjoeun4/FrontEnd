@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/top_nav/chat_room_controller.dart';
 import 'package:honbop_mate/features/auth/services/auth_service.dart';
 import 'package:honbop_mate/features/auth/services/stomp_service.dart';
+import 'package:honbop_mate/features/auth/models/chat_model.dart';
 
 class ChatScreen extends StatelessWidget {
   final int roomId;
@@ -24,14 +26,14 @@ class ChatScreen extends StatelessWidget {
     final TextEditingController textController = TextEditingController();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFBACEE0), // 카톡 배경색 느낌
+      backgroundColor: AppColors.secondary, // 카톡 배경색 느낌
       appBar: AppBar(
         title: Text(
           roomName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: AppTextStyles.bodyLargeBold,
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: Column(
@@ -39,9 +41,9 @@ class ChatScreen extends StatelessWidget {
           Expanded(
             child: Obx(() {
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 10,
-                  vertical: 20,
+                  vertical: AppSpacing.xl,
                 ),
                 reverse: true,
                 itemCount: controller.messages.length,
@@ -70,8 +72,8 @@ class ChatScreen extends StatelessWidget {
 
   Widget _buildInput(ChatRoomController controller, TextEditingController tc) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      color: AppColors.background,
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: SafeArea(
         child: Row(
           children: [
@@ -81,13 +83,13 @@ class ChatScreen extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: "메시지를 입력하세요...",
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: AppBorderRadius.radiusRound,
                     borderSide: BorderSide.none,
                   ),
-                  fillColor: Colors.grey[100],
+                  fillColor: AppColors.grey100,
                   filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
                     vertical: 10,
                   ),
                 ),
@@ -95,9 +97,9 @@ class ChatScreen extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             CircleAvatar(
-              backgroundColor: Colors.yellow[700],
+              backgroundColor: AppColors.yellow400,
               child: IconButton(
-                icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                icon: const Icon(Icons.send, color: AppColors.textWhite, size: 20),
                 onPressed: () {
                   if (tc.text.trim().isNotEmpty) {
                     controller.sendMessage(tc.text);
@@ -122,7 +124,7 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: AppSpacing.paddingVerticalSM,
       child: Row(
         mainAxisAlignment: isMe
             ? MainAxisAlignment.end
@@ -141,19 +143,16 @@ class ChatBubble extends StatelessWidget {
               children: [
                 if (!isMe)
                   Padding(
-                    padding: const EdgeInsets.only(left: 2, bottom: 4),
+                    padding: EdgeInsets.only(left: 2, bottom: AppSpacing.xs),
                     child: Text(
                       message.nickname ?? "상대방",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.black87,
-                      ),
+                      style: AppTextStyles.bodyXSmall.copyWith(color: AppColors.textBlack87),
                     ),
                   ),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: AppSpacing.paddingMD,
                   decoration: BoxDecoration(
-                    color: isMe ? Colors.yellow[400] : Colors.white,
+                    color: isMe ? AppColors.yellow400 : AppColors.background,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(15),
                       topRight: const Radius.circular(15),
@@ -162,7 +161,7 @@ class ChatBubble extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black12,
+                        color: AppColors.black54,
                         blurRadius: 2,
                         offset: Offset(1, 1),
                       ),
@@ -170,7 +169,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                   child: Text(
                     message.content ?? "",
-                    style: const TextStyle(color: Colors.black, fontSize: 15),
+                    style: AppTextStyles.bodyMedium,
                   ),
                 ),
               ],

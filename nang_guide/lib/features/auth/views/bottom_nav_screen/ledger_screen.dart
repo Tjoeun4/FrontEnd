@@ -6,9 +6,10 @@ import '../../models/ledger_models.dart';
 import '../../services/ledger_api_client.dart';
 import '../dialog/expense_edit_screen.dart';
 import '../dialog/expense_registration_screen.dart';
-import './../../controllers/bottom_nav/ledger_controller.dart';
-import './../components/app_nav_bar.dart';
-import './../components/bottom_nav_bar.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/ledger_controller.dart';
+import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
+import 'package:honbop_mate/core/navigation/widgets/bottom_nav_bar.dart';
 
 /// 📌 가계부 메인 화면 (View 레이어)
 /// - 월별 지출 요약
@@ -58,8 +59,7 @@ class LedgerScreen extends StatelessWidget {
                 // 지출 등록 화면으로 이동
                 Get.to(() => const ExpenseRegistrationScreen());
               },
-              backgroundColor: Colors.amber,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: const Icon(Icons.add),
             ),
           ),
         ],
@@ -88,7 +88,7 @@ class LedgerScreen extends StatelessWidget {
                 icon: const Icon(
                   Icons.arrow_back_ios,
                   size: 18,
-                  color: Colors.black87,
+                  color: AppColors.textBlack87,
                 ),
               ),
               // 연/월 클릭 시 바텀 시트 호출
@@ -97,10 +97,7 @@ class LedgerScreen extends StatelessWidget {
                 child: Obx(
                   () => Text(
                     '${controller.year.value}. ${controller.month.value.toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextStyles.heading3,
                   ),
                 ),
               ),
@@ -109,7 +106,7 @@ class LedgerScreen extends StatelessWidget {
                 icon: const Icon(
                   Icons.arrow_forward_ios,
                   size: 18,
-                  color: Colors.black87,
+                  color: AppColors.textBlack87,
                 ),
               ),
             ],
@@ -119,14 +116,11 @@ class LedgerScreen extends StatelessWidget {
             () => RichText(
               text: TextSpan(
                 text: '지출 ',
-                style: const TextStyle(color: Colors.black, fontSize: 15),
+                style: AppTextStyles.bodyMedium,
                 children: [
                   TextSpan(
                     text: '${NumberFormat('#,###').format(controller.totalExpense.value)}원',
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextStyles.bodyMediumBold.copyWith(color: AppColors.error),
                   ),
                 ],
               ),
@@ -149,10 +143,10 @@ class LedgerScreen extends StatelessWidget {
         height: 300,
         // 내부 컨테이너에 배경색과 상단 라운드 처리를 적용합니다.
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xl)),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingLG,
         child: Column(
           children: [
             // --- 상단 액션 바 ---
@@ -161,23 +155,20 @@ class LedgerScreen extends StatelessWidget {
               children: [
                 TextButton(
                   onPressed: () => Get.back(),
-                  child: const Text("취소", style: TextStyle(color: Colors.grey)),
+                  child: Text("취소", style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
                 ),
-                const Text(
+                Text(
                   "연월 선택",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.bodyLargeBold,
                 ),
                 TextButton(
                   onPressed: () {
                     controller.updateYearMonth(tempYear, tempMonth);
                     Get.back();
                   },
-                  child: const Text(
+                  child: Text(
                     "확인",
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppTextStyles.bodyMediumBold.copyWith(color: AppColors.primary),
                   ),
                 ),
               ],
@@ -233,13 +224,13 @@ class LedgerScreen extends StatelessWidget {
   Widget _buildTabSwitcher() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: AppSpacing.paddingSymmetricMD,
       child: Obx(
         () => CupertinoSegmentedControl<int>(
           groupValue: controller.selectedTabIndex.value,
-          selectedColor: Colors.amber,
-          borderColor: Colors.amber,
-          unselectedColor: Colors.white,
+          selectedColor: AppColors.primary,
+          borderColor: AppColors.primary,
+          unselectedColor: AppColors.background,
           children: const {
             0: Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
@@ -267,8 +258,8 @@ class LedgerScreen extends StatelessWidget {
       ..sort((a, b) => b.compareTo(a));
 
     if (sortedDates.isEmpty) {
-      return const Center(
-        child: Text('기록된 내역이 없습니다.', style: TextStyle(color: Colors.grey)),
+      return Center(
+        child: Text('기록된 내역이 없습니다.', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
       );
     }
 
@@ -292,25 +283,25 @@ class LedgerScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.grey[100],
+                      backgroundColor: AppColors.grey100,
                       child: Text(
                         controller.getCategoryEmoji(item.category), // ✅ item.category 사용
-                        style: const TextStyle(fontSize: 20),
+                        style: AppTextStyles.heading3,
                       ),
                     ),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(item.title, style: const TextStyle(fontSize: 15)), // ✅ item.title 사용
+                        Text(item.title, style: AppTextStyles.bodyMedium), // ✅ item.title 사용
                         Text(
                           '${item.formattedAmount}원', // ✅ 모델의 getter 활용
-                          style: const TextStyle(fontSize: 15, color: Colors.redAccent),
+                          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
                         ),
                       ],
                     ),
                     subtitle: Text(
                       '${controller.mapBackendToFrontendCategory(item.category)}  |  ${item.timeOnly}', // ✅ getter 활용
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: AppTextStyles.bodyXSmall.copyWith(color: AppColors.grey600),
                     ),
                     onTap: () {
                       // ✅ 수정 화면 진입 시 모델 객체 자체를 넘기거나 필요한 필드 전달
@@ -410,10 +401,10 @@ class LedgerScreen extends StatelessWidget {
 
     Get.bottomSheet(
       Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        padding: AppSpacing.paddingXL,
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xl)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -423,20 +414,14 @@ class LedgerScreen extends StatelessWidget {
               children: [
                 Text(
                   '$day',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.heading2,
                 ),
-                const SizedBox(width: 8),
-                Text(dateKey, style: TextStyle(color: Colors.grey[600])),
+                const SizedBox(width: AppSpacing.sm),
+                Text(dateKey, style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey600)),
                 const Spacer(),
                 Text(
                   '${NumberFormat('#,###').format(controller.getDayTotal(day))}원',
-                  style: const TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.bodyMediumBold.copyWith(color: AppColors.error),
                 ),
               ],
             ),
@@ -482,10 +467,7 @@ class LedgerScreen extends StatelessWidget {
                 height: 40,
                 child: Text(
                   e,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
+                  style: AppTextStyles.bodyXSmall.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -498,35 +480,35 @@ class LedgerScreen extends StatelessWidget {
 // LedgerScreen 클래스 내부 하단에 추가
 Widget _buildDayHeader(DateTime dateTime, int dayTotal) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    color: Colors.grey[50],
+    padding: AppSpacing.paddingSymmetricMD,
+    color: AppColors.grey100,
     child: Row(
       children: [
         Text(
           '${dateTime.day}',
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: AppTextStyles.heading2,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
                   decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(4),
+                    color: AppColors.grey600,
+                    borderRadius: AppBorderRadius.radiusXS,
                   ),
                   child: Text(
                     DateFormat('EEEE', 'ko_KR').format(dateTime).substring(0, 1), // '수' 형태로 표시
-                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                    style: TextStyle(fontSize: 10, color: AppColors.textWhite),
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: AppSpacing.xs),
                 Text(
                   DateFormat('yyyy.MM').format(dateTime),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: AppTextStyles.bodyXSmall.copyWith(color: AppColors.grey600),
                 ),
               ],
             ),
@@ -535,11 +517,7 @@ Widget _buildDayHeader(DateTime dateTime, int dayTotal) {
         const Spacer(),
         Text(
           '${NumberFormat('#,###').format(dayTotal)}원',
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.redAccent,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTextStyles.bodyLargeBold.copyWith(color: AppColors.error),
         ),
       ],
     ),

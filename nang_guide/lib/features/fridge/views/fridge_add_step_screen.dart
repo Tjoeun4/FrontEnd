@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import '../controllers/fridge_add_controller.dart';
 import '../models/ingredient_resolve_model.dart';
 
@@ -169,9 +170,8 @@ class FridgeAddStepScreen extends GetView<FridgeAddController> {
       child: ElevatedButton(
         onPressed: controller.isCreating.value ? null : () => controller.createFridgeItem(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
           minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: AppBorderRadius.cardRadius),
         ),
         child: controller.isCreating.value
             ? const CircularProgressIndicator(color: Colors.white)

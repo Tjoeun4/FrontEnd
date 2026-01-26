@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/community_controller.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/dialog/group_dialog.dart';
-import './../components/app_nav_bar.dart';
-import './../../views/post_create_screen.dart';
-import './../components/bottom_nav_bar.dart';
-import './../../../auth/views/dialog/gonggu_dialog.dart';
+import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
+import 'package:honbop_mate/features/auth/views/post_create_screen.dart';
+import 'package:honbop_mate/core/navigation/widgets/bottom_nav_bar.dart';
+import 'package:honbop_mate/features/auth/views/dialog/gonggu_dialog.dart';
 
 class CommunityScreen extends StatelessWidget {
   // 커뮤니티 컨트롤러에있는 함수를 찾습니다.
@@ -25,7 +26,7 @@ class CommunityScreen extends StatelessWidget {
         children: [
           // 1. 검색창 영역 (Expanded 대신 Padding을 사용하여 상단에 적절히 배치)
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: AppSpacing.paddingLG,
             child: TextField(
               controller: Controller.searchController, // 컨트롤러 연결
               decoration: InputDecoration(
@@ -39,9 +40,9 @@ class CommunityScreen extends StatelessWidget {
                   },
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppBorderRadius.cardRadius,
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                contentPadding: AppSpacing.paddingHorizontalLG,
               ),
               // 키보드에서 엔터(완료) 버튼을 눌렀을 때 실행
               onSubmitted: (value) {
@@ -95,14 +96,14 @@ class CommunityScreen extends StatelessWidget {
                 onRefresh: () => Controller.fetchRooms(),
                 child: ListView.builder(
                   // 키보드가 올라왔을 때 리스트가 잘 밀리도록 처리
-                  padding: const EdgeInsets.only(bottom: 80),
+                  padding: const EdgeInsets.only(bottom: 80), // FAB 공간
                   itemCount: Controller.gonguRooms.length,
                   itemBuilder: (context, index) {
                     final room = Controller.gonguRooms[index];
                     return ListTile(
                       leading: const CircleAvatar(
-                        backgroundColor: Colors.orange,
-                        child: Icon(Icons.group, color: Colors.white),
+                        backgroundColor: AppColors.primary,
+                        child: Icon(Icons.group, color: AppColors.textWhite),
                       ),
                       title: Text(room['title'] ?? '제목 없음'),
                       subtitle: Text(
@@ -134,9 +135,8 @@ class CommunityScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        child: const Icon(Icons.edit, color: Colors.white),
         onPressed: () => Get.toNamed(AppRoutes.POST),
+        child: const Icon(Icons.edit),
       ),
       bottomNavigationBar: MyBottomNavigation(),
     );
@@ -155,9 +155,9 @@ class CommunityScreen extends StatelessWidget {
           Controller.filterByCategory(categoryId);
         }
       },
-      selectedColor: Colors.orange,
+      selectedColor: AppColors.primary,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black,
+        color: isSelected ? AppColors.textWhite : AppColors.textPrimary,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
     );

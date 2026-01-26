@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/services/token_service.dart';
+import 'package:honbop_mate/core/services/token_service.dart';
 import 'package:get_storage/get_storage.dart';
 
 // 지역코드 가져오기 위해서 생성했습니다. 1.22 구현

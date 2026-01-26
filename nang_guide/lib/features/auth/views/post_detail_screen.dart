@@ -3,7 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/services/gongu_service.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/features/community/services/gongu_service.dart';
 import 'package:intl/intl.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -71,8 +72,8 @@ class PostDetailScreen extends GetView<PostDetailController> {
                           },
                           // 에러 발생 시 (S3 권한 문제 등)
                           errorBuilder: (context, error, stackTrace) => Container(
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                            color: AppColors.grey200,
+                            child: const Icon(Icons.broken_image, size: 80, color: AppColors.textSecondary),
                           ),
                         );
                       },
@@ -91,12 +92,12 @@ class PostDetailScreen extends GetView<PostDetailController> {
                     // 2. 카테고리 & 제목
                     Text(
                       "${data['categoryName'] ?? '카테고리'}",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey600, fontSize: 14),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     Text(
                       data['title'] ?? '',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.heading2,
                     ),
                     const SizedBox(height: 12),
 
@@ -212,16 +213,12 @@ class PostDetailScreen extends GetView<PostDetailController> {
             const SizedBox(width: 10),
             // 참여하기 버튼
             Expanded(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
+              child: SizedBox(
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: () => controller.joinGroupBuy(),
+                  child: const Text("이 공구 참여하기", style: AppTextStyles.buttonText),
                 ),
-                onPressed: () => controller.joinGroupBuy(),
-                child: const Text("이 공구 참여하기", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

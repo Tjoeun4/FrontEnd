@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/services/token_service.dart';
+import 'package:honbop_mate/core/services/token_service.dart';
 import 'package:http/http.dart' as http;
-import './../models/spring_response_model.dart';
+import 'package:honbop_mate/core/models/spring_response_model.dart';
 // import '/services/token_service.dart';
-import '../controllers/auth_controller.dart';
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 
 class ApiService {
   // final AuthController _authController = Get.find<AuthController>();

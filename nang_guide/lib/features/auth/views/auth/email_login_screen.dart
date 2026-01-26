@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 
 import '../../routes/app_routes.dart';
@@ -80,18 +81,18 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF69420), // 배경색
+      backgroundColor: AppColors.primary, // 배경색
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textWhite),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          padding: EdgeInsets.symmetric(horizontal: 40.0),
           child: Form(
             key: _formKey,
             child: Column(
@@ -100,14 +101,10 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 const Spacer(flex: 2),
                 Image.asset('assets/login_logo.png', height: 120),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   '혼밥 메이트를 찾는 가장 쉬운 방법',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.heading3.copyWith(color: AppColors.textWhite),
                 ),
                 const Spacer(flex: 1),
                 TextFormField(
@@ -142,21 +139,21 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                   decoration: InputDecoration(
                     hintText: '비밀번호',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: AppColors.background,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: AppBorderRadius.radiusRound,
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
+                    contentPadding: EdgeInsets.symmetric(
                       vertical: 15,
-                      horizontal: 20,
+                      horizontal: AppSpacing.xl,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: Colors.grey,
+                        color: AppColors.textSecondary,
                       ),
                       onPressed: () {
                         setState(() {
@@ -175,11 +172,11 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                 Theme(
                   data: Theme.of(
                     context,
-                  ).copyWith(unselectedWidgetColor: Colors.white),
+                  ).copyWith(unselectedWidgetColor: AppColors.textWhite),
                   child: CheckboxListTile(
-                    title: const Text(
+                    title: Text(
                       '아이디 저장',
-                      style: TextStyle(color: Colors.white),
+                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textWhite),
                     ),
                     value: _saveId,
                     onChanged: (bool? value) async { // onChanged를 async로 변경
@@ -193,31 +190,27 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     },
                     controlAffinity: ListTileControlAffinity.leading,
                     contentPadding: EdgeInsets.zero,
-                    activeColor: Colors.white,
-                    checkColor: const Color(0xFF14A3A3),
+                    activeColor: AppColors.textWhite,
+                    checkColor: AppColors.accent,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 Obx(() => SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF424242), // 진회색
+                      backgroundColor: AppColors.grey800, // 진회색 (로그인 화면 특수 색상)
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: AppBorderRadius.radiusRound,
                       ),
                     ),
                     onPressed: _authController.isLoading.value ? null : _login, // 로그인 메소드 연결
                     child: _authController.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
+                        ? const CircularProgressIndicator(color: AppColors.textWhite)
+                        : Text(
                       '로그인',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: AppTextStyles.heading3.copyWith(color: AppColors.textWhite),
                     ),
                   ),
                 )),

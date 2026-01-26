@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/post_controller.dart';
 
 class PostCreateScreen extends StatelessWidget {
@@ -13,15 +14,15 @@ class PostCreateScreen extends StatelessWidget {
     final PostController controller = Get.put(PostController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text("게시물 작성하기", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: Text("게시물 작성하기", style: AppTextStyles.bodyLargeBold),
+        backgroundColor: AppColors.background,
         elevation: 0.5,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black), onPressed: () => Navigator.pop(context)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: AppSpacing.paddingXL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -33,13 +34,13 @@ class PostCreateScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
+                  color: AppColors.grey100,
+                  borderRadius: AppBorderRadius.cardRadius,
+                  border: Border.all(color: AppColors.grey300),
                 ),
                 child: controller.selectedImage.value != null
                     ? ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppBorderRadius.cardRadius,
                   child: Image.file(controller.selectedImage.value!, fit: BoxFit.cover),
                 )
                     : const Column(
@@ -52,7 +53,7 @@ class PostCreateScreen extends StatelessWidget {
                 ),
               ),
             )),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             _buildLabel("게시물 종류"),
             Obx(() => DropdownButtonFormField<String>(
@@ -64,7 +65,7 @@ class PostCreateScreen extends StatelessWidget {
               },
               decoration: const InputDecoration(border: OutlineInputBorder()),
             )),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             Obx(() {
               if (controller.selectedType.value == '공동구매') {
@@ -76,9 +77,9 @@ class PostCreateScreen extends StatelessWidget {
                       value: controller.selectedFoodType.value,
                       items: ['육류', '양념', '채소', '유제품', '해산물', '과일'].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
                       onChanged: (value) { if (value != null) controller.selectedFoodType.value = value; },
-                      decoration: InputDecoration(contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8))),
+                      decoration: InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 15), border: OutlineInputBorder(borderRadius: AppBorderRadius.radiusSM)),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 );
               }
@@ -87,11 +88,11 @@ class PostCreateScreen extends StatelessWidget {
 
             _buildLabel("게시물 제목"),
             TextField(controller: controller.titleController, decoration: const InputDecoration(hintText: "제목을 입력하세요", border: OutlineInputBorder())),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             _buildLabel("게시물 설명"),
             TextField(controller: controller.contentController, maxLines: 5, decoration: const InputDecoration(hintText: "내용을 입력하세요", border: OutlineInputBorder())),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             Obx(() {
               if (controller.selectedType.value == '공동구매' || controller.selectedType.value == '나눔') {
@@ -112,7 +113,7 @@ class PostCreateScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 );
               }
@@ -131,7 +132,7 @@ class PostCreateScreen extends StatelessWidget {
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(hintText: "Total 가격을 입력하세요", border: OutlineInputBorder())
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
                 );
               }
@@ -173,10 +174,15 @@ class PostCreateScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            Obx(() => ElevatedButton(
-              onPressed: controller.isLoading.value ? null : () => controller.submitPost(),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, minimumSize: const Size(double.infinity, 55), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-              child: controller.isLoading.value ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('작성 완료', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            Obx(() => SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: controller.isLoading.value ? null : () => controller.submitPost(),
+                child: controller.isLoading.value 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: AppColors.textWhite, strokeWidth: 2)) 
+                    : const Text('작성 완료', style: AppTextStyles.buttonText),
+              ),
             )),
           ],
         ),
@@ -191,40 +197,46 @@ class PostCreateScreen extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => Container(
-          height: MediaQuery.of(context).size.height * 0.85,
-          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
-          child: Column(
-            children: [
-              Container(margin: const EdgeInsets.symmetric(vertical: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-              const Text("만날 장소를 선택해주세요", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              Expanded(
-                child: GoogleMap(
-                  initialCameraPosition: CameraPosition(target: tempPos, zoom: 17),
-                  markers: {Marker(markerId: const MarkerId('temp'), position: tempPos)},
-                  onMapCreated: controller.onMapCreated,
-                  onTap: (LatLng pos) { setDialogState(() => tempPos = pos); },
-                  gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{ Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
-                  zoomGesturesEnabled: true,
-                  scrollGesturesEnabled: true,
+        builder: (dialogContext, setDialogState) {
+          final bottomPadding = MediaQuery.of(dialogContext).padding.bottom;
+          return Container(
+            height: MediaQuery.of(dialogContext).size.height * 0.85,
+            decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+            child: Column(
+              children: [
+                Container(margin: const EdgeInsets.symmetric(vertical: 12), width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                const Text("만날 장소를 선택해주세요", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(target: tempPos, zoom: 17),
+                    markers: {Marker(markerId: const MarkerId('temp'), position: tempPos)},
+                    onMapCreated: controller.onMapCreated,
+                    onTap: (LatLng pos) { setDialogState(() => tempPos = pos); },
+                    gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{ Factory<OneSequenceGestureRecognizer>(() => EagerGestureRecognizer()) },
+                    zoomGesturesEnabled: true,
+                    scrollGesturesEnabled: true,
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, minimumSize: const Size(double.infinity, 55), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                  onPressed: () async {
-                    controller.updateLocation(tempPos);
-                    await controller.confirmLocation();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("위치 설정 완료", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                Padding(
+                  padding: AppSpacing.paddingXL,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        controller.updateLocation(tempPos);
+                        await controller.confirmLocation();
+                        Navigator.pop(dialogContext);
+                      },
+                      child: const Text("위치 설정 완료", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
                 ),
-              ),
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
-            ],
-          ),
-        ),
+                SizedBox(height: bottomPadding),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:honbop_mate/features/auth/services/gongu_service.dart'; // GonguService가 있는 경로
+import 'package:honbop_mate/features/community/services/gongu_service.dart'; // GonguService가 있는 경로
 import 'package:get_storage/get_storage.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
