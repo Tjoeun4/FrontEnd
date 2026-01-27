@@ -21,19 +21,21 @@ class PantryApiClient extends GetxService {
   }
 
   /// 2. 새 조미료 추가
-  Future<bool> addPantryItem(String itemName) async {
+  // 기존: Future<bool> addPantryItem(...)
+  // 수정: 응답 데이터 전체(Map)를 반환하도록 변경
+  Future<Map<String, dynamic>> addPantryItem(String itemName) async {
     try {
       final response = await _dio.post(
         '/fridge/pantry',
         data: {'itemName': itemName},
       );
-      return response.statusCode == 200 && response.data['ok'] == true;
+      // response.data에는 {'ok': bool, 'message': String}이 담겨 있음
+      return response.data;
     } catch (e) {
       print('조미료 추가 실패: $e');
-      return false;
+      return {'ok': false, 'message': '서버 통신 중 오류가 발생했습니다.'};
     }
   }
-
   /// 3. 조미료 삭제 (Soft Delete)
   Future<bool> deletePantryItem(int pantryItemId) async {
     try {
