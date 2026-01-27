@@ -31,6 +31,10 @@ import 'package:honbop_mate/features/auth/views/post_detail_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 
+import '../../fridge/bindings/pantry_binding.dart';
+import '../../fridge/views/pantry_management_screen.dart';
+import '../../fridge/views/pantry_onboarding_screen.dart';
+
 class AppRoutes {
   static const SPLASH = '/';
   static const LOGIN = '/login'; // 로그인 선택 화면
@@ -50,6 +54,8 @@ class AppRoutes {
   static const CHAT_ROOM = '/chat/room/:roomId'; // 채팅방
   static const FRIDGE = '/fridge'; // 내 냉장고 탭
   static const FRIDGE_ADD = '/fridge/add'; // 냉장고에 식재료 추가
+  static const PANTRY_ONBOARDING = '/pantry-onboarding';
+  static const PANTRY_MANAGEMENT = '/pantry-management';
 
   static final routes = [
     GetPage(name: SPLASH, page: () => SplashScreen(), binding: AuthBinding()),
@@ -138,6 +144,7 @@ class AppRoutes {
       binding: PostDetailBinding(),
       transition: Transition.noTransition,
     ),
+    /// 냉장고 관련 라우트
     GetPage(
       name: FRIDGE,
       page: () => FridgeListScreen(),
@@ -150,6 +157,19 @@ class AppRoutes {
       binding: FridgeBinding(),
       /* 같은 바인딩 사용 (서비스/컨트롤러 공유) */ transition:
           Transition.cupertino /* 추가 화면은 슬라이드 효과 권장 */,
+    ),
+    /// 조미료 관련 라우트
+    GetPage(
+      name: PANTRY_ONBOARDING,
+      page: () => const PantryOnboardingScreen(),
+      binding: PantryBinding(), // PantryController를 주입하는 바인딩 필요
+      transition: Transition.cupertino,
+    ),
+    GetPage(
+      name: PANTRY_MANAGEMENT,
+      page: () => const PantryManagementScreen(),
+      binding: PantryBinding(), // 👈 여기서 Controller와 Service 주입
+      transition: Transition.cupertino,
     ),
   ];
 }

@@ -55,7 +55,9 @@ class ProfileScreen extends StatelessWidget {
                 _buildMenuItem("냉장고 음식 리스트 보기"),
                 _buildMenuItem("유통기한 확인하기"),
                 _buildMenuItem("보유 조미료 관리", onTap: () {
-                  showSeasoningSurveyDialog(context);
+                  // 기존: showSeasoningSurveyDialog(context);
+                  // 수정: 관리 페이지로 이동 (라우트 이름은 AppRoutes 설정에 따라 변경)
+                  Get.toNamed('/pantry-management');
                 }),
                 _buildMenuItem("식료품 공구 내 게시글 관리"),
                 _buildMenuItem("내 동네 설정"),

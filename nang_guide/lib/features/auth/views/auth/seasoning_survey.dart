@@ -1,3 +1,5 @@
+/// 기존 조미료 설문 다이얼로그 파일(현재는 기능 이전)
+/*
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -261,3 +263,4 @@ void showSeasoningSurveyDialog(BuildContext context) {
     },
   );
 }
+*/
