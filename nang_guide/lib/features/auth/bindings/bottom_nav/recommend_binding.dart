@@ -6,7 +6,6 @@ import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
 import 'package:honbop_mate/core/services/token_service.dart';
-import 'package:honbop_mate/features/auth/controllers/bottom_nav/recommend_controller.dart';
 // 서비스 추가할 예정
 
 class RecommendBinding extends Bindings {
@@ -26,7 +25,7 @@ class RecommendBinding extends Bindings {
 
     // Controllers
     Get.put<NavController>(NavController(), permanent: true); // NavController를 영구 종속성으로 추가
-    Get.lazyPut<RecommendController>(() => RecommendController());
+    //Get.lazyPut<RecommendController>(() => RecommendController());
     Get.lazyPut<AuthController>(() => AuthController());
     // Get.lazyPut<TokenService>(() => TokenService());
   }
