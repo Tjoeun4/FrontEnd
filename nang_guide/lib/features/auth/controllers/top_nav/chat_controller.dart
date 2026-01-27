@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 import '../../models/chat_model.dart';
 import '../../services/chat_service.dart';
-import '../../services/token_service.dart';
+import 'package:honbop_mate/core/services/token_service.dart';
 
 class ChatController extends GetxController {
   // ✅ AuthService를 찾아옵니다.

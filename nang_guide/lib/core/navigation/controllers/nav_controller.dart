@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../../routes/app_routes.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 
 class NavController extends GetxController {
   final selectedIndex = 0.obs;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import '../controllers/top_nav/chat_controller.dart';
 import 'chat_screen.dart';
@@ -14,16 +15,16 @@ class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           "채팅 목록",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: AppTextStyles.bodyLargeBold,
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Get.back(),
         ),
       ),
@@ -59,14 +60,14 @@ class ChatListScreen extends StatelessWidget {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.only(bottom: 12, left: 8, right: 8),
-                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.only(bottom: AppSpacing.md, left: AppSpacing.sm, right: AppSpacing.sm),
+                padding: AppSpacing.paddingLG,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.background,
+                  borderRadius: AppBorderRadius.containerRadius,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: AppColors.textSecondary.withOpacity(0.1),
                       spreadRadius: 2,
                       blurRadius: 10,
                     ),
@@ -83,19 +84,13 @@ class ChatListScreen extends StatelessWidget {
                         children: [
                           Text(
                             room.roomName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                            style: AppTextStyles.bodyLargeBold,
                           ),
                           const SizedBox(height: 5),
                           // 🔴 실시간 반영되는 마지막 메시지 영역
                           Text(
                             room.lastMessage ?? "메시지가 없습니다",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 13,
-                            ),
+                            style: AppTextStyles.bodySmall,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -107,13 +102,13 @@ class ChatListScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: const BoxDecoration(
-                          color: Colors.red,
+                          color: AppColors.error,
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           "${room.unreadCount}",
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: AppColors.textWhite,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -137,19 +132,19 @@ class ChatListScreen extends StatelessWidget {
     switch (type) {
       case ChatRoomType.GROUP_BUY:
         iconData = Icons.groups;
-        iconColor = Colors.orange;
+        iconColor = AppColors.primary;
         break;
       case ChatRoomType.FAMILY:
         iconData = Icons.home;
-        iconColor = Colors.green;
+        iconColor = AppColors.success;
         break;
       default:
         iconData = Icons.person;
-        iconColor = Colors.blueAccent;
+        iconColor = AppColors.info;
     }
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: iconColor.withOpacity(0.1),
         shape: BoxShape.circle,

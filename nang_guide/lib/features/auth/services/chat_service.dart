@@ -5,7 +5,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/models/authentication_response.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/features/auth/services/token_service.dart';
+import 'package:honbop_mate/core/services/token_service.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart'; // AppRoutes import 추가
 

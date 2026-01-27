@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../../controllers/bottom_nav/ledger_controller.dart'; // 날짜 포맷팅을 위해 필요
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/ledger_controller.dart';
 // ============================================
 // 지출 등록 화면
 // - 사용자가 새로운 지출 내역을 입력
@@ -64,8 +65,8 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
         "입력 확인",
         "금액과 내용을 입력해주세요.",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.redAccent,
-        colorText: Colors.white,
+        backgroundColor: AppColors.error,
+        colorText: AppColors.textWhite,
       );
       return;
     }
@@ -135,13 +136,13 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("지출 등록", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        title: Text("지출 등록", style: AppTextStyles.bodyLargeBold),
+        backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: AppSpacing.paddingXL,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -182,20 +183,18 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
               maxLines: 3,
               decoration: InputDecoration(
                 hintText: "추가 내용을 적어주세요",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                border: OutlineInputBorder(borderRadius: AppBorderRadius.radiusSM),
               ),
             ),
             const SizedBox(height: 30),
             // 영수증 OCR 버튼
-            ElevatedButton.icon(
-              onPressed: () => _showImageSourceDialog(),
-              icon: const Icon(Icons.camera_alt),
-              label: const Text("영수증 불러오기"),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.grey[700],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _showImageSourceDialog(),
+                icon: const Icon(Icons.camera_alt),
+                label: const Text("영수증 불러오기"),
               ),
             ),
             const SizedBox(height: 15),
@@ -203,26 +202,22 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Get.back(),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  child: SizedBox(
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      child: const Text("취소"),
                     ),
-                    child: const Text("취소"),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: _onSave,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  child: SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _onSave,
+                      child: const Text("저장하기"),
                     ),
-                    child: const Text("저장하기"),
                   ),
                 ),
               ],
@@ -236,10 +231,10 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
   /// ==============================
   Widget _buildLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        style: AppTextStyles.bodyLargeBold,
       ),
     );
   }
@@ -260,7 +255,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
               title: Text("영수증 불러오기", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
+              leading: const Icon(Icons.camera_alt, color: AppColors.info),
               title: const Text("영수증 촬영하기"),
               onTap: () {
                 Get.back(); // 바텀시트 닫기
@@ -268,7 +263,7 @@ class _ExpenseRegistrationScreenState extends State<ExpenseRegistrationScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.orange),
+              leading: const Icon(Icons.photo_library, color: AppColors.primary),
               title: const Text("영수증 사진 선택 (갤러리)"),
               onTap: () {
                 Get.back(); // 바텀시트 닫기

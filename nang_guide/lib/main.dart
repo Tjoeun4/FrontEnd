@@ -6,6 +6,7 @@ import './features/auth/routes/app_routes.dart';
 import 'features/auth/services/google_auth_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:honbop_mate/core/design/app_theme.dart';
 
 // void main() {
 //   runApp(const MyApp());
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
       getPages: AppRoutes.routes, // 앱에서 사용할 모든 화면(Route)의 지도를 등록
       initialBinding:
           AuthBinding(), // 앱이 시작될 때 가장 먼저 메모리에 올려둘 컨트롤러를 AuthBinding으로 설정
-      theme: ThemeData(fontFamily: 'Pretendard'),
+      theme: AppTheme.lightTheme,
     );
   }
 }

@@ -1,11 +1,11 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:dio/dio.dart'; // Dio import
-import '../controllers/auth_controller.dart';
-import '../controllers/bottom_nav/nav_controller.dart';
-import '../services/auth_api_client.dart';
-import '../services/google_auth_service.dart';
-import '../services/token_service.dart'; // TokenService import
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
+import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
+import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
+import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
+import 'package:honbop_mate/core/services/token_service.dart';
 
 class AuthBinding extends Bindings {
   // Bindings 클래스는 "앱이 특정 화면에 진입하거나 시작될 때, 필요한 도구(컨트롤러, 서비스 등)를 메모리에 미리 준비해두는 설정 파일" 역할

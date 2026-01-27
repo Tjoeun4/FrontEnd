@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
-
-import '../../controllers/bottom_nav/nav_controller.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
 
 class MyBottomNavigation extends StatelessWidget {
   MyBottomNavigation({super.key});
@@ -39,13 +39,13 @@ class MyBottomNavigation extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           HugeIcon(icon: icon, color: _activeColor, size: 24),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Container(
             width: 35,
             height: 6,
             decoration: BoxDecoration(
               color: _activeColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: AppBorderRadius.radiusSM,
             ),
           ),
         ],

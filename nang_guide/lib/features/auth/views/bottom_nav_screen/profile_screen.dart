@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 import 'package:honbop_mate/features/auth/views/auth/seasoning_survey.dart';
-import '../../controllers/bottom_nav/nav_controller.dart';
-import '../profile_edit_screen.dart';
-import './../components/app_nav_bar.dart';
-import './../components/bottom_nav_bar.dart';
+import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
+import 'package:honbop_mate/features/auth/views/profile_edit_screen.dart';
+import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
+import 'package:honbop_mate/core/navigation/widgets/bottom_nav_bar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -25,7 +26,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          padding: AppSpacing.screenPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -82,30 +83,25 @@ class ProfileScreen extends StatelessWidget {
           GestureDetector(
             child: CircleAvatar(
               radius: 30,
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.grey, size: 40), // 추후 이미지 데이터 연동
+              backgroundColor: AppColors.background,
+              child: Icon(Icons.person, color: AppColors.textSecondary, size: 40), // 추후 이미지 데이터 연동
             ),
           ),
           const SizedBox(width: 15),
           Expanded(
             child: Obx(() => Text(
               profileController.nickname.value, // 상태에 따라 자동 갱신
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: AppTextStyles.heading3,
             )),
           ),
           GestureDetector(
             onTap: () {
               Get.to(() => ProfileEditScreen());
             },
-            child: const Text(
+            child: Text(
               '정보 수정하기',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 15,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
                 decoration: TextDecoration.underline,
               ),
             ),
@@ -119,7 +115,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuSection(List<Widget> items) {
     return Column(
       children: items.map((item) => Padding(
-        padding: const EdgeInsets.only(bottom: 12.0),
+        padding: EdgeInsets.only(bottom: AppSpacing.md),
         child: item,
       )).toList(),
     );
@@ -129,18 +125,15 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuItem(String title, {Widget? trailing, VoidCallback? onTap}) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.grey200),
+        borderRadius: AppBorderRadius.cardRadius,
       ),
       child: ListTile(
         title: Text(
           title,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
         ),
-        trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
         onTap: onTap, // 로그아웃 클릭하면 로그인 화면으로 이동하고 스택 제거가 됨
       ),
     );
@@ -156,7 +149,7 @@ class ProfileScreen extends StatelessWidget {
         onChanged: (val) {
           controller.isNotificationOn.value = val;
         },
-        activeColor: const Color(0xFF2D3E50),
+        activeColor: AppColors.accent,
       ),
     );
   }

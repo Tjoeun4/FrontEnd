@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
-import '../../controllers/auth_controller.dart';
+import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -23,14 +24,10 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.black,
-          fontFamily: 'Pretendard',
-          fontWeight: FontWeight.w900,
-        ),
+        style: AppTextStyles.appBarTitle,
       ),
       centerTitle: centerTitle,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       elevation: 0, // 하단 구분선 제거 (디자인에 맞춰 조정)
       // 원하는 색상 설정
       actions: [

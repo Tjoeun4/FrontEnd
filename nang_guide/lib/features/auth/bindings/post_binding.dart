@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/features/auth/services/auth_service.dart';
-import 'package:honbop_mate/features/auth/services/gongu_service.dart';
+import 'package:honbop_mate/features/community/services/gongu_service.dart';
 import '../controllers/post_controller.dart';
 // 서비스 추가할 예정
 

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/features/auth/services/api_service.dart';
+import 'package:honbop_mate/core/services/api_service.dart';
 
 import '../../models/authentication_response.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
-import 'package:honbop_mate/features/auth/services/gongu_service.dart';
+import 'package:honbop_mate/features/community/services/gongu_service.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PostDetailController extends GetxController {

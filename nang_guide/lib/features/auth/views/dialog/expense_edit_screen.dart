@@ -5,8 +5,8 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
-import '../../controllers/bottom_nav/ledger_controller.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/ledger_controller.dart';
 import '../../models/ledger_models.dart'; // ✅ 모델 임포트
 // =========================
 // 지출 수정 / 삭제 화면
@@ -68,13 +68,13 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
         title: const Text("지출 수정/삭제"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            icon: const Icon(Icons.delete_outline, color: AppColors.error),
             onPressed: () => _showDeleteDialog(),
           )
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: AppSpacing.paddingXL,
         child: Column(
           children: [
             // 날짜 및 시간 표시 + 선택
@@ -99,7 +99,7 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
                 suffixText: "원",
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             // 카테고리 선택 (Dropdown)
             _buildLabel("카테고리"),
             DropdownButton<String>(
@@ -114,14 +114,14 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
               onChanged: (newValue) =>
                   setState(() => _selectedCategory = newValue!),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             // 지출 제목
             _buildLabel("내용"),
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(hintText: "어디에 쓰셨나요?"),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             // 메모 입력
             _buildLabel("메모"),
             TextField(
@@ -136,17 +136,13 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             ),
             const SizedBox(height: 30),
             // OCR 촬영 버튼 (향후 기능 확장용)
-            ElevatedButton.icon(
-              onPressed: _showImageSourceDialog, // 다이얼로그 호출
-              icon: const Icon(Icons.camera_alt),
-              label: const Text("영수증 불러오기"),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.grey[700],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+            SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _showImageSourceDialog, // 다이얼로그 호출
+                icon: const Icon(Icons.camera_alt),
+                label: const Text("영수증 불러오기"),
               ),
             ),
             const SizedBox(height: 30),
@@ -154,17 +150,22 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Get.back(),
-                    child: const Text("취소"),
+                  child: SizedBox(
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: () => Get.back(),
+                      child: const Text("취소"),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: _updateExpense,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
-                    child: const Text("저장하기", style: TextStyle(color: Colors.white)),
+                  child: SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _updateExpense,
+                      child: Text("저장하기", style: AppTextStyles.buttonText),
+                    ),
                   ),
                 ),
               ],
@@ -185,8 +186,8 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
       middleText: "정말 이 내역을 삭제하시겠습니까?",
       textConfirm: "삭제",
       textCancel: "취소",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
+      confirmTextColor: AppColors.textWhite,
+      buttonColor: AppColors.error,
       onConfirm: () {
         Get.back(); // 다이얼로그 닫기
         controller.deleteExpense(widget.item.expenseId); // ✅ id 접근
@@ -223,10 +224,10 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
   Widget _buildLabel(String label) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(bottom: 8.0, top: 10.0),
+      padding: EdgeInsets.only(bottom: AppSpacing.sm, top: 10.0),
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        style: AppTextStyles.bodyLargeBold,
       ),
     );
   }
@@ -268,18 +269,18 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
     Get.bottomSheet(
       // 1. 배경색이나 모양은 Container의 decoration에서 이미 처리하고 있습니다.
       Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration( // shape 대신 BoxDecoration을 사용하는 것이 더 확실합니다.
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        padding: AppSpacing.paddingXL,
+        decoration: BoxDecoration( // shape 대신 BoxDecoration을 사용하는 것이 더 확실합니다.
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.xl)),
         ),
         child: Wrap(
           children: [
             const ListTile(
-              title: Text("영수증 불러오기", style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text("영수증 불러오기", style: AppTextStyles.bodyLargeBold),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Colors.blue),
+              leading: const Icon(Icons.camera_alt, color: AppColors.info),
               title: const Text("영수증 촬영하기"),
               onTap: () {
                 Get.back(); // 바텀시트 닫기
@@ -287,14 +288,14 @@ class _ExpenseEditScreenState extends State<ExpenseEditScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Colors.orange),
+              leading: const Icon(Icons.photo_library, color: AppColors.primary),
               title: const Text("영수증 사진 선택 (갤러리)"),
               onTap: () {
                 Get.back(); // 바텀시트 닫기
                 controller.processReceipt(ImageSource.gallery); // 갤러리 호출
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
           ],
         ),
       ),
