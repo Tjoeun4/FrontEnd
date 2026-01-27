@@ -3,8 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:honbop_mate/core/design/app_design.dart';
-import 'package:honbop_mate/features/community/services/gongu_service.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:intl/intl.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -20,6 +19,12 @@ class PostDetailScreen extends GetView<PostDetailController> {
       appBar: AppBar(
         title: const Text("공구 상세 정보"),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+        onPressed: () {
+          Get.offAllNamed(AppRoutes.COMMUNITY); 
+        },
+        ),
         actions: [
           // 상단에도 공유나 신고 버튼 등을 넣을 수 있습니다.
           IconButton(onPressed: () {}, icon: const Icon(Icons.share)),
@@ -47,42 +52,12 @@ class PostDetailScreen extends GetView<PostDetailController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 1. 상단 이미지 영역 (없을 경우 대비 색상 박스)
-              Builder(builder: (context) {
-                // 서버 로그에 찍힌 키값 'imageUrls'를 사용합니다.
-                final List<dynamic>? imageUrls = data['imageUrls'];
-
-                if(imageUrls != null && imageUrls.isNotEmpty) {
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 300, // 높이 50 더 늘림
-                    child: PageView.builder(
-                      itemCount: imageUrls.length,
-                      itemBuilder: (context, index) {
-                        return Image.network(
-                          imageUrls[index],
-                          fit: BoxFit.cover,
-                          // 로딩 중 표시
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(child: CircularProgressIndicator(
-                             value: loadingProgress.expectedTotalBytes != null
-                                 ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                 : null,
-                            ));
-                          },
-                          // 에러 발생 시 (S3 권한 문제 등)
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: AppColors.grey200,
-                            child: const Icon(Icons.broken_image, size: 80, color: AppColors.textSecondary),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              }),
+              Container(
+                width: double.infinity,
+                height: 250,
+                color: Colors.grey[200],
+                child: const Icon(Icons.image, size: 80, color: Colors.grey),
+              ),
 
               Padding(
                 padding: const EdgeInsets.all(20),
@@ -92,12 +67,12 @@ class PostDetailScreen extends GetView<PostDetailController> {
                     // 2. 카테고리 & 제목
                     Text(
                       "${data['categoryName'] ?? '카테고리'}",
-                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey600, fontSize: 14),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
-                    const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: 8),
                     Text(
                       data['title'] ?? '',
-                      style: AppTextStyles.heading2,
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
 
@@ -163,22 +138,23 @@ class PostDetailScreen extends GetView<PostDetailController> {
                         ),
                         clipBehavior: Clip.antiAlias, // 모서리 둥글게 적용
                         child: // 상세 페이지 뷰 (PostDetailScreen 등)
-                        GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: targetPos,
-                            zoom: 16,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('meetLocation'),
-                              position: targetPos,
-                              // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
-                              infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
-                            ),
-                          },
-                          zoomGesturesEnabled: true,
-                          scrollGesturesEnabled: true,
-                        )
+GoogleMap(
+    initialCameraPosition: CameraPosition(
+      target: targetPos,
+      zoom: 16,
+    ),
+    markers: {
+      Marker(
+        markerId: const MarkerId('meetLocation'),
+        position: targetPos,
+        // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
+        infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
+      ),
+    },
+    zoomGesturesEnabled: true,
+    scrollGesturesEnabled: true,
+  )
+                    
                       );
                     }),
                     const SizedBox(height: 80), // 하단 버튼 공간 확보
@@ -213,12 +189,16 @@ class PostDetailScreen extends GetView<PostDetailController> {
             const SizedBox(width: 10),
             // 참여하기 버튼
             Expanded(
-              child: SizedBox(
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () => controller.joinGroupBuy(),
-                  child: const Text("이 공구 참여하기", style: AppTextStyles.buttonText),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 55),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
                 ),
+                onPressed: () => controller.joinGroupBuy(),
+                child: const Text("이 공구 참여하", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
