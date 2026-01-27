@@ -8,7 +8,8 @@ class ProfileController extends GetxController {
   // final AuthService _authService = AuthService();
   final UserService _userService = UserService();
 
-  var nickname = "사용자".obs;
+  var nickname = "".obs;
+  var neighborhood_display_name = "".obs;
   var isLoading = false.obs;
   var isLoginSuccess = false.obs;
 
@@ -30,11 +31,16 @@ class ProfileController extends GetxController {
       print("📍 [ProfileController] 받은 데이터: $result");
       // AuthenticationResponse.fromJson 내부에서 'nickname' 키를 찾습니다.
       if (result != null) {
+        nickname.value = result['nickname'] ?? '이름 없음';
         print("✅ 닉네임 업데이트 완료: ${nickname.value}");
+        neighborhood_display_name.value =
+            result['neighborhoodDisplayName'] ?? '지역 미설정';
+
+        print("✅ 데이터 할당 완료: ${neighborhood_display_name.value}");
       } else {
         print("⚠️ 데이터는 왔으나 nickname 키가 없습니다: $result");
       }
-    } catch(e) {
+    } catch (e) {
       print("❌ 에러 발생: $e");
     } finally {
       isLoading.value = false;

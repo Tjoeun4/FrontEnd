@@ -21,9 +21,9 @@ class PostDetailScreen extends GetView<PostDetailController> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-        onPressed: () {
-          Get.offAllNamed(AppRoutes.COMMUNITY); 
-        },
+          onPressed: () {
+            Get.offAllNamed(AppRoutes.COMMUNITY);
+          },
         ),
         actions: [
           // 상단에도 공유나 신고 버튼 등을 넣을 수 있습니다.
@@ -45,7 +45,7 @@ class PostDetailScreen extends GetView<PostDetailController> {
         final LatLng targetPos = LatLng(lat ?? 37.3402, lng ?? 126.7335);
 
         final data = controller.postData;
-        
+
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Column(
@@ -72,7 +72,10 @@ class PostDetailScreen extends GetView<PostDetailController> {
                     const SizedBox(height: 8),
                     Text(
                       data['title'] ?? '',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 12),
 
@@ -83,49 +86,63 @@ class PostDetailScreen extends GetView<PostDetailController> {
                         Text(
                           "${NumberFormat('#,###').format(data['priceTotal'] ?? 0)}원",
                           style: const TextStyle(
-                            fontSize: 22, 
-                            fontWeight: FontWeight.w900, 
-                            color: Colors.orange
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.orange,
                           ),
                         ),
                         // 모집 현황 표시 (예: 1/4명)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.orange.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             "모집중 ${data['currentParticipants']}/${data['maxParticipants']}명",
-                            style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.orange,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    
+
                     const Divider(height: 40),
 
                     // 4. 상세 설명
-                    const Text("상세 내용", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "상세 내용",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       data['description'] ?? '',
                       style: const TextStyle(fontSize: 16, height: 1.5),
                     ),
-                    
+
                     const SizedBox(height: 30),
-                    
+
                     // 5. 지도 영역 가이드
                     Obx(() {
                       // 컨트롤러에 좌표가 로드될 때까지 대기
-                      if(controller.locationLatLng.value == null) {
+                      if (controller.locationLatLng.value == null) {
                         return Container(
                           height: 180,
                           decoration: BoxDecoration(
                             color: Colors.grey[100],
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Center(child: CircularProgressIndicator()),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
                         );
                       }
 
@@ -138,23 +155,26 @@ class PostDetailScreen extends GetView<PostDetailController> {
                         ),
                         clipBehavior: Clip.antiAlias, // 모서리 둥글게 적용
                         child: // 상세 페이지 뷰 (PostDetailScreen 등)
-GoogleMap(
-    initialCameraPosition: CameraPosition(
-      target: targetPos,
-      zoom: 16,
-    ),
-    markers: {
-      Marker(
-        markerId: const MarkerId('meetLocation'),
-        position: targetPos,
-        // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
-        infoWindow: InfoWindow(title: controller.postData['meetPlaceText'] ?? "장소 정보 없음"),
-      ),
-    },
-    zoomGesturesEnabled: true,
-    scrollGesturesEnabled: true,
-  )
-                    
+                        GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: targetPos,
+                            zoom: 16,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('meetLocation'),
+                              position: targetPos,
+                              // 🎯 텍스트 주소도 Map 키값으로 가져옵니다.
+                              infoWindow: InfoWindow(
+                                title:
+                                    controller.postData['meetPlaceText'] ??
+                                    "장소 정보 없음",
+                              ),
+                            ),
+                          },
+                          zoomGesturesEnabled: true,
+                          scrollGesturesEnabled: true,
+                        ),
                       );
                     }),
                     const SizedBox(height: 80), // 하단 버튼 공간 확보
@@ -172,20 +192,24 @@ GoogleMap(
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 1)
+            BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 1),
           ],
         ),
         child: Row(
           children: [
             // 좋아요 버튼
-            Obx(() => IconButton(
-              onPressed: () => controller.toggleFavorite(),
-              icon: Icon(
-                controller.isFavorite.value ? Icons.favorite : Icons.favorite_border,
-                color: controller.isFavorite.value ? Colors.red : Colors.grey,
-                size: 30,
+            Obx(
+              () => IconButton(
+                onPressed: () => controller.toggleFavorite(),
+                icon: Icon(
+                  controller.isFavorite.value
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  color: controller.isFavorite.value ? Colors.red : Colors.grey,
+                  size: 30,
+                ),
               ),
-            )),
+            ),
             const SizedBox(width: 10),
             // 참여하기 버튼
             Expanded(
@@ -194,11 +218,16 @@ GoogleMap(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: () => controller.joinGroupBuy(),
-                child: const Text("이 공구 참여하", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "이 공구 참여하기",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],

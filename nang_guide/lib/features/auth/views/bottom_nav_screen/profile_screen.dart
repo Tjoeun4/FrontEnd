@@ -20,10 +20,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       // 상단바: 로그아웃 버튼 제외 적용
-      appBar: AppNavBar(
-        title: "내 프로필",
-        showLogoutAction: false,
-      ),
+      appBar: AppNavBar(title: "내 프로필", showLogoutAction: false),
       body: SingleChildScrollView(
         child: Padding(
           padding: AppSpacing.screenPadding,
@@ -37,16 +34,21 @@ class ProfileScreen extends StatelessWidget {
               // 2. 설정 섹션 (알림, 로그아웃, 탈퇴)
               _buildMenuSection([
                 // 1. 알림: Obx로 감싸서 실시간 상태 반영
-                Obx(() => _buildMenuItem(
+                Obx(
+                  () => _buildMenuItem(
                     "알림",
                     trailing: _buildSwitch(controller), // 컨트롤러 전달
-                )),
+                  ),
+                ),
                 // 2. 로그아웃: onTap 콜백 전달
-                _buildMenuItem("로그아웃", onTap: () {
-                  // 로그아웃 클릭 시 첫 페이지(로그인 화면)으로 이동 및 스택을 제거
-                  print("로그아웃 실행"); // 추후에 주석 처리
-                  Get.offAllNamed('/login'); // 설정한 초기 경로명으로 변경
-                }),
+                _buildMenuItem(
+                  "로그아웃",
+                  onTap: () {
+                    // 로그아웃 클릭 시 첫 페이지(로그인 화면)으로 이동 및 스택을 제거
+                    print("로그아웃 실행"); // 추후에 주석 처리
+                    Get.offAllNamed('/login'); // 설정한 초기 경로명으로 변경
+                  },
+                ),
                 _buildMenuItem("탈퇴"),
               ]),
               const SizedBox(height: 20),
@@ -54,21 +56,23 @@ class ProfileScreen extends StatelessWidget {
               _buildMenuSection([
                 _buildMenuItem("냉장고 음식 리스트 보기"),
                 _buildMenuItem("유통기한 확인하기"),
-                _buildMenuItem("보유 조미료 관리", onTap: () {
-                  // 기존: showSeasoningSurveyDialog(context);
-                  // 수정: 관리 페이지로 이동 (라우트 이름은 AppRoutes 설정에 따라 변경)
-                  Get.toNamed('/pantry-management');
-                }),
+                _buildMenuItem(
+                  "보유 조미료 관리",
+                  onTap: () {
+                    // 기존: showSeasoningSurveyDialog(context);
+                    // 수정: 관리 페이지로 이동 (라우트 이름은 AppRoutes 설정에 따라 변경)
+                    Get.toNamed('/pantry-management');
+                  },
+                ),
                 _buildMenuItem("식료품 공구 내 게시글 관리"),
                 _buildMenuItem("내 동네 설정"),
-                _buildMenuItem("관심 목록") // 관심 목록 = 내가 찜한 것들을 모아둔 곳
+                _buildMenuItem("관심 목록"), // 관심 목록 = 내가 찜한 것들을 모아둔 곳
               ]),
               const SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: MyBottomNavigation(),
     );
   }
 
@@ -86,15 +90,21 @@ class ProfileScreen extends StatelessWidget {
             child: CircleAvatar(
               radius: 30,
               backgroundColor: AppColors.background,
-              child: Icon(Icons.person, color: AppColors.textSecondary, size: 40), // 추후 이미지 데이터 연동
+              child: Icon(
+                Icons.person,
+                color: AppColors.textSecondary,
+                size: 40,
+              ), // 추후 이미지 데이터 연동
             ),
           ),
           const SizedBox(width: 15),
           Expanded(
-            child: Obx(() => Text(
-              profileController.nickname.value, // 상태에 따라 자동 갱신
-              style: AppTextStyles.heading3,
-            )),
+            child: Obx(
+              () => Text(
+                profileController.nickname.value, // 상태에 따라 자동 갱신
+                style: AppTextStyles.heading3,
+              ),
+            ),
           ),
           GestureDetector(
             onTap: () {
@@ -107,7 +117,7 @@ class ProfileScreen extends StatelessWidget {
                 decoration: TextDecoration.underline,
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -116,10 +126,14 @@ class ProfileScreen extends StatelessWidget {
   // 메뉴 리스트 섹션 위젯
   Widget _buildMenuSection(List<Widget> items) {
     return Column(
-      children: items.map((item) => Padding(
-        padding: EdgeInsets.only(bottom: AppSpacing.md),
-        child: item,
-      )).toList(),
+      children: items
+          .map(
+            (item) => Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.md),
+              child: item,
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -135,7 +149,13 @@ class ProfileScreen extends StatelessWidget {
           title,
           style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
         ),
-        trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+        trailing:
+            trailing ??
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
         onTap: onTap, // 로그아웃 클릭하면 로그인 화면으로 이동하고 스택 제거가 됨
       ),
     );

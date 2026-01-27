@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/core/services/profile_service.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';
 import 'package:honbop_mate/features/auth/services/stomp_service.dart';
 import 'package:honbop_mate/core/services/token_service.dart';
 import './../../controllers/top_nav/chat_controller.dart';
+import 'package:honbop_mate/core/services/api_service.dart';
 
 // 서비스 추가할 예정
 
