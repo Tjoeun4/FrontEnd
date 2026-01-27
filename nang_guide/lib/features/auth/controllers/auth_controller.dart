@@ -229,17 +229,20 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> _handleLoginSuccess(
-    bool onboardingSurveyCompleted,
-    bool isNewUser,
-  ) async {
-    Get.offAllNamed(AppRoutes.HOME);
-
-    if (!onboardingSurveyCompleted) {
+  Future<void> _handleLoginSuccess(bool onboardingSurveyCompleted, bool isNewUser) async {
+    // 1. 온보딩 완료 여부 체크
+    if (onboardingSurveyCompleted) {
+      // 완료된 유저는 홈으로
+      print('AuthController: Onboarding already completed. Navigating to Home.');
+      Get.offAllNamed(AppRoutes.HOME);
+    } else {
+      // 2. 미완료 유저는 신규 여부에 따라 웰컴 다이얼로그 후 설문 페이지로
+      print('AuthController: Onboarding NOT completed. Navigating to Pantry Onboarding.');
       if (isNewUser) {
         await showWelcomeDialog(Get.context!);
       }
-      showSeasoningSurveyDialog(Get.context!);
+      // 강제로 설문 페이지 이동 (뒤로가기 불가)
+      Get.offAllNamed(AppRoutes.PANTRY_ONBOARDING);
     }
   }
 
