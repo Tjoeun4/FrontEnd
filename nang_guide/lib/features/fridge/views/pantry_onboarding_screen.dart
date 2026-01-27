@@ -81,19 +81,27 @@ class PantryOnboardingScreen extends GetView<PantryController> {
   }
 
   /// 개별 조미료 칩 (클릭 시 서버와 통신하거나 로컬 상태 변경)
+  /// 개별 조미료 칩
   Widget _buildSeasoningChip(Map<String, dynamic> item) {
-    // 조미료가 이미 등록되어 있는지 확인 (itemName 기준)
     return Obx(() {
+      // 1. 현재 선택 여부 확인
       final bool isSelected = controller.pantryItems.any((p) => p.itemName == item['name']);
+      // 2. 컨트롤러가 로딩 중인지 확인
+      final bool isBusy = controller.isLoading.value;
 
       return FilterChip(
         label: Text(item['name']),
         selected: isSelected,
-        onSelected: (bool selected) {
+        // 💡 핵심: 로딩 중(isBusy)일 때는 onPressed/onSelected 자체를 null로 만들어 클릭을 원천 차단합니다.
+        onSelected: isBusy
+            ? null
+            : (bool selected) {
           if (selected) {
-            controller.addPantryItem(item['name']);
+            // 중복 추가 방지를 위해 한 번 더 체크 (선택되지 않았을 때만 추가)
+            if (!isSelected) {
+              controller.addPantryItem(item['name']);
+            }
           } else {
-            // 삭제 시 ID가 필요하므로 찾아서 삭제
             final target = controller.pantryItems.firstWhereOrNull((p) => p.itemName == item['name']);
             if (target != null) {
               controller.deletePantryItem(target.pantryItemId);
@@ -103,16 +111,19 @@ class PantryOnboardingScreen extends GetView<PantryController> {
         selectedColor: Colors.orange,
         checkmarkColor: Colors.white,
         backgroundColor: Colors.white,
+        // 로딩 중일 때 시각적으로 약간 흐리게 표시 (선택 사항)
+        disabledColor: Colors.grey.shade100,
         labelStyle: TextStyle(
-          color: isSelected ? Colors.white : Colors.orange,
+          color: isSelected ? Colors.white : (isBusy ? Colors.grey : Colors.orange),
           fontWeight: FontWeight.bold,
         ),
-        shape: StadiumBorder(side: BorderSide(color: Colors.orange.shade300)),
+        shape: StadiumBorder(side: BorderSide(
+            color: isBusy ? Colors.grey.shade300 : Colors.orange.shade300
+        )),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       );
     });
   }
-
   /// 하단 이전/다음 버튼
   Widget _buildBottomButtons(PageController pc, RxInt current, int total) {
     return Container(

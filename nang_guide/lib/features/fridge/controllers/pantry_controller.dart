@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/pantry_item_model.dart';
 import '../services/pantry_api_client.dart';
@@ -43,27 +44,48 @@ class PantryController extends GetxController {
   // 2️⃣ 조미료 추가
   // ============================================================
   Future<void> addPantryItem(String itemName) async {
-    if (itemName.trim().isEmpty) {
+    // 1. [방어 로직] 이미 처리 중이면 중복 요청 방지 (로그가 3번 찍히는 현상 방지)
+    if (isLoading.value) return;
+
+    // 2. [데이터 정제] 앞뒤 공백 및 보이지 않는 줄바꿈 문자 제거
+    final cleanName = itemName.trim().replaceAll('\n', '');
+
+    if (cleanName.isEmpty) {
       Get.snackbar('알림', '조미료 이름을 입력해주세요.');
       return;
     }
 
     try {
-      final success = await _apiClient.addPantryItem(itemName);
-      if (success) {
-        // 추가 성공 시 목록 최신화
+      // 3. 로딩 상태 시작 (이게 true인 동안은 위에서 return됨)
+      isLoading.value = true;
+
+      // 💡 API Client로부터 Map 데이터를 받음
+      // 전달할 때 정제된 cleanName을 보냅니다.
+      final result = await _apiClient.addPantryItem(cleanName);
+
+      final bool isOk = result['ok'] ?? false;
+      final String message = result['message'] ?? (isOk ? '추가 성공' : '추가 실패');
+
+      if (isOk) {
+        // 성공 시 목록 갱신
         await fetchPantryItems();
-        Get.snackbar('성공', '$itemName이(가) 추가되었습니다.');
+        Get.snackbar('성공', message,
+            backgroundColor: Colors.green.withOpacity(0.5),
+            snackPosition: SnackPosition.BOTTOM);
       } else {
-        // 백엔드 로직에 의해 중복 시 실패 처리될 수 있음
-        Get.snackbar('알림', '이미 등록된 조미료이거나 추가에 실패했습니다.');
+        // 백엔드에서 보낸 "이미 존재하는 항목입니다." 메시지 표시
+        Get.snackbar('알림', message,
+            backgroundColor: Colors.orange.withOpacity(0.5),
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
       print('Add Pantry Error: $e');
+      Get.snackbar('에러', '통신 중 오류가 발생했습니다.');
+    } finally {
+      // 4. [중요] 성공하든 실패하든 처리가 끝났으므로 로딩 해제
+      isLoading.value = false;
     }
-  }
-
-  // ============================================================
+  }  // ============================================================
   // 3️⃣ 조미료 삭제 (Soft Delete)
   // ============================================================
   Future<void> deletePantryItem(int pantryItemId) async {

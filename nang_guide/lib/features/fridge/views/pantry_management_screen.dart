@@ -16,36 +16,72 @@ class PantryManagementScreen extends GetView<PantryController> {
       body: Column(
         children: [
           // 1. 조미료 직접 추가 영역
+          // 1. 조미료 직접 추가 영역 수정
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: textController,
-                    decoration: InputDecoration(
-                      hintText: "추가할 조미료 입력 (예: 굴소스)",
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Obx(
+                    () => TextField(
+                      controller: textController,
+                      // 💡 로딩 중일 때는 입력창을 비활성화하여 엔터 중복 입력을 막습니다.
+                      enabled: !controller.isLoading.value,
+                      decoration: InputDecoration(
+                        hintText: "추가할 조미료 입력 (예: 굴소스)",
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onSubmitted: (val) {
+                        // 💡 컨트롤러 내부의 isLoading 체크를 믿고 호출하되, UI에서도 한 번 더 가드
+                        if (val.trim().isNotEmpty &&
+                            !controller.isLoading.value) {
+                          controller.addPantryItem(val);
+                          textController.clear();
+                        }
+                      },
                     ),
-                    onSubmitted: (val) {
-                      controller.addPantryItem(val);
-                      textController.clear();
-                    },
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    controller.addPantryItem(textController.text);
-                    textController.clear();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    minimumSize: const Size(60, 50),
+                Obx(
+                  () => ElevatedButton(
+                    // 💡 로딩 중일 때는 onPressed를 null로 만들어 버튼을 비활성화(Grey) 시킵니다.
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () {
+                            if (textController.text.trim().isNotEmpty) {
+                              controller.addPantryItem(textController.text);
+                              textController.clear();
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange,
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      // 비활성화 색상
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      minimumSize: const Size(60, 50),
+                    ),
+                    child: controller.isLoading.value
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            "추가",
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
-                  child: const Text("추가", style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
@@ -82,10 +118,18 @@ class PantryManagementScreen extends GetView<PantryController> {
                       border: Border.all(color: Colors.orange.shade100),
                     ),
                     child: ListTile(
-                      title: Text(item.itemName, style: const TextStyle(fontSize: 14)),
+                      title: Text(
+                        item.itemName,
+                        style: const TextStyle(fontSize: 14),
+                      ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.cancel, size: 20, color: Colors.orange),
-                        onPressed: () => controller.deletePantryItem(item.pantryItemId),
+                        icon: const Icon(
+                          Icons.cancel,
+                          size: 20,
+                          color: Colors.orange,
+                        ),
+                        onPressed: () =>
+                            controller.deletePantryItem(item.pantryItemId),
                       ),
                       contentPadding: const EdgeInsets.only(left: 12),
                     ),
