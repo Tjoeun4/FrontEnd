@@ -12,7 +12,6 @@ import 'package:honbop_mate/features/auth/bindings/bottom_nav/ledger_binding.dar
 import 'package:honbop_mate/features/auth/bindings/login/login_binding.dart';
 import 'package:honbop_mate/features/auth/bindings/post_binding.dart';
 import 'package:honbop_mate/features/auth/bindings/bottom_nav/profile_binding.dart';
-import 'package:honbop_mate/features/auth/bindings/bottom_nav/recommend_binding.dart';
 import 'package:honbop_mate/features/auth/bindings/login/signin_binding.dart';
 import 'package:honbop_mate/features/auth/bindings/login/signup_binding.dart';
 import 'package:honbop_mate/features/home/bindings/home_binding.dart';
@@ -22,7 +21,8 @@ import 'package:honbop_mate/features/auth/views/bottom_nav_screen/home_screen.da
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/community_screen.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/ledger_screen.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
-import 'package:honbop_mate/features/auth/views/bottom_nav_screen/recommend_screen.dart';
+// import 'package:honbop_mate/features/auth/views/bottom_nav_screen/recommend_screen.dart';
+
 import 'package:honbop_mate/features/auth/views/auth/email_signup_screen.dart';
 import 'package:honbop_mate/features/auth/views/auth/email_login_screen.dart';
 import 'package:honbop_mate/features/auth/views/splash_screen.dart';
@@ -32,8 +32,10 @@ import 'package:honbop_mate/features/auth/views/chat_screen.dart';
 import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 
 import '../../fridge/bindings/pantry_binding.dart';
+import '../../fridge/bindings/recommend_binding.dart';
 import '../../fridge/views/pantry_management_screen.dart';
 import '../../fridge/views/pantry_onboarding_screen.dart';
+import '../../fridge/views/recommend_screen.dart';
 
 class AppRoutes {
   static const SPLASH = '/';
@@ -93,7 +95,7 @@ class AppRoutes {
     ),
     GetPage(
       name: RECOMMEND,
-      page: () => RecommendScreen(),
+      page: () => const RecommendScreen(),
       binding: RecommendBinding(),
       transition: Transition.noTransition,
     ),
