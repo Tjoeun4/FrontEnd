@@ -56,6 +56,7 @@ class UserResponse {
     );
   }
 }
+
 class ApiService {
   // final AuthController _authController = Get.find<AuthController>();
   final TokenService _tokenService = Get.find<TokenService>();
@@ -123,9 +124,5 @@ class ApiService {
     //   }
     // }
     return response.body;
-  }
-
-  Future<Map<String, dynamic>> getUserProfile() async {
-    return await getRequest("api/user/me");
   }
 }

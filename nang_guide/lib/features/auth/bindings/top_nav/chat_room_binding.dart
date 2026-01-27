@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/features/auth/controllers/top_nav/chat_room_controller.dart';
-import 'package:honbop_mate/core/services/api_service.dart';
+import 'package:honbop_mate/core/services/profile_service.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
 import 'package:honbop_mate/features/auth/services/google_auth_service.dart';

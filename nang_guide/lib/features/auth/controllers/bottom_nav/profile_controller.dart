@@ -1,13 +1,12 @@
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/core/services/api_service.dart';
+import 'package:honbop_mate/core/services/user_service.dart';
 
 import '../../models/authentication_response.dart';
 
 class ProfileController extends GetxController {
   // final TokenService _tokenService = TokenService();
   // final AuthService _authService = AuthService();
-  final ApiService _apiService = ApiService();
+  final UserService _userService = UserService();
 
   var nickname = "사용자".obs;
   var isLoading = false.obs;
@@ -22,20 +21,18 @@ class ProfileController extends GetxController {
 
   Future<void> fetchUserProfile() async {
     try {
+      print('🔄 [컨트롤러] fetchUserProfile 실행');
       isLoading.value = true;
-      final Map<String, dynamic> responseData = await _apiService.getUserProfile();
+
+      final result = await _userService.getMyProfile();
 
       // 이제 로그에 {}가 아니라 데이터가 찍힐 것입니다.
-      print("📍 [ProfileController] 받은 데이터: $responseData");
-
+      print("📍 [ProfileController] 받은 데이터: $result");
       // AuthenticationResponse.fromJson 내부에서 'nickname' 키를 찾습니다.
-      final profile = AuthenticationResponse.fromJson(responseData);
-
-      if (profile.nickname != null) {
-        nickname.value = profile.nickname!;
+      if (result != null) {
         print("✅ 닉네임 업데이트 완료: ${nickname.value}");
       } else {
-        print("⚠️ 데이터는 왔으나 nickname 키가 없습니다: $responseData");
+        print("⚠️ 데이터는 왔으나 nickname 키가 없습니다: $result");
       }
     } catch(e) {
       print("❌ 에러 발생: $e");
