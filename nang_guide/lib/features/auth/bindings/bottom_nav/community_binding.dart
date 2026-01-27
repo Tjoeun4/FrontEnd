@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:honbop_mate/core/services/apiservice.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
-import 'package:honbop_mate/core/services/api_service.dart';
 import 'package:honbop_mate/features/auth/services/auth_api_client.dart';
 import 'package:honbop_mate/features/auth/services/chat_service.dart';
 import 'package:honbop_mate/features/community/services/gongu_service.dart';
