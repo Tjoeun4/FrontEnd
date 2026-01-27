@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
-import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 
 // 서비스 추가할 예정

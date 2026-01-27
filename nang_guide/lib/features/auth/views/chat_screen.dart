@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/top_nav/chat_room_controller.dart';
+import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/services/auth_service.dart';
 import 'package:honbop_mate/features/auth/services/stomp_service.dart';
 import 'package:honbop_mate/features/auth/models/chat_model.dart';
@@ -32,6 +33,12 @@ class ChatScreen extends StatelessWidget {
           roomName,
           style: AppTextStyles.bodyLargeBold,
         ),
+        leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios),
+        onPressed: () {
+          Get.offAllNamed(AppRoutes.CHAT_LIST); 
+        },
+      ),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
