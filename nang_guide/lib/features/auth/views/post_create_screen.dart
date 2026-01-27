@@ -58,7 +58,7 @@ class PostCreateScreen extends StatelessWidget {
             _buildLabel("게시물 종류"),
             Obx(() => DropdownButtonFormField<String>(
               value: controller.selectedType.value,
-              items: ['공동구매', "식사", '나눔', '정보공유'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              items: ['공동구매'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
               onChanged: (val) {
                 controller.setType(val);
                 if (val == '공동구매') controller.selectedFoodType.value = '육류';

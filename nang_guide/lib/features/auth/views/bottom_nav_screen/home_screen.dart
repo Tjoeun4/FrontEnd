@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/core/navigation/controllers/nav_controller.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/community_screen.dart';
 
 import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
@@ -12,7 +13,8 @@ class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
   final NavController navController = Get.find<NavController>();
-
+  final profileController = Get.put(ProfileController()); // 이름 빼올려고 씁니다.
+    
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,9 +38,8 @@ body: Padding(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            // 🎯 황덕배 님 이름을 더 굵고 확실하게 강조 [cite: 1, 2025-09-05]
             Text(
-              "@@@",
+              profileController.nickname.value,
               style: TextStyle(
                 fontFamily: 'Pretendard',
                 fontWeight: FontWeight.w900, // Black 두께 사용

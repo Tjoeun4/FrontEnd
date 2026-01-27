@@ -24,8 +24,10 @@ class ChatListScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back_ios),
+        onPressed: () {
+          Get.offAllNamed(AppRoutes.HOME); 
+        },
         ),
       ),
       body: Obx(() {

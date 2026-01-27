@@ -14,6 +14,7 @@ class CommunityScreen extends StatelessWidget {
   final Controller = Get.find<CommunityController>();
   final Controller2 = Get.find<CommunityController>();
 
+
   // const CommunityScreen({
   //   super.key,
   //   required this.textController,
