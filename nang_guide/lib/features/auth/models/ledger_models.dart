@@ -93,11 +93,23 @@ class MonthlyDailySummaryResponse {
             .toList(),
       );
 
-  Map<String, int> toDailyMap() => {
-    for (var item in dailyAmounts)
-      DateFormat('yyyy-MM-dd').format(item.date): item.totalAmount
-  };
-}
+// lib/models/ledger_models.dart 내 MonthlyDailySummaryResponse 클래스
+
+  Map<String, int> toDailyMap() {
+    final Map<String, int> resultMap = {};
+
+    for (var item in dailyAmounts) {
+      String key = DateFormat('yyyy-MM-dd').format(item.date);
+
+      // ✅ 덮어쓰지 않고 기존 값에 더해줌 (Summation)
+      if (resultMap.containsKey(key)) {
+        resultMap[key] = resultMap[key]! + item.totalAmount;
+      } else {
+        resultMap[key] = item.totalAmount;
+      }
+    }
+    return resultMap;
+  }}
 
 class DailyAmount {
   final DateTime date;
