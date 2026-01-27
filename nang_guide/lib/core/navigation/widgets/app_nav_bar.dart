@@ -3,11 +3,10 @@ import 'package:get/get.dart';
 import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
-import 'package:honbop_mate/features/auth/views/chat_list_screen.dart';
 import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
+  final dynamic title;
   final bool centerTitle;
   final bool showLogoutAction; // 로그아웃 아이콘 표시 여부 추가
   final AuthController authController = Get.find<AuthController>();
@@ -22,10 +21,9 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(
-        title,
-        style: AppTextStyles.appBarTitle,
-      ),
+      title: title is String
+          ? Text(title, style: AppTextStyles.appBarTitle)
+          : title,
       centerTitle: centerTitle,
       backgroundColor: AppColors.background,
       elevation: 0, // 하단 구분선 제거 (디자인에 맞춰 조정)

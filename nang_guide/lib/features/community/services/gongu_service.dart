@@ -109,6 +109,7 @@ class GonguService extends GetxService {
   final GetStorage _storage = Get.find<GetStorage>();
   final TokenService _tokenService = Get.find<TokenService>();
 
+  var isLoading = false.obs;
   @override
   void onInit() {
     super.onInit();
@@ -200,7 +201,7 @@ class GonguService extends GetxService {
   // file : [파일들...] // 이건 추후
   // */
   /// =================================================
-  Future<bool> createGonguRoom(
+  Future<dynamic> createGonguRoom(
     String title,
     String description,
     int priceTotal,
@@ -209,10 +210,9 @@ class GonguService extends GetxService {
     DateTime startdate,
     DateTime enddate,
     double lat,
-    double lng,
+    double lng, {
     // List<MultipartFile>? files, // 추후 파일 첨부 시 사용
-    {
-    File? imageFile
+    File? imageFile,
   }) async {
     try {
       // 1. 서버 주석에 명시된 postDto 구조 만들기
@@ -252,15 +252,17 @@ class GonguService extends GetxService {
       print('=======================================');
 
       // 사진 파일 추가 (dio.MultipartFile 사용)
-      if(imageFile != null) {
-        formData.files.add(MapEntry(
+      if (imageFile != null) {
+        formData.files.add(
+          MapEntry(
             "files",
             await dio.MultipartFile.fromFile(
               imageFile.path,
               filename: "post_image.jpg",
-              contentType: dio.DioMediaType('image','jpeg'), // 컨텐츠 타입 명시
+              contentType: dio.DioMediaType('image', 'jpeg'), // 컨텐츠 타입 명시
             ),
-        ));
+          ),
+        );
         print("사진 파일 첨부 완료: ${imageFile.path}");
       }
 
@@ -275,7 +277,8 @@ class GonguService extends GetxService {
       print('data      : ${response.data}');
       print('================================');
 
-      return response.statusCode == 200;
+      print("서버에서 받은 생짜 데이터: ${response.data}");
+      return response.data;
     } catch (e, stack) {
       print('❌ createGonguRoom ERROR');
       print(e);
@@ -520,6 +523,33 @@ class GonguService extends GetxService {
         print("❌ [Service] 알 수 없는 에러: $e");
       }
       rethrow; // 에러를 위로 던져서 Controller가 알게 합니다.
+    }
+  }
+
+  /// =================================================
+  /// 근처 공구방 중 최고로 많이 참여한 채팅방 목록을 불러오는 함수입니다.
+  /// - /api/group-buy/most-popular
+  /// - 헤더에는 인증 토큰 포함 해야됩니다.
+  /// =================================================
+  Future<Map<String, dynamic>?> BestGonguRoom() async {
+    try {
+      // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
+      print('========== BestGonguRoom SERVICE ==========');
+      print('baseUrl : ${_dio.options.baseUrl}');
+      print('=======================================');
+
+      final response = await _dio.get('/group-buy/most-popular');
+      print('========== RESPONSE ==========');
+      print('statusCode: ${response.statusCode}');
+      print('================================');
+
+      if (response.statusCode == 200) {
+        return response.data;
+      }
+      return null;
+    } catch (e) {
+      print('JSON Parsing Error: $e');
+      return null;
     }
   }
 }

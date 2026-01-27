@@ -11,7 +11,7 @@ class PostDetailController extends GetxController {
   final ChatService _chatService = Get.find<ChatService>();
 
   // 넘겨받은 ID (CommunityScreen에서 보낸 idValue)
-  late final int postId = Get.arguments['postId'];
+  int? postId; // Nullable로 선언
   late final int totalPrice; // 여기에 int 값이 제대로 담겨야 함
 
   // Get.arguments에 userId가 들어있다고 가정할 때
@@ -26,12 +26,24 @@ class PostDetailController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadDetail();
+
+    // 🎯 로그에 {postId: 21} 이라고 떴으니까 'postId'로 꺼내야 합니다!
+    var idParam = Get.parameters['postId'];
+
+    if (idParam != null) {
+      postId = int.parse(idParam);
+      print("✅ 드디어 찾았다 ID: $postId");
+      loadDetail();
+    } else {
+      // 🔍 여기서 어떤 이름으로 들어왔는지 다 보여줍니다.
+      print("❌ 못 찾음! 실제 들어온 값들: ${Get.parameters.keys}");
+      Get.snackbar("에러", "파라미터 이름이 맞지 않습니다.");
+    }
   }
 
   Future<void> loadDetail() async {
     isLoading.value = true;
-    final result = await _gonguService.getLocalGonguRoomDetails(postId);
+    final result = await _gonguService.getLocalGonguRoomDetails(postId!);
     if (result != null) {
       postData.value = result;
       print("📦 서버가 준 실제 키들: ${result.keys.toList()}");

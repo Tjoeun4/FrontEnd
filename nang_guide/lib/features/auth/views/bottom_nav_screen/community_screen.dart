@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/core/design/app_design.dart';
 import 'package:honbop_mate/features/auth/controllers/bottom_nav/community_controller.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 import 'package:honbop_mate/features/auth/routes/app_routes.dart';
 import 'package:honbop_mate/features/auth/views/dialog/group_dialog.dart';
 import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
@@ -13,7 +14,7 @@ class CommunityScreen extends StatelessWidget {
   // 커뮤니티 컨트롤러에있는 함수를 찾습니다.
   final Controller = Get.find<CommunityController>();
   final Controller2 = Get.find<CommunityController>();
-
+  final profileController = Get.put(ProfileController());
 
   // const CommunityScreen({
   //   super.key,
@@ -22,7 +23,14 @@ class CommunityScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppNavBar(title: "게시판"),
+      appBar: AppNavBar(
+        title: Obx(
+          () => Text(
+            profileController.neighborhood_display_name.value,
+            style: const TextStyle(color: Colors.black),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // 1. 검색창 영역 (Expanded 대신 Padding을 사용하여 상단에 적절히 배치)

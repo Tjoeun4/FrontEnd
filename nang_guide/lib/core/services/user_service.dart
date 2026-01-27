@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/core/services/token_service.dart';
@@ -50,18 +49,23 @@ class UserResponse {
       email: json['email'],
       nickname: json['nickname'],
       profileImageUrl: json['profile_image_url'] ?? json['profileImageUrl'],
-      onboardingSurveyCompleted: json['onboardingSurveyCompleted'] ?? json['onboarding_survey_completed'],
+      onboardingSurveyCompleted:
+          json['onboardingSurveyCompleted'] ??
+          json['onboarding_survey_completed'],
       address: json['address'],
       mothlyFoodBudget: json['mothly_food_budget'] ?? json['mothlyFoodBudget'],
-      neighborhoodId: json['neighborhood_id'] ?? json['neighborhoodId'], // 지역코드 필드 추가 01.22
-      neighborhoodCityName: json['neighborhood_city_name'] ?? json['neighborhoodCityName'],
-      neighborhoodDisplayName: json['neighborhood_display_name'] ?? json['neighborhoodDisplayName'],
+      neighborhoodId:
+          json['neighborhood_id'] ?? json['neighborhoodId'], // 지역코드 필드 추가 01.22
+      neighborhoodCityName:
+          json['neighborhood_city_name'] ?? json['neighborhoodCityName'],
+      neighborhoodDisplayName:
+          json['neighborhood_display_name'] ?? json['neighborhoodDisplayName'],
       zipCode: json['zip_code'] ?? json['zipCode'],
-      error: json['error'], // Assuming backend might send an 'error' field directly on some failures
+      error:
+          json['error'], // Assuming backend might send an 'error' field directly on some failures
     );
   }
 }
-
 
 /// ---------------------------------------------
 /// 공구 서비스
@@ -149,7 +153,7 @@ class UserService extends GetxService {
   //  Method : GET
   //  설명 : 현재 로그인한 유저의 정보를 가져옵니다.
   // =================================================
-  Future<List<dynamic>?> getMyProfile() async {
+  Future<Map<String, dynamic>?> getMyProfile() async {
     try {
       // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
       print('========== getMyProfile SERVICE ==========');
@@ -161,7 +165,7 @@ class UserService extends GetxService {
       print('statusCode: ${response.statusCode}');
       print('================================');
 
-      if (response.statusCode == 200 && response.data is List) {
+      if (response.statusCode == 200) {
         return response.data;
       }
       return null;
