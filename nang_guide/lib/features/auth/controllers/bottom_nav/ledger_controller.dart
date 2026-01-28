@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -70,16 +71,14 @@ class LedgerController extends GetxController {
     }
   }
 
-  /// 월별 일자별 지출 요약 조회
-  Future<void> _fetchDailySummary() async {
+  /// 월별 일자별 지출 요약 조회 (리스트를 받아서 직접 요약)
+Future<void> _fetchDailySummary() async {
     final response = await _apiClient.getDailySummary(year.value, month.value);
     if (response != null) {
       // ✅ MonthlyDailySummaryResponse 모델 사용
-      final summaryModel = MonthlyDailySummaryResponse.fromJson(response);
-
       // ✅ 모델 내부의 유틸 메서드로 Map 갱신
-      dailySummaries.assignAll(summaryModel.toDailyMap());
-      totalExpense.value = summaryModel.monthTotalAmount;
+      dailySummaries.assignAll(response.toDailyMap());
+      totalExpense.value = response.monthTotalAmount;
     }
   }
 

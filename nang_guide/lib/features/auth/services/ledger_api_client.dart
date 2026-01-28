@@ -98,7 +98,7 @@ class LedgerApiClient extends GetxService {
   // - 달력 탭 / 월별 리스트 화면에서 사용
   // - 특정 연/월 기준으로 지출 목록을 서버에서 조회
   // ============================================================
-  Future<Map<String, dynamic>?> getMonthlyExpenses(
+   Future<Map<String, dynamic>?> getMonthlyExpenses(
     int year,
     int month, {
     int page = 0,
@@ -127,17 +127,21 @@ class LedgerApiClient extends GetxService {
   // 7️⃣ 월별 일자별 지출 요약 조회
   // - 달력 UI에서 날짜별 총 지출 금액 표시용
   // ============================================================
-  Future<Map<String, dynamic>?> getDailySummary(int year, int month) async {
+  Future<MonthlyDailySummaryResponse> getDailySummary(int year, int month) async {
     try {
       final response = await _dio.get(
         '/expenses/monthly/daily-summary',
         queryParameters: {'year': year.toString(), 'month': month.toString()},
       );
-      return response.data;
+      return MonthlyDailySummaryResponse.fromJson(response.data);
     } on dio.DioException catch (e) {
       print('일일 요약 조회 실패: ${e.response?.data ?? e.message}');
-      return null;
-    }
+      return MonthlyDailySummaryResponse(
+        year: year,
+        month: month,
+        monthTotalAmount: 0,
+        dailyAmounts: [],
+      );}
   }
 
   // ============================================================
