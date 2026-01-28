@@ -38,6 +38,7 @@ class GonguResponse {
   final int? maxParticipants;
   final double? lat;
   final double? lng;
+  final File? files;
 
   // 이것도 사용할 예정이에요
   GonguResponse({
@@ -63,6 +64,7 @@ class GonguResponse {
     this.maxParticipants,
     this.lat,
     this.lng,
+    this.files,
   });
 
   // JSON 팩토리로 간단하게 전송 및 수신 가능
@@ -94,6 +96,7 @@ class GonguResponse {
       maxParticipants: json['maxParticipants'],
       lat: json['lat'] != null ? json['lat'].toDouble() : null,
       lng: json['lng'] != null ? json['lng'].toDouble() : null,
+      files: null, // 파일은 별도로 처리 필요
     );
   }
 }
@@ -186,7 +189,7 @@ class GonguService extends GetxService {
   /// - 리퀘스트 바디 예시 수정
   /// 01.25 수정함
   /// form-data
-  /// postDto : {
+  // / postDto : {
   //     "title": "생수 살사212212132",
   //     "description": "제곧2323내2",
   //     "priceTotal": 50000,
@@ -202,90 +205,84 @@ class GonguService extends GetxService {
   // */
   /// =================================================
   Future<dynamic> createGonguRoom(
-    String title,
-    String description,
-    int priceTotal,
-    String meetPlaceText,
-    int categoryId,
-    DateTime startdate,
-    DateTime enddate,
-    double lat,
-    double lng, {
-    // List<MultipartFile>? files, // 추후 파일 첨부 시 사용
-    File? imageFile,
-  }) async {
-    try {
-      // 1. 서버 주석에 명시된 postDto 구조 만들기
-      final Map<String, dynamic> postDto = {
-        "title": title,
-        "description": description,
-        "priceTotal": priceTotal,
-        "meetPlaceText": meetPlaceText,
-        "categoryId": categoryId,
-        "neighborhoodId": 11560, // 주석 예시에 있는 고정값 또는 파라미터화
-        "startdate": startdate.toIso8601String(),
-        "enddate": enddate.toIso8601String(),
-        "lat": lat,
-        "lng": lng,
-      };
+  String title,
+  String description,
+  int priceTotal,
+  String meetPlaceText,
+  int categoryId,
+  DateTime startdate,
+  DateTime enddate,
+  double lat,
+  double lng, {
+  File? files, // 단일 파일 전송
+}) async {
+  try {
+    // 1. 데이터 맵 생성
+    final Map<String, dynamic> postDto = {
+      "title": title,
+      "description": description,
+      "priceTotal": priceTotal,
+      "meetPlaceText": meetPlaceText,
+      "categoryId": categoryId,
+      "neighborhoodId": 11560,
+      "startdate": startdate.toIso8601String(),
+      "enddate": enddate.toIso8601String(),
+      "lat": lat,
+      "lng": lng,
+    };
 
-      // FormData 구성 (방법 1 적용)
-      final formData = dio.FormData.fromMap({
-        'postDto': dio.MultipartFile.fromString(
-          jsonEncode(postDto),
-          contentType: dio.DioMediaType('application', 'json'),
+    // 2. FormData 구성
+    final formData = dio.FormData();
+
+    // JSON 파트 추가 (Spring @RequestPart와 대응)
+    formData.files.add(MapEntry(
+      'postDto',
+      dio.MultipartFile.fromString(
+        jsonEncode(postDto),
+        contentType: dio.DioMediaType('application', 'json'),
+      ),
+    ));
+
+    // 이미지 파트 추가
+    if (files != null) {
+      formData.files.add(MapEntry(
+        'files', // 서버 API 명세에 따라 'file' 또는 'files' 확인 필수!
+        await dio.MultipartFile.fromFile(
+          files.path,
+          filename: files.path.split('/').last,
+          contentType: dio.DioMediaType('image', 'jpeg'),
         ),
-      });
-
-      // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
-      print('========== createRoom SERVICE ==========');
-      print('baseUrl : ${_dio.options.baseUrl}');
-      print('title   : "$title" (${title.runtimeType})');
-      print('description: "$description" (${description.runtimeType})');
-      print('priceTotal: $priceTotal (${priceTotal.runtimeType})');
-      print('meetPlaceText: "$meetPlaceText" (${meetPlaceText.runtimeType})');
-      print('categoryId: $categoryId (${categoryId.runtimeType})');
-      print('startdate: $startdate (${startdate.runtimeType})');
-      print('enddate: $enddate (${enddate.runtimeType})');
-      print('lat: $lat (${lat.runtimeType})');
-      print('lng: $lng (${lng.runtimeType})');
-      print('=======================================');
-
-      // 사진 파일 추가 (dio.MultipartFile 사용)
-      if (imageFile != null) {
-        formData.files.add(
-          MapEntry(
-            "files",
-            await dio.MultipartFile.fromFile(
-              imageFile.path,
-              filename: "post_image.jpg",
-              contentType: dio.DioMediaType('image', 'jpeg'), // 컨텐츠 타입 명시
-            ),
-          ),
-        );
-        print("사진 파일 첨부 완료: ${imageFile.path}");
-      }
-
-      final response = await _dio.post(
-        '/group-buy',
-        data: formData, // JSON 대신 formData를 전송
-        options: dio.Options(contentType: 'multipart/form-data'),
-      );
-
-      print('========== RESPONSE ==========');
-      print('statusCode: ${response.statusCode}');
-      print('data      : ${response.data}');
-      print('================================');
-
-      print("서버에서 받은 생짜 데이터: ${response.data}");
-      return response.data;
-    } catch (e, stack) {
-      print('❌ createGonguRoom ERROR');
-      print(e);
-      print(stack);
-      return false;
+      ));
     }
+
+    // 3. 로그 출력 (디버깅용)
+    print('---------- SENDING DATA ----------');
+    print('Payload: ${jsonEncode(postDto)}');
+    print('Files: ${files}');
+    print('----------------------------------');
+
+    // 4. 요청 실행
+    final response = await _dio.post(
+      '/group-buy', // 기본 경로 확인하세요!
+      data: formData,
+      options: dio.Options(
+        contentType: 'multipart/form-data',
+        // headers: { "Authorization": "Bearer $token" } // 토큰 필요시 추가
+      ),
+    );
+
+    // 5. 서버 응답 확인
+    print('✅ SUCCESS RESPONSE: ${response.data}');
+    
+    // 보통 response.data['imageUrl'] 또는 response.data['data']['imageUrl'] 등에 URL이 들어있습니다.
+    return response.data;
+
+  } catch (e, stack) {
+    print('❌ createGonguRoom ERROR');
+    print('Error: $e');
+    return false;
   }
+}
 
   /// =================================================
   /// 공구 방 좋아요 API 함수
@@ -552,4 +549,7 @@ class GonguService extends GetxService {
       return null;
     }
   }
+
+  /// =================================================
+  /// 
 }

@@ -178,6 +178,9 @@ class PostController extends GetxController {
       final int categoryId = _getCategoryId(selectedFoodType.value);
       final double lat = currentPosition.value.latitude;
       final double lng = currentPosition.value.longitude;
+      final String files = selectedImage.value != null
+          ? selectedImage.value!.path.split('/').last
+          : '';
 
       print("🚀 [서버 전송 시도] ID 발급 대기 중...");
 
@@ -193,6 +196,7 @@ class PostController extends GetxController {
         endDate!,
         lat,
         lng,
+        files: selectedImage.value
       );
 
       // 5. 생성된 ID(숫자) 확인 후 채팅방 개설 도미노 시작

@@ -16,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
     // 컨트롤러 등록
     final controller = Get.put(NavController());
     final profileController = Get.put(ProfileController());
-
+    
     return Scaffold(
       backgroundColor: Colors.white,
       // 상단바: 로그아웃 버튼 제외 적용
@@ -87,15 +87,36 @@ class ProfileScreen extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            child: CircleAvatar(
-              radius: 30,
-              backgroundColor: AppColors.background,
-              child: Icon(
-                Icons.person,
-                color: AppColors.textSecondary,
-                size: 40,
-              ), // 추후 이미지 데이터 연동
-            ),
+            child: // 1. 프로필 이미지 부분 (상태에 따라 자동 갱신)
+          
+            // GestureDetector 내부의 Obx 부분을 아래 코드로 교체하세요.
+Obx(() {
+  final String url = profileController.profileImageUrl.value;
+  final bool hasImage = url.trim().isNotEmpty;
+
+  return Container(
+    width: 60,
+    height: 60,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.grey.withOpacity(0.2)), // 원형 테두리 살짝
+      color: Colors.white, 
+    ),
+    child: ClipOval(
+      child: hasImage
+          ? Image.network(
+              url,
+              fit: BoxFit.cover,
+              // [팁] 너무 큰 이미지는 아래처럼 cache 크기를 지정하면 훨씬 잘 뜹니다.
+              cacheWidth: 180, 
+              cacheHeight: 180,
+              errorBuilder: (context, error, stackTrace) => 
+                const Icon(Icons.broken_image, color: Colors.red),
+            )
+          : const Icon(Icons.person, size: 40, color: Colors.grey),
+    ),
+  );
+})
           ),
           const SizedBox(width: 15),
           Expanded(
