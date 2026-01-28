@@ -81,16 +81,13 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 15),
 
-              // 🎯 카드들 (Expanded 제거, 대신 SizedBox로 높이 제어 가능)
-
-              // 2. 유통기한 카드
-// 🎯 HomeScreen 클래스 내 build 메서드 중 2. 유통기한 카드 부분
-
+            // 🎯 카드들 (Expanded 제거, 대신 SizedBox로 높이 제어 가능)
+            // 2. 유통기한 카드
             _buildFixedCard(
-              height: 175,
+              height: 200, // 💡 버튼이 추가되므로 높이를 175에서 220 정도로 넉넉하게 늘려주세요.
               title: "⏰ 유통기한 임박",
               accentColor: Colors.orangeAccent,
-              onPressed: () => Get.toNamed(AppRoutes.FRIDGE),
+              onPressed: () {}, // 카드 자체 클릭 리스너 (기능 없음)
               content: Obx(() {
                 // 💡 데이터가 없을 때의 처리
                 if (homeController.topImminentItems.isEmpty) {
@@ -102,56 +99,138 @@ class HomeScreen extends StatelessWidget {
                   );
                 }
 
-                // 💡 데이터가 있을 때 3개 목록 렌더링
+                // 💡 데이터가 있을 때 3개 목록 + 바로가기 버튼
                 return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: homeController.topImminentItems.map((item) {
-                    return _buildImminentItemRow(item);
-                  }).toList(),
-                );
-              }),
-            ),
-
-              // 3. AI 요리 추천 카드
-              _buildFixedCard(
-                height: 140,
-                title: "🤖 AI 요리 추천",
-                content: const Text("오늘 냉장고 파먹기 메뉴는?"),
-                accentColor: Colors.blueAccent,
-              ),
-
-              // 4. 이번달 식비 요약 카드
-            _buildFixedCard(
-              height: 140,
-              title: "📊 이번달 식비 요약",
-              content: Obx(() {
-                // 컨트롤러의 원본 텍스트를 가져옵니다.
-                // 예: "이번 달 지출 100,000원,\n지난달보다 5,000원 더 썼어요"
-                final fullText = homeController.monthlySummaryMessage.value;
-
-                // 텍스트가 아직 로딩 중일 때의 처리
-                if (fullText.contains("데이터를 불러오는 중")) {
-                  return const Text("데이터를 불러오는 중...");
-                }
-
-                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // 위아래 간격 배치
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
-                    Text.rich(
-                      TextSpan(
-                        style: const TextStyle(
-                          //fontSize: 16,
-                          //color: Colors.black87,
-                          //height: 1.5,
+                    // 1. 식재료 리스트 영역
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: homeController.topImminentItems.map((item) {
+                        return _buildImminentItemRow(item);
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // 2. 내 냉장고 바로가기 버튼 (공구 카드와 동일한 스타일)
+                    GestureDetector(
+                      onTap: () {
+                        // 🎯 요청하신대로 Get.offAllNamed를 사용하여 이동
+                        Get.offAllNamed(AppRoutes.FRIDGE);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
                         ),
-                        children: _buildHighlightedSummary(fullText),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.play_arrow,
+                                  size: 14,
+                                  color: Colors.orange[300],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "내 냉장고 바로가기",
+                                  style: TextStyle(
+                                    color: Colors.orange[300],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14,
+                              color: Colors.orange[300],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 );
               }),
+            ),
+              // 4. 이번달 식비 요약 카드
+// 4. 이번달 식비 요약 카드
+            _buildFixedCard(
+              height: 180, // 💡 버튼이 추가되므로 높이를 140에서 180 정도로 늘려주세요.
+              title: "📊 이번달 식비 요약",
               accentColor: Colors.greenAccent,
+              content: Obx(() {
+                final fullText = homeController.monthlySummaryMessage.value;
+
+                if (fullText.contains("데이터를 불러오는 중")) {
+                  return const Center(child: Text("데이터를 불러오는 중..."));
+                }
+
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // 💡 텍스트와 버튼을 위아래로 분리
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. 텍스트 영역
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(height: 1.5),
+                          children: _buildHighlightedSummary(fullText),
+                        ),
+                      ),
+                    ),
+
+                    // 2. 가계부 바로가기 버튼 (다른 카드들과 통일된 스타일)
+                    GestureDetector(
+                      onTap: () {
+                        // 🎯 가계부 탭(AppRoutes.LEDGER)으로 이동
+                        Get.offAllNamed(AppRoutes.LEDGER);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+                        decoration: const BoxDecoration(
+                          color: Colors.transparent,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.play_arrow,
+                                  size: 14,
+                                  color: Colors.green[300], // 💡 카드 accentColor에 맞춘 색상
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "가계부 바로가기",
+                                  style: TextStyle(
+                                    color: Colors.green[300],
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              size: 14,
+                              color: Colors.green[300],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
             ),
 
               // 🎯 5. 근처 식료품 공구 카드
