@@ -3,10 +3,12 @@ import 'package:honbop_mate/features/community/services/gongu_service.dart';
 import 'package:intl/intl.dart';
 
 import '../../auth/controllers/bottom_nav/ledger_controller.dart';
+import '../../fridge/controllers/fridge_list_controller.dart';
 
 class HomeController extends GetxController {
   final GonguService _gonguService = GonguService();
   final LedgerController _ledgerController = Get.put(LedgerController());
+  final FridgeListController _fridgeController = Get.find<FridgeListController>();
 
   var isLoading = false.obs;
   var isLoginSuccess = false.obs;
@@ -19,6 +21,9 @@ class HomeController extends GetxController {
   // ✅ 이번 달 식비 요약 문구 변수
   var monthlySummaryMessage = "데이터를 불러오는 중...".obs;
 
+  // 💡 3. 유통기한 임박 상위 3개 아이템을 담을 관찰 가능한 리스트
+  var topImminentItems = <dynamic>[].obs;
+
   @override
   onInit() {
     super.onInit();
@@ -28,9 +33,13 @@ class HomeController extends GetxController {
     everAll([_ledgerController.totalExpense, _ledgerController.lastMonthTotal], (_) {
       _generateMonthlySummary();
     });
+    ever(_fridgeController.fridgeItems, (_) {
+      _updateTopImminentItems();
+    });
 
     // 초기 1회 실행
     _generateMonthlySummary();
+    _updateTopImminentItems();
   }
 
   Future<void> TopGongu() async {
@@ -79,5 +88,17 @@ class HomeController extends GetxController {
 
     // 최종 문구 업데이트
     monthlySummaryMessage.value = "이번 달 지출 $formattedCurrent원,\n지난달보다 $comparisonText";
+  }
+
+  void _updateTopImminentItems() {
+    // 냉장고 컨트롤러의 전체 리스트를 복사
+    List<dynamic> allItems = List.from(_fridgeController.fridgeItems);
+
+    // 유통기한(daysLeft) 오름차순 정렬 (남은 날짜가 적을수록 앞으로)
+    // daysLeft가 null인 경우는 뒤로 밀리도록 처리
+    allItems.sort((a, b) => (a.daysLeft ?? 999).compareTo(b.daysLeft ?? 999));
+
+    // 상위 3개만 잘라서 저장
+    topImminentItems.assignAll(allItems.take(3).toList());
   }
 }
