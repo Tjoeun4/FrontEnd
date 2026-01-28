@@ -243,16 +243,6 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    const Text('|', style: TextStyle(color: Colors.white70)),
-                    TextButton(
-                      onPressed: () {
-                        Get.offAllNamed(AppRoutes.HOME);;
-                      },
-                      child: const Text(
-                        '테스트 로그인',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ],
                 ),
                 const Spacer(flex: 3),
