@@ -55,29 +55,28 @@ class PostDetailScreen extends GetView<PostDetailController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. 상단 이미지 영역 (없을 경우 대비 색상 박스)
-              Container(
-  width: double.infinity,
-  height: 250,
-  decoration: BoxDecoration(
-    color: Colors.grey[200],
-    borderRadius: BorderRadius.circular(12),
-  ),
-  child: firstImageUrl != null 
-    ? Image.network(
-        firstImageUrl,
-        fit: BoxFit.cover,
-        // 로딩 처리
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const Center(child: CircularProgressIndicator());
-        },
-        // 에러 처리 (URL이 잘못되었을 경우)
-        errorBuilder: (context, error, stackTrace) => 
-          const Icon(Icons.broken_image, size: 80, color: Colors.grey),
-      )
-    : const Icon(Icons.image, size: 80, color: Colors.grey),
-),
+              // URL이 null이 아니고 비어있지 않을 때만 영역을 생성합니다.
+              if (firstImageUrl != null && firstImageUrl.toString().trim().isNotEmpty) ...[
+                Container(
+                  width: double.infinity,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Image.network(
+                    firstImageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) => 
+                      const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 15), // 이미지가 있을 때만 생기는 아래 간격
+              ],
 
               Padding(
                 padding: const EdgeInsets.all(20),

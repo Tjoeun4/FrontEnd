@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:honbop_mate/features/auth/controllers/bottom_nav/profile_controller.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
@@ -13,6 +14,9 @@ class ProfileEditScreen extends StatefulWidget {
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   File? _selectedImage; // 선택된 사진을 담을 변수
   final ImagePicker _picker = ImagePicker();
+
+  // 컨트롤러 주입
+  final controller = Get.put(ProfileController());
 
   // 갤러리에서 사진 가져오기
   Future<void> _pickedImage() async {
@@ -38,8 +42,37 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Get.back(),
-            child: Text("완료", style: TextStyle(color: Colors.orange, fontSize: 16)),
+            onPressed: () async {
+              try {
+                // 1. 로딩 다이얼로그 (선택사항이지만 권장)
+                Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+
+                // 2. 서버에 이미지 업로드 및 프로필 정보 저장 호출
+                await controller.saveProfileImg(); 
+                
+                // 3. 로딩 다이얼로그 닫기
+                Get.back(); 
+
+                // 4. 프로필 수정 화면 닫기 (이전 화면으로 이동)
+                Get.back();
+                
+                // 5. 성공 메시지
+                Get.snackbar(
+                  "성공", 
+                  "프로필이 수정되었습니다.",
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.black87,
+                  colorText: Colors.white,
+                );
+              } catch (e) {
+                Get.back(); // 에러 시 로딩창은 닫아줘야 함
+                Get.snackbar("오류", "저장에 실패했습니다: $e");
+              }
+            },
+            child: const Text(
+              "완료", 
+              style: TextStyle(color: Colors.orange, fontSize: 16, fontWeight: FontWeight.bold)
+            ),
           )
         ],
       ),
@@ -53,32 +86,26 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
             // 프로필 이미지 섹션
             Center(
-              child: GestureDetector(
-                onTap: _pickedImage, // 클릭 시 이미지 선택 함수 실행
-
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey[200],
-                      child: const Icon(Icons.person, size: 60, color: Colors.white),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(blurRadius: 2, color: Colors.black26)],
+                        child: Obx(() => GestureDetector(
+                        onTap: () => controller.pickImage(),
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            shape: BoxShape.circle,
+                            image: controller.selectedImage.value != null
+                                ? DecorationImage(
+                                    image: FileImage(controller.selectedImage.value!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: controller.selectedImage.value == null
+                              ? const Icon(Icons.camera_alt, size: 40)
+                              : null,
                         ),
-                        child: Icon(Icons.camera_alt, size: 18, color: Colors.grey[700]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          )),
             ),
 
             const SizedBox(height: 40),
