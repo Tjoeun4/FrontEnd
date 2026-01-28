@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/core/services/token_service.dart';
@@ -174,4 +176,55 @@ class UserService extends GetxService {
       return null;
     }
   }
+
+  /// =================================================
+  /// 유저 이미지 넣는 함수
+  //  경로 : /api/user/me
+  //  Method : POST
+  //  설명 : 현재 로그인한 유저의 프로필 이미지를 업로드합니다.
+  // =================================================
+  Future<String?> UserImagePost(File? file) async {
+  if (file == null) return null; // 파일이 없으면 바로 리턴
+
+  try {
+    print('========== UserImagePost SERVICE ==========');
+    print('baseUrl : ${_dio.options.baseUrl}');
+
+    // 1. FormData 구성
+    final formData = dio.FormData();
+
+    // 2. 파일 추가 (Key는 'file')
+    formData.files.add(MapEntry(
+      'file',
+      await dio.MultipartFile.fromFile(
+        file.path,
+        filename: file.path.split('/').last,
+        // 디오 미디어 타입 설정 (가장 표준적인 방식)
+        contentType: dio.DioMediaType('image', 'jpeg'), 
+      ),
+    ));
+
+    // 3. POST 요청 (반드시 data: formData를 넣어줘야 함)
+    final response = await _dio.post(
+      '/user/me/image', // baseUrl에 /api가 있다면 /user/me/image만 작성
+      data: formData,   // 👈 이 부분이 누락되면 서버가 데이터를 못 받음
+      options: dio.Options(
+        contentType: 'multipart/form-data', // 👈 명시적으로 설정
+      ),
+    );
+
+    print('========== RESPONSE ==========');
+    print('statusCode: ${response.statusCode}');
+    print('data: ${response.data}');
+
+    if (response.statusCode == 200) {
+      // 서버 응답이 String이므로 그대로 반환
+      return response.data.toString();
+    }
+    return null;
+  } catch (e) {
+    print('❌ 전송 에러: $e');
+    return null;
+  }
 }
+  }
