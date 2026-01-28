@@ -10,6 +10,8 @@ import 'package:honbop_mate/core/navigation/widgets/app_nav_bar.dart';
 import 'package:honbop_mate/core/navigation/widgets/bottom_nav_bar.dart';
 import 'package:honbop_mate/features/home/controllers/home_controller.dart';
 
+import '../../routes/app_routes.dart';
+
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
@@ -82,12 +84,33 @@ class HomeScreen extends StatelessWidget {
               // 🎯 카드들 (Expanded 제거, 대신 SizedBox로 높이 제어 가능)
 
               // 2. 유통기한 카드
-              _buildFixedCard(
-                height: 140,
-                title: "⏰ 유통기한 임박",
-                content: const Text('1x3 으로 들어갈거고 없으면 없다고 뜰예정'),
-                accentColor: Colors.orangeAccent,
-              ),
+// 🎯 HomeScreen 클래스 내 build 메서드 중 2. 유통기한 카드 부분
+
+            _buildFixedCard(
+              height: 175,
+              title: "⏰ 유통기한 임박",
+              accentColor: Colors.orangeAccent,
+              onPressed: () => Get.toNamed(AppRoutes.FRIDGE),
+              content: Obx(() {
+                // 💡 데이터가 없을 때의 처리
+                if (homeController.topImminentItems.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      '임박한 식재료가 없습니다. ❄️',
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                  );
+                }
+
+                // 💡 데이터가 있을 때 3개 목록 렌더링
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: homeController.topImminentItems.map((item) {
+                    return _buildImminentItemRow(item);
+                  }).toList(),
+                );
+              }),
+            ),
 
               // 3. AI 요리 추천 카드
               _buildFixedCard(
@@ -293,6 +316,7 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required Widget content,
     required Color accentColor,
+    VoidCallback? onPressed,
   }) {
     return SizedBox(
       height: height,
@@ -300,7 +324,7 @@ class HomeScreen extends StatelessWidget {
         title: title,
         content: content,
         accentColor: accentColor,
-        onPressed: () {},
+          onPressed: onPressed ?? () {},
       ),
     );
   }
@@ -427,5 +451,55 @@ class HomeScreen extends StatelessWidget {
     }
 
     return spans;
+  }
+  // 🎯 HomeScreen 클래스 하단에 추가
+
+  Widget _buildImminentItemRow(dynamic item) {
+    // 💡 D-Day 색상 계산 로직 (기존 냉장고 탭 로직과 동일)
+    Color dDayColor = AppColors.success;
+    if (item.daysLeft != null) {
+      if (item.daysLeft! <= 0) {
+        dDayColor = AppColors.error;
+      } else if (item.daysLeft! <= 3) {
+        dDayColor = AppColors.warning;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // 식재료 이름
+          Expanded(
+            child: Text(
+              item.rawName ?? item.itemName ?? '이름 없음',
+              style: const TextStyle(
+                //fontSize: 15,
+                //fontWeight: FontWeight.w500,
+                //color: AppColors.textPrimary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // D-Day 배지
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: dDayColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              item.dDayText,
+              style: TextStyle(
+                color: dDayColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
