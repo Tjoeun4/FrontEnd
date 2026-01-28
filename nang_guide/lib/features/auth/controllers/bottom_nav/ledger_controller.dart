@@ -11,13 +11,14 @@ import '../../models/ledger_models.dart'; // ✅ 새로 만든 모델 임포트
 /// - 서버 통신 결과를 UI 친화적인 형태로 가공
 class LedgerController extends GetxController {
   /// 🌐 가계부 API 전용 Client (서버 통신 담당)
-  final LedgerApiClient _apiClient = Get.find<LedgerApiClient>();
+  final LedgerApiClient _apiClient = Get.put(LedgerApiClient());
 
   // ============================================================
   // 1️⃣ 공통 UI 상태 관리
   // ============================================================
   var selectedTabIndex = 1.obs;
   var totalExpense = 0.obs;
+  var lastMonthTotal = 0.obs; // 지난달 총액 저장용
   var isLoading = false.obs;
 
   // ============================================================
@@ -51,8 +52,9 @@ class LedgerController extends GetxController {
     isLoading.value = true;
     try {
       await Future.wait([
-        _fetchMonthlyExpenses(),
-        _fetchDailySummary(),
+        _fetchMonthlyExpenses(), // 이번 달 리스트
+        _fetchDailySummary(), // 이번 달 요약
+        _fetchLastMonthTotal(), // 지난달 총합 조회
       ]);
     } finally {
       isLoading.value = false;
@@ -79,6 +81,21 @@ Future<void> _fetchDailySummary() async {
       // ✅ 모델 내부의 유틸 메서드로 Map 갱신
       dailySummaries.assignAll(response.toDailyMap());
       totalExpense.value = response.monthTotalAmount;
+    }
+  }
+
+  /// ✅ [추가] 지난달 총액만 가져오는 전용 메서드
+  Future<void> _fetchLastMonthTotal() async {
+    // 1월인 경우 자동으로 작년 12월을 계산함
+    DateTime lastMonthDate = DateTime(year.value, month.value - 1);
+
+    final response = await _apiClient.getDailySummary(
+        lastMonthDate.year,
+        lastMonthDate.month
+    );
+
+    if (response != null) {
+      lastMonthTotal.value = response.monthTotalAmount;
     }
   }
 

@@ -98,12 +98,38 @@ class HomeScreen extends StatelessWidget {
               ),
 
               // 4. 이번달 식비 요약 카드
-              _buildFixedCard(
-                height: 140,
-                title: "📊 이번달 식비 요약",
-                content: const Text("이번 주는 지난주보다"),
-                accentColor: Colors.greenAccent,
-              ),
+            _buildFixedCard(
+              height: 140,
+              title: "📊 이번달 식비 요약",
+              content: Obx(() {
+                // 컨트롤러의 원본 텍스트를 가져옵니다.
+                // 예: "이번 달 지출 100,000원,\n지난달보다 5,000원 더 썼어요"
+                final fullText = homeController.monthlySummaryMessage.value;
+
+                // 텍스트가 아직 로딩 중일 때의 처리
+                if (fullText.contains("데이터를 불러오는 중")) {
+                  return const Text("데이터를 불러오는 중...");
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    Text.rich(
+                      TextSpan(
+                        style: const TextStyle(
+                          //fontSize: 16,
+                          //color: Colors.black87,
+                          //height: 1.5,
+                        ),
+                        children: _buildHighlightedSummary(fullText),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+              accentColor: Colors.greenAccent,
+            ),
 
               // 🎯 5. 근처 식료품 공구 카드
               _buildFixedCard(
@@ -365,5 +391,41 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // HomeScreen 클래스 내부 하단에 추가
+  List<InlineSpan> _buildHighlightedSummary(String text) {
+    List<InlineSpan> spans = [];
+
+    // 정규표현식으로 숫자와 콤마(,)를 찾습니다.
+    final RegExp regExp = RegExp(r'(\d{1,3}(,\d{3})*|\d+)');
+    final Iterable<RegExpMatch> matches = regExp.allMatches(text);
+
+    int lastMatchEnd = 0;
+    for (final RegExpMatch match in matches) {
+      // 숫자 앞의 일반 텍스트 추가
+      if (match.start > lastMatchEnd) {
+        spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start)));
+      }
+
+      // 숫자 부분 강조 스타일 추가
+      spans.add(
+        TextSpan(
+          text: match.group(0),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600, // 가장 두껍게
+            color: Colors.black,         // 진한 검은색
+          ),
+        ),
+      );
+      lastMatchEnd = match.end;
+    }
+
+    // 남은 텍스트 추가
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastMatchEnd)));
+    }
+
+    return spans;
   }
 }
