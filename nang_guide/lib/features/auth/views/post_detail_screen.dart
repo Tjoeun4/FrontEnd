@@ -45,6 +45,10 @@ class PostDetailScreen extends GetView<PostDetailController> {
         final LatLng targetPos = LatLng(lat ?? 37.3402, lng ?? 126.7335);
 
         final data = controller.postData;
+        
+        // 이미지를 담을 url 리스트 입니다.
+        final List<dynamic> urls = controller.postData['imageUrls'] ?? '';
+        String? firstImageUrl = urls.isNotEmpty ? urls[0] : null;
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -53,11 +57,27 @@ class PostDetailScreen extends GetView<PostDetailController> {
             children: [
               // 1. 상단 이미지 영역 (없을 경우 대비 색상 박스)
               Container(
-                width: double.infinity,
-                height: 250,
-                color: Colors.grey[200],
-                child: const Icon(Icons.image, size: 80, color: Colors.grey),
-              ),
+  width: double.infinity,
+  height: 250,
+  decoration: BoxDecoration(
+    color: Colors.grey[200],
+    borderRadius: BorderRadius.circular(12),
+  ),
+  child: firstImageUrl != null 
+    ? Image.network(
+        firstImageUrl,
+        fit: BoxFit.cover,
+        // 로딩 처리
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        // 에러 처리 (URL이 잘못되었을 경우)
+        errorBuilder: (context, error, stackTrace) => 
+          const Icon(Icons.broken_image, size: 80, color: Colors.grey),
+      )
+    : const Icon(Icons.image, size: 80, color: Colors.grey),
+),
 
               Padding(
                 padding: const EdgeInsets.all(20),
