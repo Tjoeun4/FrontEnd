@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:honbop_mate/features/auth/controllers/post_detail_controller.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../../core/navigation/controllers/nav_controller.dart';
+
 // post_detail_screen.dart
 class PostDetailScreen extends GetView<PostDetailController> {
   // GetView를 사용하므로 상단 find는 생략 가능합니다.
@@ -22,7 +24,7 @@ class PostDetailScreen extends GetView<PostDetailController> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
-            Get.offAllNamed(AppRoutes.COMMUNITY);
+            Get.find<NavController>().changeTab(1);
           },
         ),
         actions: [

@@ -117,8 +117,8 @@ class HomeScreen extends StatelessWidget {
                     // 2. 내 냉장고 바로가기 버튼 (공구 카드와 동일한 스타일)
                     GestureDetector(
                       onTap: () {
-                        // 🎯 요청하신대로 Get.offAllNamed를 사용하여 이동
-                        Get.offAllNamed(AppRoutes.FRIDGE);
+                        // 🎯 NavController를 사용하여 탭 전환
+                        navController.changeTab(2);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
@@ -190,8 +190,8 @@ class HomeScreen extends StatelessWidget {
                     // 2. 가계부 바로가기 버튼 (다른 카드들과 통일된 스타일)
                     GestureDetector(
                       onTap: () {
-                        // 🎯 가계부 탭(AppRoutes.LEDGER)으로 이동
-                        Get.offAllNamed(AppRoutes.LEDGER);
+                        // 🎯 NavController를 사용하여 탭 전환
+                        navController.changeTab(4);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
