@@ -82,23 +82,6 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
     <th align="center">윤우진</th>
   </tr>
   <tr>
-    <td align="center">
-      <img src="https://i.imgur.com/w1Kujqe.png" alt="이정민" width="150">
-    </td>
-    <td align="center">
-      <img src="https://i.imgur.com/fnQzD7E.png" alt="나서이" width="150">
-    </td>
-    <td align="center">
-      <img src="https://i.imgur.com/NWkQpK1.png" alt="강형원" width="150">
-    </td>
-    <td align="center">
-      <img src="https://i.imgur.com/u5QvVT4.png" alt="손은섭" width="150">
-    </td>
-    <td align="center">
-      <img src="https://i.imgur.com/u5QvVT4.png" alt="윤우진" width="150">
-    </td>
-  </tr>
-  <tr>
     <td align="center">PM, BE, DB 설계, API 설계</td>
     <td align="center">BE, Server, DB 설계, API 설계</td>
     <td align="center">FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계</td>
