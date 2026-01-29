@@ -6,7 +6,7 @@ import '../models/ingredient_resolve_model.dart';
 
 class FridgeAddStepScreen extends GetView<FridgeAddController> {
   const FridgeAddStepScreen({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +108,10 @@ class FridgeAddStepScreen extends GetView<FridgeAddController> {
 
   // --- [Step 3] 상세 정보 입력 (수량, 날짜 등) ---
   Widget _buildDetailInputStep() {
+    
     bool isAi = controller.resolveResult.value?.type == ResolveType.AI_PENDING;
+    // UI 리빌드 false 초기화 방지
+    final RxBool isEditing = false.obs;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -130,7 +133,37 @@ class FridgeAddStepScreen extends GetView<FridgeAddController> {
           Row(
             children: [
               IconButton(onPressed: () => controller.quantity.value--, icon: const Icon(Icons.remove)),
-              Obx(() => Text("${controller.quantity.value}", style: const TextStyle(fontSize: 18))),
+              // 2. controller.isEditing 대신 위에서 만든 isEditing을 사용
+              Obx(() => isEditing.value 
+          ? SizedBox(
+              width: 50,
+              child: TextField(
+                autofocus: true,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onSubmitted: (v) {
+                  print("입력된 값: $v");
+                  if (v.isNotEmpty) {
+                    controller.quantity.value = double.tryParse(v) ?? controller.quantity.value;
+                  }
+                  isEditing.value = false;
+                },
+                onTapOutside: (_) {
+                  print("입력창 외부 클릭 - 편집 종료");
+                  isEditing.value = false;
+                },
+              ),
+            )
+          : GestureDetector(
+              onTap: () {
+                print("텍스트 클릭 - 편집 모드 진입");
+                isEditing.value = true;
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text("${controller.quantity.value}", style: const TextStyle(fontSize: 18)),
+              ),
+            ),
+        ),
               IconButton(onPressed: () => controller.quantity.value++, icon: const Icon(Icons.add)),
               const SizedBox(width: 20),
               Expanded(
