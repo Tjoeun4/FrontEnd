@@ -105,12 +105,53 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
     <td>Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화</td>
   </tr>
 </table>
+<br/>
+<div align="center">
+
 # 🎨 Design & Architecture
 프로젝트의 설계 문서와 UI 디자인을 아래 링크에서 확인하실 수 있습니다.
 
-| 구분 | 링크 |
-| :--- | :--- |
-| **Figma UI Design** | <a href="https://www.figma.com/design/IuFE0AoQFtVKj05zFvBmcp/%EB%8D%94%EC%A1%B0%EC%9D%804%ED%8C%80_%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%85?node-id=0-1&p=f&t=ba3k0KTZPYsPzK1a-0" target="_blank"><img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white" /></a> |
-| **Figjam Diagram** | <a href="https://www.figma.com/board/ziN8FOnd6fhy31RMGvG5lV/%EC%8B%9C%ED%80%80%EC%8A%A4-%EC%9C%A0%EC%8A%A4%EC%BC%80%EC%9D%B4%EC%8A%A4-%EB%8B%A4%EC%9D%B4%EC%96%B4%EA%B7%B8%EB%9E%A8?t=ba3k0KTZPYsPzK1a-0" target="_blank"><img src="https://img.shields.io/badge/FigJam-F24E1E?style=flat-square&logo=figma&logoColor=white" /></a> |
-| **Project Notion** | <a href="https://www.notion.so/Tjoeun-All-In-One-1-2d90a79d68ca80059bfcf6562d3c1ffe" target="_blank"><img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=notion&logoColor=white" /></a> |
-| **ERD (Database)** | <a href="https://www.erdcloud.com/d/oPtPSyjre9DevFtKj" target="_blank"><img src="https://img.shields.io/badge/ERD%20Cloud-252a34?style=flat-square&logo=icloud&logoColor=white" /></a> |
+<table width="600">
+  <thead>
+    <tr>
+      <th align="center" width="200">구분</th>
+      <th align="center" width="400">링크</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><b>Figma UI Design</b></td>
+      <td align="center">
+        <a href="https://www.figma.com/design/IuFE0AoQFtVKj05zFvBmcp/%EB%8D%94%EC%A1%B0%EC%9D%804%ED%8C%80_%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%85?node-id=0-1&p=f&t=ba3k0KTZPYsPzK1a-0" target="_blank">
+          <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white" />
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><b>Figjam Diagram</b></td>
+      <td align="center">
+        <a href="https://www.figma.com/board/ziN8FOnd6fhy31RMGvG5lV/%EC%8B%9C%ED%80%80%EC%8A%A4-%EC%9C%A0%EC%8A%A4%EC%BC%80%EC%9D%B4%EC%8A%A4-%EB%8B%A4%EC%9D%B4%EC%96%B4%EA%B7%B8%EB%9E%A8?t=ba3k0KTZPYsPzK1a-0" target="_blank">
+          <img src="https://img.shields.io/badge/FigJam-F24E1E?style=flat-square&logo=figma&logoColor=white" />
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><b>Project Notion</b></td>
+      <td align="center">
+        <a href="https://www.notion.so/Tjoeun-All-In-One-1-2d90a79d68ca80059bfcf6562d3c1ffe" target="_blank">
+          <img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=notion&logoColor=white" />
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><b>ERD (Database)</b></td>
+      <td align="center">
+        <a href="https://www.erdcloud.com/d/oPtPSyjre9DevFtKj" target="_blank">
+          <img src="https://img.shields.io/badge/ERD%20Cloud-252a34?style=flat-square&logo=icloud&logoColor=white" />
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
