@@ -69,9 +69,6 @@ class PantryController extends GetxController {
       if (isOk) {
         // 성공 시 목록 갱신
         await fetchPantryItems();
-        Get.snackbar('성공', message,
-            backgroundColor: Colors.green.withOpacity(0.5),
-            snackPosition: SnackPosition.BOTTOM);
       } else {
         // 백엔드에서 보낸 "이미 존재하는 항목입니다." 메시지 표시
         Get.snackbar('알림', message,
