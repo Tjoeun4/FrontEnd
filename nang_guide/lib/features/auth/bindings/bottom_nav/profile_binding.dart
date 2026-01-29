@@ -16,16 +16,10 @@ class ProfileBinding extends Bindings {
   void dependencies() {
     // 1. 프로필 컨트롤러: 유저의 닉네임, 사진, 작성글 목록 등의 상태를 관리합니다.
     Get.put<ProfileController>(ProfileController());
-    Get.put(
-      GetStorage(),
-      permanent: true,
-    ); // GetX패키지의 의존성 주입(인스턴스 생성 후 메모리에 올림) 메서드. 매번 GetStorage()를 새로 생성할 필요 없이, 메모리에 딱 하나 올라가 있는 '싱글톤(Singleton)' 객체를 공유해서 쓰기 위함
-
+    Get.put(GetStorage(), permanent: true); // GetX패키지의 의존성 주입(인스턴스 생성 후 메모리에 올림) 메서드. 매번 GetStorage()를 새로 생성할 필요 없이, 메모리에 딱 하나 올라가 있는 '싱글톤(Singleton)' 객체를 공유해서 쓰기 위함
+    
     // 기본 서비스들 (Dio, TokenService 등)을 다시 한번 확인하며 등록
-    Get.put(
-      Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/api')),
-      permanent: true,
-    );
+    Get.put(Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8080/api')), permanent: true);
     Get.put<GoogleAuthService>(GoogleAuthService(), permanent: true);
     // Register TokenService, injecting the Dio instance
     Get.put<TokenService>(TokenService(Get.find<Dio>()), permanent: true);
@@ -39,6 +33,7 @@ class ProfileBinding extends Bindings {
     // CommunityController 생성 시, 위에서 등록한 ApiService를 찾아 주입함
     Get.lazyPut(() => CommunityController(Get.find<ApiService>()));
 
+   
     // 3. CommunityController 등록
     // 생성자에서 ApiService를 필요로 한다면 Get.find()로 넣어줍니다.
     Get.lazyPut<CommunityController>(
@@ -47,5 +42,6 @@ class ProfileBinding extends Bindings {
 
     // 4. 네비게이션 컨트롤러 등 추가
     Get.lazyPut<NavController>(() => NavController());
+
   }
 }

@@ -24,7 +24,7 @@ class PostDetailScreen extends GetView<PostDetailController> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
-            Get.find<NavController>().changeTab(1);
+            Get.offAllNamed(AppRoutes.COMMUNITY);
           },
         ),
         actions: [
