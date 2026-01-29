@@ -72,21 +72,18 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
 - 평일 오전 11시
 
 ## 👥 Team Members
+이정민 : PM, BE, DB 설계, API 설계
+나서이 : BE, Server, DB 설계, API 설계
+강형원 : FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계
+손은섭 : FE, 상태 관리, 생명주기 최적화, API 연동
+윤우진 : FE, Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화
 
-<table align="center">
-  <tr>
-    <th align="center">이정민</th>
-    <th align="center">나서이</th>
-    <th align="center">강형원</th>
-    <th align="center">손은섭</th>
-    <th align="center">윤우진</th>
-  </tr>
-  <tr>
-    <td align="center">PM, BE, DB 설계, API 설계</td>
-    <td align="center">BE, Server, DB 설계, API 설계</td>
-    <td align="center">FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계</td>
-    <td align="center">FE, 상태 관리, 생명주기 최적화, API 연동</td>
-    <td align="center">FE, Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화</td>
-  </tr>
-</table>
+# 🎨 Design & Architecture
+프로젝트의 설계 문서와 UI 디자인을 아래 링크에서 확인하실 수 있습니다.
 
+| 구분 | 링크 |
+| :--- | :--- |
+| **Figma UI Design** | <a href="https://www.figma.com/design/IuFE0AoQFtVKj05zFvBmcp/%EB%8D%94%EC%A1%B0%EC%9D%804%ED%8C%80_%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8%EB%AA%85?node-id=0-1&p=f&t=ba3k0KTZPYsPzK1a-0" target="_blank"><img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white" /></a> |
+| **Figjam Diagram** | <a href="https://www.figma.com/board/ziN8FOnd6fhy31RMGvG5lV/%EC%8B%9C%ED%80%80%EC%8A%A4-%EC%9C%A0%EC%8A%A4%EC%BC%80%EC%9D%B4%EC%8A%A4-%EB%8B%A4%EC%9D%B4%EC%96%B4%EA%B7%B8%EB%9E%A8?t=ba3k0KTZPYsPzK1a-0" target="_blank"><img src="https://img.shields.io/badge/FigJam-F24E1E?style=flat-square&logo=figma&logoColor=white" /></a> |
+| **Project Notion** | <a href="https://www.notion.so/Tjoeun-All-In-One-1-2d90a79d68ca80059bfcf6562d3c1ffe" target="_blank"><img src="https://img.shields.io/badge/Notion-000000?style=flat-square&logo=notion&logoColor=white" /></a> |
+| **ERD (Database)** | <a href="https://www.erdcloud.com/d/oPtPSyjre9DevFtKj" target="_blank"><img src="https://img.shields.io/badge/ERD%20Cloud-252a34?style=flat-square&logo=icloud&logoColor=white" /></a> |
