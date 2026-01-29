@@ -72,12 +72,39 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
 - 평일 오전 11시
 
 ## 👥 Team Members
-이정민 : PM, BE, DB 설계, API 설계<br/>
-나서이 : BE, Server, DB 설계, API 설계<br/>
-강형원 : FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계<br/>
-손은섭 : FE, 상태 관리, 생명주기 최적화, API 연동<br/>
-윤우진 : FE, Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화
 
+<table align="center">
+  <tr>
+    <th align="center">Role</th>
+    <th align="center">Name</th>
+    <th align="center">Responsibilities</th>
+  </tr>
+  <tr>
+    <td align="center"><b>Leader / BE</b></td>
+    <td align="center">이정민</td>
+    <td>PM, BE, DB 설계, API 설계</td>
+  </tr>
+  <tr>
+    <td align="center"><b>BE</b></td>
+    <td align="center">나서이</td>
+    <td>BE, Server 구축, DB 설계, API 설계</td>
+  </tr>
+  <tr>
+    <td align="center"><b>FE</b></td>
+    <td align="center">강형원</td>
+    <td>AI 기반 레시피 서비스 UI 구현, 가계부 캘린더 설계</td>
+  </tr>
+  <tr>
+    <td align="center"><b>FE</b></td>
+    <td align="center">손은섭</td>
+    <td>상태 관리, 생명주기 최적화, API 연동</td>
+  </tr>
+  <tr>
+    <td align="center"><b>FE</b></td>
+    <td align="center">윤우진</td>
+    <td>Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화</td>
+  </tr>
+</table>
 # 🎨 Design & Architecture
 프로젝트의 설계 문서와 UI 디자인을 아래 링크에서 확인하실 수 있습니다.
 
