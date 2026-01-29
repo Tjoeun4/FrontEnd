@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2), () {}); // 2초 대기
     // 삼중지문으로 자동로그인 주입 예정
     if (!mounted) return;
-    // Get.offAllNamed(AppRoutes.LOGIN); // 이 줄이 리디렉션을 유발하고 있습니다.
+    Get.offAllNamed(AppRoutes.LOGIN); // 이 줄이 리디렉션을 유발하고 있습니다.
     // GetX를 사용하여 자동 메인 화면으로 이동
     // 자동 로그인 성공 시 메인 페이지로 이동
     // else로 로그인 페이지로 이동 예정
@@ -35,12 +35,11 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       backgroundColor: Colors.white, // 배경색을 로고에 맞춰 설정하거나 투명하게 할 수 있습니다.
       body: Center(
-        child: CircularProgressIndicator(), // 로딩 인디케이터 추가
-        // child: Image.asset(
-        //   'assets/logo.png', // pubspec.yaml에 선언된 로고 이미지 경로
-        //   width: 500, // 로고 크기 조절
-        //   height: 500,
-        // ),
+        child: Image.asset(
+          'assets/nang_guide.png', // pubspec.yaml에 선언된 로고 이미지 경로
+          width: 500, // 로고 크기 조절
+          height: 500,
+        ),
       ),
     );
   }
