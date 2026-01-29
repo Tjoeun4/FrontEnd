@@ -72,10 +72,10 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
 - 평일 오전 11시
 
 ## 👥 Team Members
-이정민 : PM, BE, DB 설계, API 설계
-나서이 : BE, Server, DB 설계, API 설계
-강형원 : FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계
-손은섭 : FE, 상태 관리, 생명주기 최적화, API 연동
+이정민 : PM, BE, DB 설계, API 설계<br/>
+나서이 : BE, Server, DB 설계, API 설계<br/>
+강형원 : FE, AI기반 레시피 서비스 UI 구현, 가계부 캘린더 설계<br/>
+손은섭 : FE, 상태 관리, 생명주기 최적화, API 연동<br/>
 윤우진 : FE, Design, 컴포넌트 공통화, 사용자 경험(UX) 최적화
 
 # 🎨 Design & Architecture
