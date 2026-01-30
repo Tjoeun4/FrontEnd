@@ -1,4 +1,3 @@
-//  채팅 내역 입니다.
 class ChatMessageRequest2 {
   final String? messageId;
   final String? senderId;
