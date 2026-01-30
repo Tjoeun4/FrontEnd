@@ -1,12 +1,16 @@
-import 'dart:io';
-
 import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:get_storage/get_storage.dart';
 import 'package:honbop_mate/core/services/token_service.dart';
 import 'package:honbop_mate/routes/app_routes.dart';
+import 'package:stomp_dart_client/stomp_dart_client.dart';
 
-class UserService extends GetxService {
+/// ---------------------------------------------
+/// 인증/회원 관련 API 통신을 담당하는 Client
+/// - GetX Service로 앱 전역에서 재사용
+/// - Google 로그인, 이메일 인증, 회원가입 처리
+/// ---------------------------------------------
+class ChatService extends GetxService {
   final dio.Dio _dio =
       Get.find<dio.Dio>(); // Base URL이 http://10.0.2.2:8080/api 로 설정된채로 가져와짐
   final GetStorage _storage = Get.find<GetStorage>();
@@ -81,83 +85,75 @@ class UserService extends GetxService {
     );
   }
 
+  // ✅ 추가할 부분: 소켓 클라이언트 변수
+  StompClient? _stompClient;
+
+  // ✅ ChatController에서 부르는 그 'connect' 함수입니다.
+  void connect({
+    required String token,
+    required Function onConnect,
+    required Function(dynamic) onError,
+  }) {
+    _stompClient = StompClient(
+      config: StompConfig(
+        url: 'ws://172.16.252.206:8080/ws-stomp', // 👈 본인 서버 주소 확인!
+        onConnect: (frame) {
+          onConnect(); // 연결 성공 시 컨트롤러의 콜백 실행
+        },
+        onStompError: (frame) {
+          onError(frame.body);
+        },
+        onWebSocketError: (err) => onError(err),
+        stompConnectHeaders: {'Authorization': 'Bearer $token'},
+      ),
+    );
+    _stompClient?.activate();
+  }
+
+  // ✅ 구독 기능을 위해 stompClient를 외부에 노출하거나 여기서 처리
+  void subscribe(String destination, Function(StompFrame) callback) {
+    _stompClient?.subscribe(destination: destination, callback: callback);
+  }
+
   /// =================================================
-  /// 유저 검색하는 함수
-  //  경로 : /api/user/me
-  //  Method : GET
-  //  설명 : 현재 로그인한 유저의 정보를 가져옵니다.
-  // =================================================
-  Future<Map<String, dynamic>?> getMyProfile() async {
+  /// 과거 메시지 내역 로드 (방 입장 시 호출)
+  /// roomId: 방 ID
+  /// path : roomId
+  /// 경로 : /api/chat/room/{roomId}
+  /// =================================================
+  Future<List<dynamic>?> fetchChatHistory(int roomId) async {
     try {
-      // 로그 테스트입니다.. 잘 들어가는지 확인하기위함
-      print('========== getMyProfile SERVICE ==========');
-      print('baseUrl : ${_dio.options.baseUrl}');
-      print('=======================================');
-
-      final response = await _dio.get('/user/me');
-      print('========== RESPONSE ==========');
-      print('statusCode: ${response.statusCode}');
-      print('================================');
-
+      final response = await _dio.get('/chat/room/$roomId');
       if (response.statusCode == 200) {
+        final data = response.data;
+
+        // 서버 응답 구조가 보통 아래 3개 중 하나입니다. 맞는 걸로 리턴될 거예요.
+        if (data is List) return data;
+        if (data is Map) {
+          return data['content'] ?? data['messages'] ?? data['data'] ?? null;
+        }
+      }
+      return null;
+    } catch (e) {
+      print('❌ API 요청 에러: $e');
+      return null;
+    }
+  }
+
+  // =============================================
+  // 채팅방 관련 API -- 채팅방 조회
+  // - 헤더에는 반드시 인증 토큰 포함
+  // - 리퀘스트 바디 없음
+  // =============================================
+  Future<List<dynamic>?> fetchChatMyRooms() async {
+    try {
+      final response = await _dio.get('/chat/rooms');
+      if (response.statusCode == 200 && response.data is List) {
         return response.data;
       }
       return null;
     } catch (e) {
       print('JSON Parsing Error: $e');
-      return null;
-    }
-  }
-
-  /// =================================================
-  /// 유저 이미지 넣는 함수
-  //  경로 : /api/user/me
-  //  Method : POST
-  //  설명 : 현재 로그인한 유저의 프로필 이미지를 업로드합니다.
-  // =================================================
-  Future<String?> UserImagePost(File? file) async {
-    if (file == null) return null; // 파일이 없으면 바로 리턴
-
-    try {
-      print('========== UserImagePost SERVICE ==========');
-      print('baseUrl : ${_dio.options.baseUrl}');
-
-      // 1. FormData 구성
-      final formData = dio.FormData();
-
-      // 2. 파일 추가 (Key는 'file')
-      formData.files.add(
-        MapEntry(
-          'file',
-          await dio.MultipartFile.fromFile(
-            file.path,
-            filename: file.path.split('/').last,
-            // 디오 미디어 타입 설정 (가장 표준적인 방식)
-            contentType: dio.DioMediaType('image', 'jpeg'),
-          ),
-        ),
-      );
-
-      // 3. POST 요청 (반드시 data: formData를 넣어줘야 함)
-      final response = await _dio.post(
-        '/user/me/image', // baseUrl에 /api가 있다면 /user/me/image만 작성
-        data: formData, // 👈 이 부분이 누락되면 서버가 데이터를 못 받음
-        options: dio.Options(
-          contentType: 'multipart/form-data', // 👈 명시적으로 설정
-        ),
-      );
-
-      print('========== RESPONSE ==========');
-      print('statusCode: ${response.statusCode}');
-      print('data: ${response.data}');
-
-      if (response.statusCode == 200) {
-        // 서버 응답이 String이므로 그대로 반환
-        return response.data.toString();
-      }
-      return null;
-    } catch (e) {
-      print('❌ 전송 에러: $e');
       return null;
     }
   }

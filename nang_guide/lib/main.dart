@@ -1,32 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import './features/auth/bindings/auth_binding.dart';
-import './features/auth/routes/app_routes.dart';
-import 'features/auth/services/google_auth_service.dart';
+import 'package:honbop_mate/core/design/app_design.dart';
+import 'package:honbop_mate/login/binding/auth_binding.dart';
+import 'package:honbop_mate/login/service/google_auth_service.dart';
+import 'package:honbop_mate/routes/app_routes.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:honbop_mate/core/design/app_theme.dart';
-
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       theme: ThemeData(
-//         primaryColor: Color(0xFF14A3A3),
-//         primarySwatch: Colors.teal,
-//         useMaterial3: true,
-//       ),
-//       home: SplashScreen(),
-//     );
-//   }
-// }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,10 +14,6 @@ void main() async {
   await _initializeGoogleMap(); // 현시점 구글 지도 때문에 애뮬 터질려 함
   // 3. 한국어(ko_KR) 로케일 데이터를 초기화합니다.
   await initializeDateFormatting('ko_KR');
-  // await _initializeNaverMap();
-  // Get.put(AuthController(), permanent: true);
-  // Get.put(TokenService(), permanent: true);
-  // Get.put(ApiService(), permanent: true);
   runApp(MyApp());
 }
 

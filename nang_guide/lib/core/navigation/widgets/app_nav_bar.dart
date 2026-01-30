@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:honbop_mate/core/design/app_design.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
-import 'package:honbop_mate/features/auth/views/bottom_nav_screen/profile_screen.dart';
-import 'package:honbop_mate/features/auth/controllers/auth_controller.dart';
+import 'package:honbop_mate/login/controller/auth_controller.dart';
+import 'package:honbop_mate/routes/app_routes.dart';
+import 'package:honbop_mate/setting/views/profile_screen.dart';
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final dynamic title;
@@ -48,14 +48,6 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
             Get.to(() => ProfileScreen());
           },
         ),
-        /*
-        IconButton(
-          icon: Icon(Icons.logout),
-          onPressed: () {
-            authController.logout();
-          },
-        )
-         */
       ],
     );
   }

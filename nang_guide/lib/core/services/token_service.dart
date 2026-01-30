@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:honbop_mate/features/auth/models/authentication_response.dart';
-import 'dart:convert'; // Import dart:convert for jsonDecode
+import 'package:honbop_mate/core/models/authentication_response.dart';
+
 /// --------------------------------------------------
 /// 인증 토큰(Access / Refresh)을 전담 관리하는 서비스
 ///
@@ -55,6 +57,7 @@ class TokenService extends GetxService {
       await _storage.write('refresh_token', refreshToken);
     }
   }
+
   /// --------------------------------------------------
   /// 토큰 초기화 (로그아웃 / 인증 실패)
   /// --------------------------------------------------
@@ -83,7 +86,8 @@ class TokenService extends GetxService {
     }
 
     try {
-      final response = await _dio.post( // post
+      final response = await _dio.post(
+        // post
         '/v1/auth/refresh-token', // 백엔드 토큰 재발급 엔드포인트
         options: Options(
           headers: {'Authorization': 'Bearer $currentRefreshToken'},
@@ -124,7 +128,8 @@ class TokenService extends GetxService {
         'TokenService: Failed to refresh token. Status: ${response.statusCode}, Data: ${response.data}',
       );
       return false;
-    } on DioException catch (e) { // Refresh Token 자체가 만료되었거나 유효하지 않은 경우
+    } on DioException catch (e) {
+      // Refresh Token 자체가 만료되었거나 유효하지 않은 경우
       print('TokenService: Error refreshing token: $e');
       if (e.response?.statusCode == 401) {
         // Refresh Token 자체도 만료되었거나 유효하지 않은 경우

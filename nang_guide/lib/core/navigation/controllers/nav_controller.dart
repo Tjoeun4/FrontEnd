@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:honbop_mate/features/auth/routes/app_routes.dart';
+import 'package:honbop_mate/routes/app_routes.dart';
 
 class NavController extends GetxController {
   final selectedIndex = 0.obs;
@@ -11,11 +11,21 @@ class NavController extends GetxController {
     selectedIndex.value = index;
 
     switch (index) {
-      case 0: Get.offNamed(AppRoutes.HOME); break;
-      case 1: Get.offNamed(AppRoutes.COMMUNITY); break;
-      case 2: Get.offNamed(AppRoutes.FRIDGE); break;
-      case 3: Get.offNamed(AppRoutes.RECOMMEND); break;
-      case 4: Get.offNamed(AppRoutes.LEDGER); break;
+      case 0:
+        Get.offNamed(AppRoutes.HOME);
+        break;
+      case 1:
+        Get.offNamed(AppRoutes.COMMUNITY);
+        break;
+      case 2:
+        Get.offNamed(AppRoutes.FRIDGE);
+        break;
+      case 3:
+        Get.offNamed(AppRoutes.RECOMMEND);
+        break;
+      case 4:
+        Get.offNamed(AppRoutes.LEDGER);
+        break;
     }
   }
 
