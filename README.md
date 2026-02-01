@@ -15,7 +15,8 @@ AI 기반의 **식재료 관리 및 레시피 추천** 기능을 중심으로, *
 * **💰 스마트 가계부**: 영수증 인식(OCR)을 활용한 편리한 식비 지출 관리
 
 # 개발 시스템 구성도
-<img width="990" height="472" alt="image" src="https://github.com/user-attachments/assets/7c890f8a-f561-4a08-a7cd-29b8f9a43f82" />
+<img width="1129" height="533" alt="image" src="https://github.com/user-attachments/assets/513940b1-c336-4ff4-b5aa-a9097cdd3550" />
+
 
 # 📦 기술 스택 (Tech Stack)
 
